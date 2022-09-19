@@ -1,0 +1,210 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} TMT120APV
+@since 04/01/2022
+@version 1.0
+@description    -> Classe do PE MT120APV.
+A finalidade dessas classes para PE, eh não poluir os Pontos de entrada com diversos processos distintos e usar o conceito de Orientacao de obejtos
+que deixa o fonte muito mais clean e de facil manutenção.
+@totvsDescription   -> Ponto de entrada para alterar o Grupo de Aprovacao. Na alteracao do pedido, pode ser usado para alterar o saldo do mesmo (var. n120TotLib)
+@Transacion     -> SIM.
+@Return         -> Espera caracter com o código do grupo de aprovacao.
+@type Class
+/*/
+
+Class TMT120APV
+
+	Public Method New() Constructor
+	Public Method Processa()
+
+	Public Method fBuildKey( cEntidade )
+	Public Method ShowGED()
+	Public Method ValidaAnexo()
+
+EndClass
+
+Method New() Class TMT120APV
+
+Return(Self)
+
+Method Processa() Class TMT120APV
+
+	Local cReturn := Nil
+
+	If IsInCallStack("MATA160")
+
+		If !Empty(SC8->C8_XCONTRA)
+
+			Return("")
+
+		EndIf
+
+	EndIf
+
+    ::ShowGed()
+
+Return(cReturn)
+
+Method ShowGED() Class TMT120APV
+
+	Local aArea := GetArea()
+
+	// Do While !::ValidaAnexo()
+	// EndDo
+
+	RestArea(aArea)
+
+Return()
+
+Method ValidaAnexo() Class TMT120APV
+
+	Local lTemMSErr     := If(TYPE('lMSErroAuto') != 'U',.T.,.F.)
+	lOCAL _lMsErroAx    := If(lTemMSErr,lMSErroAuto,.F.)
+	Local lRet 	        := .F.
+	Local nValMin       := GetNewPar("MV_YVALMIN",10000)
+	Local _cMoeda       := SC7->C7_MOEDA
+	Local _dEmissao     := SC7->C7_EMISSAO
+	Local _nTxPed	    := SC7->C7_TXMOEDA
+    Local lPtoPed       := .F.
+
+	Private cAlDoc      := "SC7"
+	Private nRegDoc     := SC7->(Recno())
+	Private cChaveAne   := ""
+	Private nTotal      := 0
+
+	//Valida se está vazio, para enrtar apenas na primeira vez e evitar consultas desnecessaárias
+	If Empty(cChaveAne)
+
+		cAliasAx   := GetNextAlias()
+		nTotal     := 0
+		//Valida se o pedido possui anexos, e se em nenhum item existir, chama a rotina de anexos.,
+
+		BeginSQL Alias cAliasAx
+		 
+		SELECT C7_FILIAL,C7_NUM,C7_ITEM,C7_CONTRA,C7_CONTREV,C7_MEDICAO,C7_NUMSC,C7_PLANILH,C7_ITEMSC, C7_TOTAL, C7_EMISSAO, C7_MOEDA, C7_TXMOEDA
+		FROM %TABLE:SC7% SC7
+		WHERE SC7.%NotDel% AND C7_FILIAL = %EXP:SC7->C7_FILIAL% AND C7_NUM = %EXP:SC7->C7_NUM%
+
+		EndSQL
+
+		//cChaveAne := "%'SC7" + SC7->C7_FILIAL+ SC7->C7_NUM+SC7->C7_ITEM + "'"
+		cChaveAne := "%" + ::fBuildKey( "SC7" )
+
+		While !(cAliasAx)->(EOF())
+
+			nTotal += (cAliasAx)->C7_TOTAL
+			_dEmissao := STOD( (cAliasAx)->C7_EMISSAO)
+			_cMoeda := (cAliasAx)->C7_MOEDA
+			_nTxPed	:= (cAliasAx)->C7_TXMOEDA
+
+			If IsInCallStack("CNTA120") .OR. IsInCallStack("CNTA121")
+
+				/*cChaveAne += ",'CND"+AllTrim(CND->CND_FILIAL)+AllTrim(CND->CND_CONTRA)+AllTrim(CND->CND_REVISA) +AllTrim(CND->CND_NUMMED)+ "'"
+				cChaveAne += ",'CND"+CND->CND_FILIAL+CND->CND_CONTRA+CND->CND_REVISA +CND->CND_NUMMED+ "'"
+				cChaveAne += ",'CND"+CND->CND_FILIAL+CND->CND_CONTRA+CND->CND_NUMMED+ "'"*/
+
+				cChaveAne += "," + ::fBuildKey( "CND" )
+
+				cAlDoc :=  "CND"
+				nRegDoc := CND->(Recno())
+
+			EndIf
+
+			If !Empty((cAliasAx)->C7_NUMSC)
+				//cChaveAne += ",'SC1"+(cAliasAx)->C7_FILIAL+(cAliasAx)->C7_NUMSC+(cAliasAx)->C7_ITEMSC + "'"
+				cChaveAne += "," + ::fBuildKey( "SC1" )
+				DBSelectArea("SC1")
+				SC1->(DbSetOrder(1))
+				If SC1->(DbSeek((cAliasAx)->C7_FILIAL+(cAliasAx)->C7_NUMSC+(cAliasAx)->C7_ITEMSC))
+					cAlDoc :=  "SC1"
+					nRegDoc := SC1->(Recno())
+				EndIf
+			EndIf
+
+			(cAliasAx)->(DbSkip())
+
+		EndDo
+
+		cChaveAne += "%"
+
+		If (_cMoeda != 1)
+		
+			If XMOEDA(1,_cMoeda,1,_dEmissao) == _nTxPed
+			
+				nTotal := XMOEDA(nTotal,_cMoeda,1,_dEmissao)
+			
+			Else
+
+				nTotal := (nTotal * _nTxPed)
+
+			EndIf
+		
+		EndIf
+		
+		(cAliasAx)->(dbCloseArea())
+	
+	EndIf
+
+	cAliasAx   := GetNextAlias()
+
+	BeginSQL Alias cAliasAx
+        
+        SELECT *
+        FROM %TABLE:AC9% AC9
+        INNER JOIN %TABLE:ACB% ACB ON ACB_FILIAL = AC9_FILIAL AND 
+                                    AC9_CODOBJ = ACB_CODOBJ  AND 
+                                    ACB.%NotDel% 
+        WHERE AC9.%NotDel% AND AC9_FILenT = %EXP:cFilAnt% AND AC9_ENTIDA||AC9_CODENT IN (%EXP:cChaveAne%)
+
+	EndSQL
+
+	DBSelectArea('SC1')
+	SC1->(dbSetOrder(1))
+	
+    If !Empty(SC7->C7_NUMSC) .AND. SC1->(dbSeek(SC7->C7_FILIAL+SC7->C7_NUMSC+SC7->C7_ITEMSC))
+		If AllTrim(SC1->C1_ORIGEM) == 'MATA170'
+			lPtoPed := .T.
+		EndIf
+	EndIf
+
+	//Só vai obrigar anexo Se:     for pedido sob contrato e valor maior q 10000       ou não for sob contrato, não for ponto de pedido e se tiver cotação só se o valor for maior que 10000
+
+	DBSelectArea(cAliasAx)
+	(cAliasAx)->(DBGoTop())
+
+	If (cAliasAx)->(EOF()) .AND. (((SC7->C7_CONTRAT == 'S' .AND. nTotal > nValMin ) .OR. SC7->C7_CONTRAT != 'S' ) .AND. !lPtoPed .AND. ;
+			(Empty(SC7->C7_NUMCOT) .OR. (!Empty(SC7->C7_NUMCOT) .AND. nTotal > nValMin ) ) .OR. MsgNoYes( "Anexos não são obrigatório para este pedido! Deseja adicionar mesmo assim ?", 'Adicionar Anexo.' ))
+
+		lRet := .F.
+
+		//alert('É obrigatório adicionar ao menos 1 arquivo.')
+		If IsInCallStack("MATA161")
+			U_GED(cAlDoc,nRegDoc, 2)
+		Else
+			U_GED(cAlDoc,nRegDoc, 4)
+		EndIf
+
+	Else
+
+		lRet := .T.
+	
+    EndIf
+
+	If(lTemMSErr)
+	
+    	//Volta o valor dessa variável, pois quando o anexo gerava erro de anexo duplicado, o sistema marcava lMSErroAuto como erro, mesmo o usuário já tendo alterado o nome.
+		lMSErroAuto:= _lMsErroAx
+	
+    EndIf
+	
+	(cAliasAx)->(dbCloseArea())
+
+Return(lRet)
+
+Method fBuildKey( cEntidade ) Class TMT120APV
+
+	Local cChaveEnt := U_GEDENT( cEntidade )[1]
+	Local cChaveAne := "'" + cEntidade + cChaveEnt + "'"
+
+Return( cChaveAne )

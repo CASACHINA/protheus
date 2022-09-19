@@ -1,0 +1,28 @@
+Group 
+   Version=7.0
+   VSSDB=
+   HasProperties=1
+   Properties
+      BeforeApply=
+      AfterApply=
+      Icon=
+      ID=
+      Version=
+      PalmName=
+      OutPut=
+   End
+   ProjectsCount=1
+   Project Novo Projeto
+      FoldersCount=1
+      Folder Fontes
+         VSSPath=Fontes
+         FilesCount=2
+         File \TOTVS\microsiga\protheus12\my projects\CASA CHINA\RH\ImpCad.PRW
+             Type=T
+         End
+         File \TOTVS\microsiga\protheus12\my projects\CASA CHINA\RH\ImpFUN.PRW
+             Type=T
+         End
+      End
+   End
+End
