@@ -38,7 +38,7 @@ static function fGerarToken()
     cPostRet := HttpPost(cUrl + cPath, , getJson(), 120, aHeader, @cHeaRet)
 
     if !empty(cPostRet)
-        Conout("POST Auth: " + cPostRet)
+        //conout("POST Auth: " + cPostRet)
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(cPostRet) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -58,13 +58,13 @@ static function fGerarToken()
 
             return .T.
         else
-            // Conout("Erro" + cValToChar(oJsonRet["code"]) + ". Mensagem: " + oJsonRet["message"])
+            // //conout("Erro" + cValToChar(oJsonRet["code"]) + ". Mensagem: " + oJsonRet["message"])
             // msgInfo("Erro" + cValToChar(oJsonRet["code"]) + ". Mensagem: " + oJsonRet["message"], "Erro")
             return .F.
         endif
         
     Else
-        // Conout("Erro POST Auth: " + cHeadRet)
+        // //conout("Erro POST Auth: " + cHeadRet)
         return .F.
     EndIf
 return .T.

@@ -151,22 +151,18 @@ Static Function fCriaMsNew()
     aStruAux := QRY_DAD->(DbStruct())
     QRY_DAD->(DbCloseArea())
      
-    DbSelectArea("SX3")
-    SX3->(DbSetOrder(2)) // Campo
-    SX3->(DbGoTop())
-     
     //Percorrendo os campos
     For nAtual := 1 To Len(aStruAux)
         cCampoAtu := aStruAux[nAtual][1]
      
         //Se coneguir posicionar no campo
-        If SX3->(DbSeek(cCampoAtu))
+        If FWSX3Util():GetFieldType( cCampoAtu ) != ' '
             //Cabeçalho ...    Titulo        Campo        Mask                                    Tamanho                Dec                    Valid    Usado    Tip                F3    CBOX
-            aAdd(aHeadAux,{    X3Titulo(),    cCampoAtu,    PesqPict(SX3->X3_ARQUIVO, cCampoAtu),    SX3->X3_TAMANHO,    SX3->X3_DECIMAL,    ".F.",    ".F.",    SX3->X3_TIPO,    "",    ""})
-             
+            aAdd(aHeadAux,{    X3Titulo(),    cCampoAtu,    PesqPict(SX3->X3_ARQUIVO, cCampoAtu),   TamSx3(cCampoAtu)[1],   TamSx3(cCampoAtu)[2],    ".F.",    ".F.",    FWSX3Util():GetFieldType( cCampoAtu ) ,    "",    ""})
+		
             //Se o campo atual for retornar, aumenta o tamanho do retorno
             If cCampoAtu $ cCampoRet
-                nTamanRet += SX3->X3_TAMANHO
+                nTamanRet += TamSx3(cCampoAtu)[1]
             EndIf
              
         Else

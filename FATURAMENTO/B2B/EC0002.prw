@@ -20,7 +20,7 @@ user function EC0002(nRecInf, lJob, lAll)
     default lAll    := .F.
 
     if lJob // Funcao é job
-        conout("Inicio JOB EC0002")
+        //conout("Inicio JOB EC0002")
         RpcClearEnv()
         RpcSetType(3) // Nao consumir licenças
         RpcSetEnv("01", "010104") // Montando ambiente
@@ -38,7 +38,7 @@ user function EC0002(nRecInf, lJob, lAll)
     nRecPrd := nRecInf
 
     if u_EC0001() // Atualizando token
-        cToken := allTrim(getMv("EC_TOKEN"))
+        cToken := buscaToken()
         cGetPar := 'access_token=' + escape(cToken)
     else
         cMenErr := "Erro Geração Token"
@@ -135,7 +135,7 @@ user function EC0002(nRecInf, lJob, lAll)
 
     if lJob
         RpcClearEnv() // Finalizando conexao caso seja job
-        conout("Fim JOB EC0002")
+        //conout("Fim JOB EC0002")
     endif
 return nil
 
@@ -188,7 +188,7 @@ static function fExecDados(lJob)
 
             if (cRet == "401") // Unauthorized
                 if u_EC0001() // Atualizando token
-                    cToken := allTrim(getMv("EC_TOKEN"))
+                    cToken := buscaToken()
                     cGetPar := 'access_token=' + escape(cToken)
                 else
                     cMenErr := "Erro Geração Token"
@@ -338,7 +338,7 @@ static function fPost(cUrlPost, cPath, cGetPar, cJson, aHeader, lJob)
     cPostRet := HttpPost(cUrlPost + cPath, cGetPar, cJson, 120, aHeader, @cHeaRet) // Efetua o POST
 
     If !empty(cPostRet) // Retorno
-        Conout("POST Produto: " + cPostRet)
+        //conout("POST Produto: " + cPostRet)
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(cPostRet) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -389,7 +389,7 @@ static function fPut(cUrlPut, cPath, cGetPar, cJson, aHeader, lJob)
 
     oRest:setPath(cPath + "?" + cGetPar)
     If (oRest:Put(aHeader, cJson)) // Efetua o POST
-        Conout("PUT PRODUTO: " + oRest:GetResult())
+        //conout("PUT PRODUTO: " + oRest:GetResult())
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(oRest:GetResult()) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -462,3 +462,7 @@ Funcao chamada pelo Schedule
 user function EC0002J()
     u_EC0002(0, .T., .F.)
 return nil
+
+static function buscaToken()
+    Local _cToken :=  allTrim(getMv("EC_TOKEN"))
+return _cToken

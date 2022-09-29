@@ -18,14 +18,15 @@
 */
 
 User Function VMIXINUT(aParam)
+    Local _iCount
     If Type("aParam") <> "U" .And. ValType(aParam) == "A"
         For _iCount := 1 To Len(aParam) 
 	  If ValType(aParam[_iCount]) == "C"
-              ConOut("aParam " + StrZero(_iCount) + " --> " + aParam[_iCount])
+              //conout("aParam " + StrZero(_iCount) + " --> " + aParam[_iCount])
 	  ElseIf ValType(aParam[_iCount]) == "N"
-              ConOut("aParam " + StrZero(_iCount) + " --> " + Str(aParam[_iCount]))
+              //conout("aParam " + StrZero(_iCount) + " --> " + Str(aParam[_iCount]))
 	  ElseIf ValType(aParam[_iCount]) == "D"
-              ConOut("aParam " + StrZero(_iCount) + " --> " + Dtoc(aParam[_iCount]))
+              //conout("aParam " + StrZero(_iCount) + " --> " + Dtoc(aParam[_iCount]))
 	  EndIf
         Next
 	
@@ -84,7 +85,7 @@ Static Function Execute(__cEmpresa, __cFilial)
     cVMIXINS  := SubStr(cVMIXDB, At(".", cVMIXDB) + 1, Len(cVMIXDB))
     cVMIXDB   := SubStr(cVMIXDB, 1, At(".", cVMIXDB) - 1)
 
-    Conout("INTEGRACAO VISUAL MIX VERSÃO 2.00 INICIADA - INUTILIZAÇÃO...")
+    //conout("INTEGRACAO VISUAL MIX VERSÃO 2.00 INICIADA - INUTILIZAÇÃO...")
 
     If !__lJob
 
@@ -97,7 +98,7 @@ Static Function Execute(__cEmpresa, __cFilial)
         
     If Empty(cVMIXDB)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
         EndIf
@@ -106,7 +107,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXTAB)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
         EndIf
@@ -115,7 +116,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXCAPA)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCAP com a tabela de consulta do Visual Mix Notas Fiscais!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCAP com a tabela de consulta do Visual Mix Notas Fiscais!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCAP com a tabela de consulta do Visual Mix Notas Fiscais!")
         EndIf
@@ -124,7 +125,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXFIL)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")        
         EndIf
@@ -133,7 +134,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXNTP)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que não serão importados!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que não serão importados!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que não serão importados!")
         EndIf
@@ -142,7 +143,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXCTP)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
         EndIf
@@ -151,7 +152,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXKEY)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
         EndIf
@@ -175,7 +176,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If !__lJob
 
-        ConOut("Iniciando contagem dos registros...")
+        //conout("Iniciando contagem dos registros...")
 		
         While qCupom->(!Eof())
 
@@ -196,11 +197,11 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     While qCupom->(!Eof())
 
-        ConOut("Iniciando leitura do documento:") 
-        ConOut("Loja...: " + cValToChar(qCupom->(loja)))
-        ConOut("Pdv....: " + cValToChar(qCupom->(num_pdv)))
-        ConOut("Cupom..: " + cValToChar(qCupom->(evento_cupom)))
-        ConOut("Nsu....: " + cValToChar(qCupom->(evento_nsu)))
+        //conout("Iniciando leitura do documento:") 
+        //conout("Loja...: " + cValToChar(qCupom->(loja)))
+        //conout("Pdv....: " + cValToChar(qCupom->(num_pdv)))
+        //conout("Cupom..: " + cValToChar(qCupom->(evento_cupom)))
+        //conout("Nsu....: " + cValToChar(qCupom->(evento_nsu)))
 
         __cMsgAdv  := ""
         __cMsgErro := ""
@@ -291,7 +292,7 @@ Static Function Execute(__cEmpresa, __cFilial)
         MsgInfo("Importação das nota inutilizadas/canceladas concluída!")
     EndIf
 
-    Conout("Importação das nota inutilizadas/canceladas concluída!")
+    //conout("Importação das nota inutilizadas/canceladas concluída!")
 	
 	dDataBase := xDataBase
 Return Nil

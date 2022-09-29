@@ -98,7 +98,7 @@ user function EC0007EN(nRecno)
     endif
 
     if u_EC0001() // Atualizando token
-        cToken := allTrim(getMv("EC_TOKEN"))
+        cToken := buscaToken()
         cGetPar := 'access_token=' + escape(cToken)
     else
         msgInfo("Erro Geração Token", "ERRO")
@@ -130,7 +130,7 @@ user function EC0007EN(nRecno)
 
         if (cRet == "401") // Unauthorized
             if u_EC0001() // Atualizando token
-                cToken := allTrim(getMv("EC_TOKEN"))
+                cToken := buscaToken()
                 cGetPar := 'access_token=' + escape(cToken)
             else
                 msgInfo("Erro Geração Token", "ERRO")
@@ -179,7 +179,7 @@ static function fPost(cUrlPost, cPath, cGetPar, cJson, aHeader)
     cPostRet := HttpPost(cUrlPost + cPath, cGetPar, cJson, 120, aHeader, @cHeaRet) // Efetua o POST
 
     If !empty(cPostRet) // Retorno
-        Conout("POST Marca: " + cPostRet)
+        //conout("POST Marca: " + cPostRet)
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(cPostRet) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -194,14 +194,19 @@ static function fPost(cUrlPost, cPath, cGetPar, cJson, aHeader)
 
         else
             cMens := "Erro" + cValToChar(oJsonRet["code"]) + ". Mensagem: " + oJsonRet["message"]
-            Conout(cMens)
+            //conout(cMens)
             msgInfo(cMens)
             cRetorno := cMens
         endif
     else
         cMens := "Problema post: " + cHeaRet
-        Conout(cMens)
+        //conout(cMens)
         msgInfo(cMens)
         cRetorno := cMens
     endif
 return cRetorno
+
+
+static function buscaToken()
+    Local _cToken :=  allTrim(getMv("EC_TOKEN"))
+return _cToken

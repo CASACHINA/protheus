@@ -222,7 +222,7 @@ static function fFinaliza()
 	local cArmEst  := getNewPar("CH_ARMDIS", "01")
 	local cNumPed  := GetNumSC7(.T.)
 	local nPreco, nTotal, oModel
-
+	Local _lContin := .t.
 	private lMsErroAuto := .F.
 
 	procRegua(3) // Tamanho da regua de processamento
@@ -286,85 +286,90 @@ static function fFinaliza()
 			disarmTransaction()
 			mostraErro()
 			msgStop("Erro ao criar pedido de compra")
-			return nil
+			_lContin := .F.
 		endif
 	endif
+	IF _lContin
+		incproc("Criando Solicita¡Ño de transferÕncia. Aguarde... (2/2)")
+		// Gerar solicita¡Ño de transferencia
+		dbSelectArea("Z02")
+		Z02->(dbSetOrder(2))
+		Z02->(dbGoTop())
+		if Z02->(msSeek(xFilial("Z02") + Z01->Z01_CODIGO + "2", .F.)) // Buscando todos os itens 
+			oModel := FwLoadModel("MATA311")
+			aItens := {}
 	
-	incproc("Criando Solicita¡Ño de transferÕncia. Aguarde... (2/2)")
-	// Gerar solicita¡Ño de transferencia
-	dbSelectArea("Z02")
-	Z02->(dbSetOrder(2))
-	Z02->(dbGoTop())
-	if Z02->(msSeek(xFilial("Z02") + Z01->Z01_CODIGO + "2", .F.)) // Buscando todos os itens 
-		oModel := FwLoadModel("MATA311")
-		aItens := {}
- 
-		// Adicionando os dados do ExecAuto cab
-		aCabec := {}
-		aAdd(aCabec, {"NNS_FILIAL", cFilDis, Nil})
-		aAdd(aCabec, {"NNS_DATA"  , dDataBase, Nil})
-		aAdd(aCabec, {"NNS_SOLICT", __cUserID, Nil})
-		aAdd(aCabec, {"NNS_CLASS" , criaVar("NNS_CLASS", .T.), Nil})
-		aAdd(aCabec, {"NNS_ESPECI", criaVar("NNS_ESPECI", .T.), Nil})
+			// Adicionando os dados do ExecAuto cab
+			aCabec := {}
+			aAdd(aCabec, {"NNS_FILIAL", cFilDis, Nil})
+			aAdd(aCabec, {"NNS_DATA"  , dDataBase, Nil})
+			aAdd(aCabec, {"NNS_SOLICT", __cUserID, Nil})
+			aAdd(aCabec, {"NNS_CLASS" , criaVar("NNS_CLASS", .T.), Nil})
+			aAdd(aCabec, {"NNS_ESPECI", criaVar("NNS_ESPECI", .T.), Nil})
 
-		while !Z02->(EoF()) .and. allTrim(xFilial("Z02") + Z01->Z01_CODIGO + "2") == allTrim(Z02->Z02_FILIAL + Z02->Z02_CODIGO + Z02->Z02_TIPO)
+			while !Z02->(EoF()) .and. allTrim(xFilial("Z02") + Z01->Z01_CODIGO + "2") == allTrim(Z02->Z02_FILIAL + Z02->Z02_CODIGO + Z02->Z02_TIPO)
 
-			// Verificando se o saldo em estoque » suficiente para atender todo a quantidade solicitada
-			nQtdEst := fEstTransf(Z02->Z02_PRODUT) // Recalculando saldo
-			if nQtdEst <> Z02->Z02_ESTOQ
-				recLock("Z02", .F.)
-					Z02->Z02_ESTOQ := nQtdEst
-				Z02->(msUnlock())
+				// Verificando se o saldo em estoque » suficiente para atender todo a quantidade solicitada
+				nQtdEst := fEstTransf(Z02->Z02_PRODUT) // Recalculando saldo
+				if nQtdEst <> Z02->Z02_ESTOQ
+					recLock("Z02", .F.)
+						Z02->Z02_ESTOQ := nQtdEst
+					Z02->(msUnlock())
+				endif
+				
+				// solicitacao de transferencia nao pode possuir qtde maior que o saldo em estoque.
+				nQtdSol := min(Z02->Z02_QUANT, Z02->Z02_ESTOQ)
+
+				if nQtdSol > 0
+					// Adicionando os dados do ExecAuto Item
+					aIteAux := {}
+					aAdd(aIteAux, {"NNT_FILIAL", cFilDis, Nil})
+					aAdd(aIteAux, {"NNT_FILORI", cFilDis, Nil})
+					aAdd(aIteAux, {"NNT_PROD"  , Z02->Z02_PRODUT, Nil})
+					aAdd(aIteAux, {"NNT_LOCAL" , cArmEst, Nil})
+					aAdd(aIteAux, {"NNT_LOCALI", criaVar("NNT_LOCALI", .F.), Nil})
+					aAdd(aIteAux, {"NNT_QUANT" , nQtdSol, Nil})
+					aAdd(aIteAux, {"NNT_FILDES", cFilAnt, Nil})
+					aAdd(aIteAux, {"NNT_PRODD" , Z02->Z02_PRODUT, Nil})
+					aAdd(aIteAux, {"NNT_LOCLD" , cArmEst, Nil})
+
+					// no item o array precisa de um nivel superior.
+					aAdd(aItens, aIteAux)
+				else
+					disarmTransaction()
+					msgInfo("Produto " + allTrim(Z02->Z02_PRODUT) + " nÑo possui saldo no CD. NÑo ser∑ criada solicita¡Ño de transferÕncia para este produto." )
+				endif
+
+				Z02->(dbSkip())
+			endDo
+
+			if len(aItens) > 0
+				cFilAnt := cFilDis // Trocando filial para CD
+				lMsErroAuto := .F. // Chamando a inclusÑo - Modelo 1
+				
+				FWMVCRotAuto(oModel, "NNS", 3, {{"NNSMASTER", aCabec}, {"NNTDETAIL", aItens}})
+				cFilAnt := cBkpFil // Voltando para filial original
+				if !lMsErroAuto
+					recLock("Z01", .F.)
+						Z01->Z01_SOLTRA := NNS->NNS_COD
+					Z01->(msUnlock())
+
+				else // Se houve erro no ExecAuto, mostra mensagem
+					disarmTransaction()
+					mostraErro()
+					msgStop("Erro ao criar solicita¡Ño de transferÕncia.")
+					_lContin := .F.
+				EndIf
 			endif
-			
-			// solicitacao de transferencia nao pode possuir qtde maior que o saldo em estoque.
-			nQtdSol := min(Z02->Z02_QUANT, Z02->Z02_ESTOQ)
-
-			if nQtdSol > 0
-				// Adicionando os dados do ExecAuto Item
-				aIteAux := {}
-				aAdd(aIteAux, {"NNT_FILIAL", cFilDis, Nil})
-				aAdd(aIteAux, {"NNT_FILORI", cFilDis, Nil})
-				aAdd(aIteAux, {"NNT_PROD"  , Z02->Z02_PRODUT, Nil})
-				aAdd(aIteAux, {"NNT_LOCAL" , cArmEst, Nil})
-				aAdd(aIteAux, {"NNT_LOCALI", criaVar("NNT_LOCALI", .F.), Nil})
-				aAdd(aIteAux, {"NNT_QUANT" , nQtdSol, Nil})
-				aAdd(aIteAux, {"NNT_FILDES", cFilAnt, Nil})
-				aAdd(aIteAux, {"NNT_PRODD" , Z02->Z02_PRODUT, Nil})
-				aAdd(aIteAux, {"NNT_LOCLD" , cArmEst, Nil})
-
-				// no item o array precisa de um nivel superior.
-				aAdd(aItens, aIteAux)
-			else
-				disarmTransaction()
-				msgInfo("Produto " + allTrim(Z02->Z02_PRODUT) + " nÑo possui saldo no CD. NÑo ser∑ criada solicita¡Ño de transferÕncia para este produto." )
-			endif
-
-			Z02->(dbSkip())
-		endDo
-
-		if len(aItens) > 0
-			cFilAnt := cFilDis // Trocando filial para CD
-			lMsErroAuto := .F. // Chamando a inclusÑo - Modelo 1
-			
-			FWMVCRotAuto(oModel, "NNS", 3, {{"NNSMASTER", aCabec}, {"NNTDETAIL", aItens}})
-			cFilAnt := cBkpFil // Voltando para filial original
-			if !lMsErroAuto
-				recLock("Z01", .F.)
-					Z01->Z01_SOLTRA := NNS->NNS_COD
-				Z01->(msUnlock())
-
-			else // Se houve erro no ExecAuto, mostra mensagem
-				disarmTransaction()
-				mostraErro()
-				msgStop("Erro ao criar solicita¡Ño de transferÕncia.")
-				return nil
-			EndIf
 		endif
-	endif
+	ENDIF
+
 	end Transaction
 
-	MsgInfo("Registro finalizado com SUCESSO.", "Sucesso")
+	IF _lContin
+		MsgInfo("Registro finalizado com SUCESSO.", "Sucesso")
+	ENDIF
+
 return nil
 
 // Funcao para importar arquivo para grid Pedido

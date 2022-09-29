@@ -85,7 +85,7 @@ Static Function ReportDef()
 
 		While File(Replace(cFile, ".pdf", ".rel")) .And. nTentativa <> 0
 			
-			ConOut("VMIX008 - Arquivo está em processo. Aguardando..." + cValToChar(nTentativa) + "[" + cFile + "]")
+			//conout("VMIX008 - Arquivo está em processo. Aguardando..." + cValToChar(nTentativa) + "[" + cFile + "]")
 
 			nTentativa--
 
@@ -97,7 +97,7 @@ Static Function ReportDef()
 
 		// If !lRet
 
-		// 	ConOut("ERRO AO ENVIAR ARQUIVO: " + cFile + " >>> PARA O SERVIDOR.")
+		// 	//conout("ERRO AO ENVIAR ARQUIVO: " + cFile + " >>> PARA O SERVIDOR.")
 
 		// EndIf
 
@@ -213,14 +213,14 @@ Static Function PrintReport(oReport, cQry)
 			cSQL += " FROM " + RetFullName("SE5", aEmp[nW]) + " SE5 "
 			cSql += " INNER JOIN " + RetFullName("SA1", aEmp[nW]) + " SA1 ON "
 			cSql += " ( "
-			cSQL += " 	A1_FILIAL 			= " + ValToSQL(xFilialEmp("SA1", aEmp[nW], aEmp[nW] + aEmp[nW] + aFil[nX]))
+			cSQL += " 	A1_FILIAL 			= " + xFilial('SA1')
 			cSQL += " 	AND A1_COD 			= E5_CLIFOR "
 			cSQL += " 	AND A1_LOJA			= E5_LOJA "
 			cSQL += " 	AND E5_MOTBX		= 'VOU' "
 			cSQL += " 	AND SA1.D_E_L_E_T_ 	= '' "
 			cSql += " ) "
 			cSQL += " WHERE E5_DATA			BETWEEN " + ValToSQL(_dBaixaDe) + " AND " + ValToSQL(_dBaixaAte)
-			cSql += " AND E5_FILIAL		= " + ValToSQL(xFilialEmp("SE5", aEmp[nW], aEmp[nW] + aEmp[nW] + aFil[nX]))
+			cSql += " AND E5_FILIAL		= " + xFilial('SE5')
 			cSQL += " AND SE5.D_E_L_E_T_ 	= '' "
 
 		Next nX
@@ -298,26 +298,3 @@ Static Function PrintReport(oReport, cQry)
 	(cQry)->(DbCloseArea())
 
 Return()
-
-Static Function xFilialEmp(cAlias, cEmp, cFil)
-
-	Local cFilRet := Space(FWSizeFilial())
-
-	OpenSXs( , , , ,cEmp,"SX2TMP")
-
-	DbSelectArea("SX2TMP")
-	DbSeek(Upper(cAlias))
-
-	If SX2TMP->X2_MODO == "E"
-
-		cFilRet := cFil
-
-	Else
-
-		cFilRet := cEmp + cEmp
-
-	EndIf
-
-	dbCloseArea()
-
-Return( cFilRet )

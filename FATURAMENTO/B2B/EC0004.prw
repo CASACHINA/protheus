@@ -61,7 +61,7 @@ user function EC0004(lJob, cId)
     If (oRest:Get())
         cGetRest := oRest:GetResult()
         
-        // Conout("GET Pedidos: " + cGetRest)
+        // //conout("GET Pedidos: " + cGetRest)
         oJsonRet := JsonObject():New()
         cJsonRet := oJsonRet:fromJson(cGetRest) // Convertendo json
         
@@ -77,14 +77,7 @@ user function EC0004(lJob, cId)
         endif
         
         if (empty(cId))
-            dbSelectArea("SX6")
-            SX6->(dbSetOrder(1))
-            if SX6->(msSeek(xFilial("SX6") + "EC_HORCLI "))
-                // Atualizando parametro de consulta que foi confirmada e consultado
-                recLock("SX6", .F.)
-                    SX6->X6_CONTEUD := cHorCon
-                SX6->(msUnlock())
-            endIf
+            PutMv('EC_HORCLI',cHorCon)
         endif
     endif
 

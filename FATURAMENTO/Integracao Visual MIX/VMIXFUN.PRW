@@ -10,7 +10,7 @@ User Function eNewSeq()
 
         cReturn := U_NewSeq(nSequencia, nTamanho)
 
-        Conout(cReturn)
+        //conout(cReturn)
 
         nSequencia++
 

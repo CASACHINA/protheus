@@ -92,9 +92,9 @@ Static Function Execute(__cEmpresa, __cFilial)
     cVMIXINS  := SubStr(cVMIXDB, At(".", cVMIXDB) + 1, Len(cVMIXDB))
     cVMIXDB   := SubStr(cVMIXDB, 1, At(".", cVMIXDB) - 1)
 
-    ConOut("")
-    ConOut("=================================================================")         
-    ConOut("INTEGRACAO VISUAL MIX VERSAO 06-02-2019 INICIADA...")
+    //conout("")
+    //conout("=================================================================")         
+    //conout("INTEGRACAO VISUAL MIX VERSAO 06-02-2019 INICIADA...")
 
     If !__lJob
 
@@ -107,7 +107,7 @@ Static Function Execute(__cEmpresa, __cFilial)
         
     If Empty(cVMIXDB)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXDB com o caminho do banco de dados do Visual Mix!")
         EndIf
@@ -116,7 +116,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXTAB)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXTAB com a tabela de consulta do Visual Mix!")
         EndIf
@@ -125,7 +125,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXFIL)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXFIL com a filial do Visual Mix!")        
         EndIf
@@ -134,7 +134,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXNTP)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que nao serão importados!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que nao serão importados!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXNTP com o(s) tipos de evento que nao serão importados!")
         EndIf
@@ -143,7 +143,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXCTP)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXCTP com o(s) tipos de evento de cancelamento!")
         EndIf
@@ -152,7 +152,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If Empty(cVMIXKEY)
         If __lJob
-            ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
+            //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
         Else
             MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXKEY com a chave de pesquisa do cancelamento!")
         EndIf
@@ -161,7 +161,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     // If Empty(lVMIXVNR)
     //     If __lJob
-    //         ConOut("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXVNR com .T. ou .F., caso verdadeiro pesquisa o número anteriror do documento para cancelamento!")
+    //         //conout("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXVNR com .T. ou .F., caso verdadeiro pesquisa o número anteriror do documento para cancelamento!")
     //     Else
     //         MsgStop("Impossível iniciar a integração com o Visual Mix, favor preecher o Parâmetro ZZ_VMIXVNR com .T. ou .F., caso verdadeiro pesquisa o número anteriror do documento para cancelamento!")
     //     EndIf
@@ -184,7 +184,7 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     If !__lJob
 
-        ConOut("Iniciando contagem dos registros...")
+        //conout("Iniciando contagem dos registros...")
 
         While qCupom->(!Eof())
 
@@ -206,18 +206,18 @@ Static Function Execute(__cEmpresa, __cFilial)
 
     While qCupom->(!Eof())
 
-        ConOut("=================================================================")         
-        ConOut("Iniciando leitura do documento:") 
-        ConOut("Loja...: " + cValToChar(qCupom->(loja)))
+        //conout("=================================================================")         
+        //conout("Iniciando leitura do documento:") 
+        //conout("Loja...: " + cValToChar(qCupom->(loja)))
         If ValType(qCupom->(data)) == "D"
-            ConOut("Data...: " + SubStr(DtoS(qCupom->(data)),1,4) + "-" + SubStr(DtoS(qCupom->(data)),5,2) + "-" + SubStr(DtoS(qCupom->(data)),7,2) + " 00:00:00.0000000")
+            //conout("Data...: " + SubStr(DtoS(qCupom->(data)),1,4) + "-" + SubStr(DtoS(qCupom->(data)),5,2) + "-" + SubStr(DtoS(qCupom->(data)),7,2) + " 00:00:00.0000000")
         Else
-            ConOut("Data...: " + qCupom->(data))
+            //conout("Data...: " + qCupom->(data))
         EndIf
-        ConOut("Pdv....: " + cValToChar(qCupom->(num_pdv)))
-        ConOut("Cupom..: " + cValToChar(qCupom->(evento_cupom)))
-        ConOut("Nsu....: " + cValToChar(qCupom->(evento_nsu)))
-        ConOut("Tipo...: " + cValToChar(qCupom->(tipo_evento)))
+        //conout("Pdv....: " + cValToChar(qCupom->(num_pdv)))
+        //conout("Cupom..: " + cValToChar(qCupom->(evento_cupom)))
+        //conout("Nsu....: " + cValToChar(qCupom->(evento_nsu)))
+        //conout("Tipo...: " + cValToChar(qCupom->(tipo_evento)))
 
         __cMsgAdv  := ""
         __cMsgErro := ""
@@ -256,10 +256,10 @@ Static Function Execute(__cEmpresa, __cFilial)
         While qDuplic->(!Eof())
 
             lDuplic := .T.
-            ConOut("-----------------------------------------------------------------")         
-            ConOut("ATENCAO")         
-            ConOut("Este documento ja foi importado, pulando para o proximo registro!")
-            ConOut("=================================================================")         
+            //conout("-----------------------------------------------------------------")         
+            //conout("ATENCAO")         
+            //conout("Este documento ja foi importado, pulando para o proximo registro!")
+            //conout("=================================================================")         
             qDuplic->(DbSkip())
 
         EndDo
@@ -436,9 +436,9 @@ Static Function Execute(__cEmpresa, __cFilial)
 
             TCSqlExec(cSql)              
 
-            ConOut("-----------------------------------------------------------------")         
-            ConOut("Reducao Z concluida com sucesso!")
-            ConOut("=================================================================")                                       
+            //conout("-----------------------------------------------------------------")         
+            //conout("Reducao Z concluida com sucesso!")
+            //conout("=================================================================")                                       
 
         Else
 
@@ -463,7 +463,7 @@ Static Function Execute(__cEmpresa, __cFilial)
                 
             If cValToChar(qCupom->(tipo_evento)) $ AllTrim(cVMIXCTP)
 
-                ConOut("Evento de cancelamento!")
+                //conout("Evento de cancelamento!")
 
                 // Caso seja cancelamento
 
@@ -534,9 +534,9 @@ Static Function Execute(__cEmpresa, __cFilial)
 
                         TCSqlExec(cSql)              
 
-                        ConOut("-----------------------------------------------------------------")         
-                        ConOut("Documento cancelado com sucesso!")
-                        ConOut("=================================================================")                           
+                        //conout("-----------------------------------------------------------------")         
+                        //conout("Documento cancelado com sucesso!")
+                        //conout("=================================================================")                           
 
                     Else
 
@@ -557,10 +557,10 @@ Static Function Execute(__cEmpresa, __cFilial)
 
                         TCSqlExec(cSql)              
 
-                        ConOut("-----------------------------------------------------------------")         
-                        ConOut("ATENCAO")                         
-                        ConOut("Documento ainda nao processado nao pode ser cancelado!")
-                        ConOut("=================================================================")                           
+                        //conout("-----------------------------------------------------------------")         
+                        //conout("ATENCAO")                         
+                        //conout("Documento ainda nao processado nao pode ser cancelado!")
+                        //conout("=================================================================")                           
 
                     EndIf
 
@@ -572,10 +572,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                     ZV3->ZV3_ERROR  := "Documento para cancelamento nao foi encontrado!"
                     ZV3->(MsUnLock())                
                       */
-                    ConOut("-----------------------------------------------------------------")         
-                    ConOut("ATENCAO")                         
-                    ConOut("Documento para cancelamento nao foi encontrado!")         
-                    ConOut("=================================================================")         
+                    //conout("-----------------------------------------------------------------")         
+                    //conout("ATENCAO")                         
+                    //conout("Documento para cancelamento nao foi encontrado!")         
+                    //conout("=================================================================")         
 
                     cSql := "  UPDATE OPENQUERY (" + cVMIXDB + ", "
                     cSql += " 'SELECT * "
@@ -848,9 +848,9 @@ Static Function Execute(__cEmpresa, __cFilial)
                                     TCSqlExec(cSql)                
                                 
                                     // If __lJob
-                                        ConOut("-----------------------------------------------------------------")         
-                                        ConOut("Visual Mix: Orcamento " + SL1->L1_NUM + " gerado com sucesso!")
-                                        ConOut("=================================================================")         
+                                        //conout("-----------------------------------------------------------------")         
+                                        //conout("Visual Mix: Orcamento " + SL1->L1_NUM + " gerado com sucesso!")
+                                        //conout("=================================================================")         
                                     // EndIf
 
                                 Else
@@ -858,10 +858,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                                     __cMsgErro += "Erro na gravação!" + Chr(10)
 
                                     // If __lJob
-                                        ConOut("-----------------------------------------------------------------")         
-                                        ConOut("ERRO")                                                         
-                                        ConOut(__cMsgErro)
-                                        ConOut("=================================================================")         
+                                        //conout("-----------------------------------------------------------------")         
+                                        //conout("ERRO")                                                         
+                                        //conout(__cMsgErro)
+                                        //conout("=================================================================")         
                                     // EndIf
                                     /*
                                     RecLock("ZV3",.F.)
@@ -893,10 +893,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                                 __cMsgErro += "Erro: Cupom sem produto ou pagamento!" + Chr(10)
 
                                 // If __lJob
-                                    ConOut("-----------------------------------------------------------------")         
-                                    ConOut("ATENCAO")                                                     
-                                    conout(__cMsgErro)
-                                    ConOut("=================================================================")         
+                                    //conout("-----------------------------------------------------------------")         
+                                    //conout("ATENCAO")                                                     
+                                    //conout(__cMsgErro)
+                                    //conout("=================================================================")         
                                 // EndIf
                                 /*
                                 RecLock("ZV3",.F.)
@@ -1213,7 +1213,7 @@ Static Function Execute(__cEmpresa, __cFilial)
                                 TCSqlExec(cSql)                
                             
                                 // If __lJob
-                                    ConOut("Visual Mix: Orcamento " + SL1->L1_NUM + " gerado com sucesso!")
+                                    //conout("Visual Mix: Orcamento " + SL1->L1_NUM + " gerado com sucesso!")
                                 // EndIf
 
                             Else
@@ -1221,10 +1221,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                                 __cMsgErro += "Erro na gravação!" + Chr(10)
 
                                 // If __lJob
-                                    ConOut("-----------------------------------------------------------------")         
-                                    ConOut("ERRO")                                                     
-                                    ConOut(__cMsgErro)
-                                    ConOut("=================================================================")         
+                                    //conout("-----------------------------------------------------------------")         
+                                    //conout("ERRO")                                                     
+                                    //conout(__cMsgErro)
+                                    //conout("=================================================================")         
                                 // EndIf
                                 /*
                                 RecLock("ZV3",.F.)
@@ -1256,10 +1256,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                             __cMsgErro += "Erro: Cupom sem produto ou pagamento!" + Chr(10)
 
                             // If __lJob
-                                ConOut("-----------------------------------------------------------------")         
-                                ConOut("ERRO")                                                                             
-                                conout(__cMsgErro)
-                                ConOut("=================================================================")         
+                                //conout("-----------------------------------------------------------------")         
+                                //conout("ERRO")                                                                             
+                                //conout(__cMsgErro)
+                                //conout("=================================================================")         
                             // EndIf
                             /*
                             RecLock("ZV3",.F.)
@@ -1313,10 +1313,10 @@ Static Function Execute(__cEmpresa, __cFilial)
                     __cMsgErro += "Erro: Cupom nao encontrado!" + Chr(10)
 
                     // If __lJob
-                        ConOut("-----------------------------------------------------------------")         
-                        ConOut("ERRO")                                                                             
-                        ConOut("Erro: Cupom nao encontrado!")
-                        ConOut("=================================================================")         
+                        //conout("-----------------------------------------------------------------")         
+                        //conout("ERRO")                                                                             
+                        //conout("Erro: Cupom nao encontrado!")
+                        //conout("=================================================================")         
                     // EndIf
                      /*
                     RecLock("ZV3",.F.)
@@ -1359,10 +1359,10 @@ Static Function Execute(__cEmpresa, __cFilial)
         MsgInfo("Importação concluída!")
     EndIf
 
-    ConOut("=================================================================")         
-    ConOut("INTEGRACAO VISUAL MIX CONCLUIDA.")
-    ConOut("=================================================================")         
-    ConOut("")
+    //conout("=================================================================")         
+    //conout("INTEGRACAO VISUAL MIX CONCLUIDA.")
+    //conout("=================================================================")         
+    //conout("")
 
 Return Nil
 
@@ -1417,7 +1417,7 @@ Static Function GetValue(cQuery, cTable)
                         __cMsgAdv += "Advertência: Campos " + AllTrim(ZV1->ZV1_CPOPRO) + " nao encontrado!" + Chr(10)
 
                         // If __lJob
-                            conout(conout)
+                            //conout(//conout)
                         // EndIf
 
                     EndIf
@@ -1451,7 +1451,7 @@ Static Function GetValue(cQuery, cTable)
                         __cMsgAdv += "Advertência: Campos " + AllTrim(ZV1->ZV1_CPOPRO) + " nao encontrado!" + Chr(10)
 
                         // If __lJob
-                            conout(__cMsgAdv)
+                            //conout(__cMsgAdv)
                         // EndIf
 
                     EndIf

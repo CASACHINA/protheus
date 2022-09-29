@@ -132,14 +132,14 @@ WSMETHOD GetValidaSaldo WSRECEIVE SCRRecno WSSEND nSaldo WSSERVICE FluigProtheus
 		
 		aSaldo 		:= MaSalAlc(SCR->CR_APROV,dDataBase,.T.)
 
-		conout("cFilAnt: " + cFilAnt)
+		//conout("cFilAnt: " + cFilAnt)
 				
 		::nSaldo 	:= 'nOk'
-		conout("SCR->CR_TOTAL: " + str(SCR->CR_TOTAL))
-		conout("aSaldo[1]: " + str(aSaldo[1]))
+		//conout("SCR->CR_TOTAL: " + str(SCR->CR_TOTAL))
+		//conout("aSaldo[1]: " + str(aSaldo[1]))
 
 		if aSaldo[1] > SCR->CR_TOTAL
-			conout("Entrou ")
+			//conout("Entrou ")
 			::nSaldo := aSaldo[1]
 		endif
 			
@@ -149,7 +149,7 @@ WSMETHOD GetValidaSaldo WSRECEIVE SCRRecno WSSEND nSaldo WSSERVICE FluigProtheus
 
 	If lError
 		cMens := "Erro ao aprovaro alçada SCR"
-		conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
+		//conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf
@@ -165,7 +165,7 @@ WSMETHOD ValidaSaldo WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 	Local lError 	:= .T.	
 	Local aSaldo	:= {}
 	
-	conout("Valida Saldo")
+	//conout("Valida Saldo")
 	
 	BEGIN TRANSACTION
 
@@ -174,14 +174,14 @@ WSMETHOD ValidaSaldo WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 		
 		aSaldo 		:= MaSalAlc(SCR->CR_APROV,dDataBase,.T.)
 
-		conout("cFilAnt: " + cFilAnt)
+		//conout("cFilAnt: " + cFilAnt)
 				
 		::cStatus 	:= 'nOk'
-		conout("SCR->CR_TOTAL: " + str(SCR->CR_TOTAL))
-		conout("aSaldo[1]: " + str(aSaldo[1]))
+		//conout("SCR->CR_TOTAL: " + str(SCR->CR_TOTAL))
+		//conout("aSaldo[1]: " + str(aSaldo[1]))
 
 		if aSaldo[1] > SCR->CR_TOTAL
-			conout("Entrou ")
+			//conout("Entrou ")
 			::cStatus := 'ok'
 		endif
 			
@@ -191,7 +191,7 @@ WSMETHOD ValidaSaldo WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 
 	If lError
 		cMens := "Erro ao aprovaro alçada SCR"
-		conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
+		//conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf
@@ -209,7 +209,7 @@ WSMETHOD AprovWFPC WSRECEIVE oAprovacao WSSEND cStatus WSSERVICE FluigProtheus
 	Local cAprovador:= ""
 	Local cUsuario	:= ""
 	
-	conout("Aprovar Pedido")
+	//conout("Aprovar Pedido")
 	
 	BEGIN TRANSACTION
 		
@@ -221,13 +221,13 @@ WSMETHOD AprovWFPC WSRECEIVE oAprovacao WSSEND cStatus WSSERVICE FluigProtheus
 		cUsuario	:= SCR->CR_USER
 		cNivel		:= SCR->CR_NIVEL
 		
-		conout("Ação: "+oAprovacao['Acao'])
+		//conout("Ação: "+oAprovacao['Acao'])
 		
 		If oAprovacao['Acao'] == "A"
 			MaAlcDoc({SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, cAprovador, cUsuario, SCR->CR_GRUPO,,,,,oAprovacao['Comentario']},dDataBase,nAcao,,,SCR->CR_ITGRP)
 		ElseIf oAprovacao['Acao'] == "R"
 			nAcao 	:= 6
-			conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, cUsuario, cAprovador, SCR->CR_GRUPO, oAprovacao['Comentario'],SCR->CR_ITGRP)
+			//conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, cUsuario, cAprovador, SCR->CR_GRUPO, oAprovacao['Comentario'],SCR->CR_ITGRP)
 			
 			MaAlcDoc({SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, cAprovador, cUsuario, SCR->CR_GRUPO,,,,,oAprovacao['Comentario']},dDataBase,nAcao,,,SCR->CR_ITGRP)
 			
@@ -239,7 +239,7 @@ WSMETHOD AprovWFPC WSRECEIVE oAprovacao WSSEND cStatus WSSERVICE FluigProtheus
 			*/
 		EndIf
 		
-		conout("Login Aprovador: "+oAprovacao['Login'])
+		//conout("Login Aprovador: "+oAprovacao['Login'])
 		
 		// Valida se foi aprovado por um usuario alternativo
 		SAK->(DbSetOrder(4)) //AK_FILIAL+AK_Login
@@ -269,7 +269,7 @@ WSMETHOD AprovWFPC WSRECEIVE oAprovacao WSSEND cStatus WSSERVICE FluigProtheus
 
 	If lError
 		cMens := "Erro ao aprovaro alçada SCR"
-		conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
+		//conout('[' + DToC(Date()) + " " + Time() + "] Aprovar SCR > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf
@@ -285,16 +285,16 @@ Libera Pedido de Compras
 WSMETHOD LiberarPC WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 	Local lError 	:= .T.
 	
-	conout("Liberar Pedido")
+	//conout("Liberar Pedido")
 	
 	BEGIN TRANSACTION
 		
 		// Posiciona na Alçada
 		SCR->(DbGoTo(Val(::SCRRecno)))
 		cFilAnt := SCR->CR_FILIAL
-		conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, SCR->CR_APROV, SCR->CR_USER, SCR->CR_GRUPO, SCR->CR_ITGRP)
+		//conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, SCR->CR_APROV, SCR->CR_USER, SCR->CR_GRUPO, SCR->CR_ITGRP)
 		if SCR->CR_TIPO == 'PC'
-			//conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, SCR->CR_APROV, SCR->CR_USER, SCR->CR_GRUPO, SCR->CR_ITGRP)
+			////conout(SCR->CR_NUM, SCR->CR_TIPO, SCR->CR_TOTAL, SCR->CR_APROV, SCR->CR_USER, SCR->CR_GRUPO, SCR->CR_ITGRP)
 		
 			// Busca o Centro de Custo
 			/*If Empty(SCR->CR_ITGRP)
@@ -305,7 +305,7 @@ WSMETHOD LiberarPC WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 				DBL->(DbSeek(xFilial('DBL')+SCR->CR_GRUPO+SCR->CR_ITGRP))
 			EndIf
 
-			conout("CC "+AllTrim(DBL->DBL_CC))*/
+			//conout("CC "+AllTrim(DBL->DBL_CC))*/
 
 			// Posiciona no Pedido de Compras
 			SC7->(DbSetOrder(1))
@@ -314,7 +314,7 @@ WSMETHOD LiberarPC WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 			// Percorre os Itens do Pedido de Compras
 			While !SC7->(EoF()) .And. SC7->C7_FILIAL+AllTrim(SC7->C7_NUM) == xFilial("SC7")+AllTrim(SCR->CR_NUM)
 				
-				conout(AllTrim(SC7->C7_CC)+" == "+AllTrim(DBL->DBL_CC))
+				//conout(AllTrim(SC7->C7_CC)+" == "+AllTrim(DBL->DBL_CC))
 
 				//If AllTrim(SC7->C7_CC) == AllTrim(DBL->DBL_CC)
 					// Libera o Item de acordo com o Centro de Custo da alçada aprovada
@@ -328,12 +328,12 @@ WSMETHOD LiberarPC WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 		else 
 			//F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO  
 
-			conout("Liberar Nota")  
+			//conout("Liberar Nota")  
 			SF1->(DbSetOrder(1))
 			
 			if SF1->(DbSeek(SCR->CR_FILIAL+AllTrim(SCR->CR_NUM), .T.))
 
-				conout("Liberar Pedido" + SF1->F1_COND)
+				//conout("Liberar Pedido" + SF1->F1_COND)
 				RecLock("SF1", .F.)
 					SF1->F1_STATUS := 'A'
 				SF1->(MsUnlock())	
@@ -352,7 +352,7 @@ WSMETHOD LiberarPC WSRECEIVE SCRRecno WSSEND cStatus WSSERVICE FluigProtheus
 
 	If lError
 		cMens := "Erro ao liberar pedido de compras"
-		conout('[' + DToC(Date()) + " " + Time() + "] Liberar PC > " + cMens)
+		//conout('[' + DToC(Date()) + " " + Time() + "] Liberar PC > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf
@@ -467,7 +467,7 @@ WSMETHOD GerarSC WSRECEIVE oSolicitacao WSSEND cCodigo WSSERVICE FluigProtheus
 
 	PRIVATE lMsErroAuto := .F.
 
-	conout("Gera Solicitação de Compras")
+	//conout("Gera Solicitação de Compras")
 	
 	BEGIN TRANSACTION
 		
@@ -521,7 +521,7 @@ WSMETHOD GerarSC WSRECEIVE oSolicitacao WSSEND cCodigo WSSERVICE FluigProtheus
 		IF lMsErroAuto
 			rollbacksx8()
 			// DisarmTransaction()
-			conout(MostraErro())
+			//conout(MostraErro())
 			lError := .T.
 		ELSE
 			Confirmsx8()
@@ -534,7 +534,7 @@ WSMETHOD GerarSC WSRECEIVE oSolicitacao WSSEND cCodigo WSSERVICE FluigProtheus
 	
 	If lError
 		cMens := "Erro ao gravar a Solicitação de Compras"
-		conout('[' + DToC(Date()) + " " + Time() + "] GravarSolicitacaoCompras > " + cMens)
+		//conout('[' + DToC(Date()) + " " + Time() + "] GravarSolicitacaoCompras > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf
@@ -755,14 +755,14 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 	::aCadClientes := WSClassNew("oCadClientes")
 	::aCadClientes:Itens := {}
 
-	conout("######01!")
+	//conout("######01!")
 
 	BEGIN TRANSACTION
-		conout("######02!")
+		//conout("######02!")
 		
 		if !empty(oProdutoProtheus:CodigoBarra)
 
-			conout("######03!")
+			//conout("######03!")
 			cQuery := " SELECT B1_COD " 
 			cQuery += " FROM "+RetSqlName('SB1')+" SB1" 
 			cQuery += " WHERE SB1.B1_CODBAR = '"+oProdutoProtheus:CodigoBarra+"' " 
@@ -774,11 +774,11 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 
 			TcQuery cQuery New Alias (cAlias) //conexao com o banco 
 			
-			conout("######04!")
+			//conout("######04!")
 			dbSelectArea(cAlias)
 			
 			if (cAlias)->(!Eof())
-				conout("######05!")
+				//conout("######05!")
 				oCadCliente:Codigo := ''
 				oCadCliente:Status :='ERRO'
 				oCadCliente:Erro :='Código de Barra já cadastrado!'
@@ -792,11 +792,11 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 
 		if lOk
 			oModelSB1  := FwLoadModel ("MATA010")
-			conout("######03!")
+			//conout("######03!")
 			oModelSB1:SetOperation(MODEL_OPERATION_INSERT)
-			conout("######!04   " +varInfo('oModelSB1',oModelSB1:GetErrorMessage(), ,.F.))
+			//conout("######!04   " +varInfo('oModelSB1',oModelSB1:GetErrorMessage(), ,.F.))
 			oModelSB1:Activate()
-			conout("######05!")
+			//conout("######05!")
 
 			oModelSB1:SetValue("SB1MASTER","B1_DESC"		,oProdutoProtheus:Descricao)
 			oModelSB1:SetValue("SB1MASTER","B1_TIPO"		,oProdutoProtheus:Tipo)		
@@ -833,19 +833,19 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			
 			oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,AsString(oProdutoProtheus:StPr))
 			oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,AsString(oProdutoProtheus:StSc))
-			conout("######06! StPr " + VALTYPE(oProdutoProtheus:StPr))
-			conout("######06! StSc " + VALTYPE(oProdutoProtheus:StSc))
+			//conout("######06! StPr " + VALTYPE(oProdutoProtheus:StPr))
+			//conout("######06! StSc " + VALTYPE(oProdutoProtheus:StSc))
 			
 			//oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,'2')			
 			//oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,'2')
 			oModelSB1:SetValue("SB1MASTER","B1_GARANT"		,'2')
 			oModelSB1:SetValue("SB1MASTER","B1_YALTB2B"		,'N')	
-			conout("######06!")
+			//conout("######06!")
 
 			If oModelSB1:VldData()
-				conout("######07!")
+				//conout("######07!")
 				oModelSB1:CommitData()
-				conout("Registro INCLUIDO na SB1! = " + SB1->B1_COD)
+				//conout("Registro INCLUIDO na SB1! = " + SB1->B1_COD)
 				//Confirmsx8()
 				//::cCodigo := SB1->B1_COD
 				cCodSB1 := SB1->B1_COD		
@@ -857,8 +857,8 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 				Aadd(::aCadClientes:Itens, oCadCliente)
 					
 			Else
-				conout("######08!")
-				conout("Erro ao incluir SB1: "+varInfo('oModelSB1',oModelSB1:GetErrorMessage(), ,.F.))
+				//conout("######08!")
+				//conout("Erro ao incluir SB1: "+varInfo('oModelSB1',oModelSB1:GetErrorMessage(), ,.F.))
 				//Rollbacksx8()
 				::cCodigo := "ERRO"
 				// Return .F.
@@ -904,7 +904,7 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			
 			if lOk
 				saveSA5(oProdutoProtheus, self)
-				conout ( "@@@@@ 00 ")		
+				//conout ( "@@@@@ 00 ")		
 				aArrayAIA := saveAIA(oProdutoProtheus)
 				if len(aArrayAIA) > 0 
 					oCadCliente:Codigo := ''
@@ -974,7 +974,7 @@ static function saveSB5(cCodSB1, oProdutoProtheus, oObjWS)
 	oModelSB5:SetOperation(MODEL_OPERATION_INSERT)
 	oModelSB5:Activate()
 
-	conout("###### Codigo " + cCodSB1)
+	//conout("###### Codigo " + cCodSB1)
 	oModelSB5:SetValue("SB5MASTER","B5_COD"		,cCodSB1)
 	oModelSB5:SetValue("SB5MASTER","B5_CEME"	,oProdutoProtheus:Descricao)
 	oModelSB5:SetValue("SB5MASTER","B5_COMPR" 	,oProdutoProtheus:VlComprimento)
@@ -983,9 +983,9 @@ static function saveSB5(cCodSB1, oProdutoProtheus, oObjWS)
 
 	If oModelSB5:VldData()
 		oModelSB5:CommitData()
-		conout("Registro INCLUIDO na SB5!")
+		//conout("Registro INCLUIDO na SB5!")
 	Else
-		conout("Erro ao incluir SB1: "+varInfo('oModelSB5',oModelSB5:GetErrorMessage(), ,.F.))
+		//conout("Erro ao incluir SB1: "+varInfo('oModelSB5',oModelSB5:GetErrorMessage(), ,.F.))
 		//::cCodigo := "ERRO"
 		oModelSB5:DeActivate()
 		oModelSB5:Destroy()
@@ -1006,7 +1006,7 @@ return
 
 
 static function saveSZ1(oProdutoProtheus)
-	conout("###### UFPR! " + oProdutoProtheus:UFPR)
+	//conout("###### UFPR! " + oProdutoProtheus:UFPR)
 	if oProdutoProtheus:UFPR <> ''
 		dbSelectArea("SZ1")
 		if recLock("SZ1", .T.)
@@ -1082,7 +1082,7 @@ static function saveDA0(oProdutoProtheus, oObjWS)
 				DA1->(msUnlock())
 			endif
 		else
-			conout( "Tabela de venda não encontrada.")
+			//conout( "Tabela de venda não encontrada.")
 			Aadd(aErroDA0,{'ERRO','Tabela de venda não encontrada.'})
 		endif
 	endif
@@ -1124,7 +1124,7 @@ static function saveDA0(oProdutoProtheus, oObjWS)
 				DA1->(msUnlock())
 			endif
 		else
-			conout( "Tabela de venda não encontrada.")
+			//conout( "Tabela de venda não encontrada.")
 			Aadd(aErroDA0,{'ERRO','Tabela de venda não encontrada.'})
 		endif
 	endif
@@ -1184,18 +1184,18 @@ return
 
 static function saveAIA(oProdutoProtheus)
 	Local aArrayAIA := {}
-	conout ( "@@@@@ 01 ")		
+	//conout ( "@@@@@ 01 ")		
 	// Cabecalho
 	dbSelectArea("AIA")
 	AIA->(dbSetOrder(1))
 	AIA->(dbGoTop())
 	if AIA->(msSeek(xFilial("AIA") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabPR))
-		conout ( "@@@@@ 02 ")		
+		//conout ( "@@@@@ 02 ")		
 		dbSelectArea("AIB")
 		AIB->(dbSetOrder(2))
 		AIB->(dbGoTop())
 		if AIB->(msSeek(xFilial("AIB") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabPR + SB1->B1_COD)) // Tabela já possui o item
-			conout ( "@@@@@ 03 ")		
+			//conout ( "@@@@@ 03 ")		
 			recLock("AIB", .F.)
 			if !empty(oProdutoProtheus:CodTabPR) // Se o estado for informado no arquivo devera atualizar o preço do estado
 				&("AIB->AIB_YPRC" + oProdutoProtheus:CodTabPR) := oProdutoProtheus:PRCVENA
@@ -1204,10 +1204,10 @@ static function saveAIA(oProdutoProtheus)
 			endif
 			AIB->(msUnlock())
 		else
-			conout ( "@@@@@ 04 ")		
+			//conout ( "@@@@@ 04 ")		
 			recLock("AIB", .T.)
 			cItem   := soma1(fUltItem(oProdutoProtheus:CodTabPR, "AIB"))
-			conout ( "@@@@@ 05 ")
+			//conout ( "@@@@@ 05 ")
 			AIB->AIB_FILIAL := xFilial("AIB")
 			AIB->AIB_CODFOR := SB1->B1_PROC
 			AIB->AIB_LOJFOR := SB1->B1_LOJPROC
@@ -1218,17 +1218,17 @@ static function saveAIA(oProdutoProtheus)
 			AIB->AIB_INDLOT := '000000000999999.99'
 			AIB->AIB_DATVIG := AIA->AIA_DATDE
 			/*if !empty(oProdutoProtheus:CodTabPR) // Se o estado for informado no arquivo devera atualizar o preço do estado
-				conout ( "@@@@@ 06 ")
+				//conout ( "@@@@@ 06 ")
 				&("AIB->AIB_YPRC" + oProdutoProtheus:CodTabPR) := oProdutoProtheus:PRCVENA
 			else*/
-				conout ( "@@@@@ 07 ")
+				//conout ( "@@@@@ 07 ")
 				AIB->AIB_PRCCOM := oProdutoProtheus:PRCVENA
 			//endif
-			conout ( "@@@@@ 08 ")
+			//conout ( "@@@@@ 08 ")
 			AIB->(msUnlock())
 		endiF
 	else // Tabela de preço de compra nao existe (Erro - Deve ser cadastrado previamente)
-		conout ( "Tabela de preço de compra não encontrada. Tabela: ")
+		//conout ( "Tabela de preço de compra não encontrada. Tabela: ")
 		Aadd(aArrayAIA,{'ERRO','Tabela de preço de compra não encontrada.'})
 	endif
 			
@@ -1271,7 +1271,7 @@ static function saveAIA(oProdutoProtheus)
 			AIB->(msUnlock())
 		endiF
 	else // Tabela de preço de compra nao existe (Erro - Deve ser cadastrado previamente)
-		conout ( "Tabela de preço de compra não encontrada. Tabela: ")		
+		//conout ( "Tabela de preço de compra não encontrada. Tabela: ")		
 		Aadd(aArrayAIA,{'ERRO','Tabela de preço de compra não encontrada.'})
 	endif
 return aArrayAIA

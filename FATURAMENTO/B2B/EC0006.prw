@@ -19,7 +19,7 @@ user function EC0006(lJob, cId)
     default cId     := ""
 
     if lJob
-        conout("Inicio JOB EC0006")
+        //conout("Inicio JOB EC0006")
     endif
 
     if lJob // Funcao é job
@@ -89,7 +89,7 @@ user function EC0006(lJob, cId)
         If (oRest:Get())
             cGetRest := oRest:GetResult()
 
-            // Conout("GET Pedidos: " + cGetRet)
+            // //conout("GET Pedidos: " + cGetRet)
             oJsonRet := JsonObject():New()
             cJsonRet := oJsonRet:fromJson(cGetRest) // Convertendo json
             fPedidos(oJsonRet, lJob)
@@ -106,7 +106,7 @@ user function EC0006(lJob, cId)
     // next i
 
     if lJob
-        conout("Fim JOB EC0006")
+        //conout("Fim JOB EC0006")
     endif
 return nil
 
@@ -215,7 +215,7 @@ static function fInsPedido(cId, lJob)
             U_EC07LOG("PEDIDO", "A", cLogErr)
 
             if lJob
-                conout("Erro pedido. Erro: " + cLogErr)
+                //conout("Erro pedido. Erro: " + cLogErr)
             endif
 
             return .F. // Nao achou o cliente - Aguardar a proxima integracao
@@ -264,8 +264,8 @@ static function fInsPedido(cId, lJob)
         cCodTra := "000004"
 
     elseif ("RETIRE" $ cFreteB2b)
-        cCodTra := "000002"
-        cTipFre := "S"
+        cCodTra := ""
+        cTipFre := "D"
         
         // Tratamento de retira no CD
         if val(oJsonPed["Order"]["shipment_value"]) == 0 .and. val(oJsonPed["Order"]["total"]) < 250
@@ -387,7 +387,7 @@ static function fInsPedido(cId, lJob)
             cLogErr := "Produto com ID " + cIdProd + " não encontrado na base de dados."
 
             if lJob
-                conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
+                //conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
             endif
 
             U_EC07LOG("PEDIDO", "E", cLogErr)
@@ -402,7 +402,7 @@ static function fInsPedido(cId, lJob)
             cLogErr := "Não foi encontrado TES inteligente para OPER: " + cOper + " CLIENTE: " + SA1->A1_COD + "/" + SA1->A1_LOJA + " PRODUTO: " + SB1->B1_COD
             U_EC07LOG("PEDIDO", "A", cLogErr)
             if lJob
-                conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
+                //conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
             endif
 
             cCodTes := "602"
@@ -444,7 +444,7 @@ static function fInsPedido(cId, lJob)
             Next nCount
 
             if lJob
-                conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
+                //conout("Erro pedido: " + cIdPed + " Erro: " + cLogErr)
             endif
 
             U_EC07LOG("PEDIDO", "E", cLogErr)
@@ -678,7 +678,7 @@ user function EC006NF(lJob, nRecno, lEnvJob)
         cPostRet := HttpPost(cUrl + cPath, cTokPar, cJson, 120, aHeader, @cHeaRet) // Efetua o POST
 
         If !empty(cPostRet) // Retorno
-            Conout("POST Cad. Nota Fiscal: " + cPostRet)
+            //conout("POST Cad. Nota Fiscal: " + cPostRet)
             oJsonRet := JsonObject():New()
             ret := oJsonRet:fromJson(cPostRet) // Convertendo json
             if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -757,7 +757,7 @@ Funcao de job para enviar NF para portal Tray
 @since 05/10/2020
 /*/
 user function EC006JNF()
-    conout("Inicio JOB EC006JNF........")
+    //conout("Inicio JOB EC006JNF........")
 
     RpcClearEnv()
     RpcSetType(3) // Nao consumir licenças
@@ -790,7 +790,7 @@ user function EC006JNF()
     endDo
     PEDNF->(DBCloseArea())
     
-    conout("Fim JOB EC006JNF........")
+    //conout("Fim JOB EC006JNF........")
 return nil
 
 /*/{Protheus.doc} fGetTax

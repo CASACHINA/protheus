@@ -35,7 +35,7 @@ user function CChtoCyberLog(cOrigem, cChave, cOpcao, cFilInt, cB2B)
 	cScript += " ('" +cOrigem+ "','" +cFilInt+ "','" +cChave+ "','" +cOpcao+ "','" +cB2B+  "') "
 
 	IF ! ( lSuccess := ! TCSQLExec(cScript) < 0)
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return lSuccess
@@ -63,7 +63,7 @@ user function CChWMSError(cOrigem, cChave, cErro)
 	cScript += " ('" +cOrigem+ "','" +cChave+ "', '"+ ajusta(cErro) +"') "
 
 	IF TCSQLExec(cScript) < 0
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return lSuccess
@@ -93,7 +93,7 @@ user function CCnRecebimento(cChave)
 	cScript += " where COD_CYBERLOG_RECEBIMENTO = '" +cChave+ "' and PROCESSAMENTO is null "
 
 	IF TCSQLExec(cScript) < 0
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return
@@ -123,7 +123,7 @@ user function CCnSaida(cChave)
 	cScript += " where COD_CYBERLOG_SAIDA = '" +cChave+ "' and PROCESSAMENTO is null "
 
 	IF TCSQLExec(cScript) < 0
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return
@@ -154,7 +154,7 @@ user function CCnInventario(dData, cProduto)
 	cScript += " where DATA_INVENTARIO = cast('" +DtoS(dData)+ "' as date) and CODIGO_PRODUTO = '"+cProduto+"' and PROCESSAMENTO is null "
 
 	IF TCSQLExec(cScript) < 0
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return
@@ -184,7 +184,7 @@ user function CCnTransferencia(cChave)
 	cScript += " where COD_CYBERLOG_TRANSFERENCIA = '" +cChave+ "' and PROCESSAMENTO is null "
 
 	IF TCSQLExec(cScript) < 0
-		ConOut(TCSQLError())
+		//conout(TCSQLError())
 	EndIF
 
 return

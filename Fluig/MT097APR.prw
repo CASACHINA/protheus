@@ -45,9 +45,9 @@ Local cRetorno		:= ""
 	// Cancela o Processo no Fluig
 	If oFluigWrk:cancelInstance(cFluigUsr, cFluigPss, nCompany, nIdFluig, cFluigMatr, cComentario)
 		cRetorno := oFluigWrk:cresult
-		conout("Cancelamento Fluig: "+cRetorno)
+		//conout("Cancelamento Fluig: "+cRetorno)
 	Else
-		conout("Processo não integrado com o Fluig")
+		//conout("Processo não integrado com o Fluig")
 	EndIf
 
 Return

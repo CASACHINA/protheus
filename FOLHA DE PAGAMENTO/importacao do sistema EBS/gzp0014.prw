@@ -44,7 +44,7 @@ User Function GZP0014()
 
 	nomeprog:= "GZS0017"
 	cPerg   := "GZS0017"
-	cPerg   += Space( Len(Sx1->x1_grupo) - Len(cPerg) )
+	//cPerg   += Space( TAMSX3("x1_grupo")[1] - Len(cPerg) )
 	wnrel   := "GZS0017"
    
 	//VerPerg()
@@ -285,7 +285,7 @@ Static Function GZS17ExAuto()
 		If lMsErroAuto
 			DisarmTransaction()
 			MostraErro()
-			Return(.F.)
+			
 		EndIF
 
 	End Transaction //Fim de Transação
@@ -324,50 +324,6 @@ User Function GZS17SL(cColuna)
 	nTotDif := nTotDeb - nTotCre
 Return(.T.)
 
-
-/*/{Protheus.doc} VerPerg
-@author Fabiano Filla
-@since 09/07/2013
-@version 1.0
-@return null,  
-@description Funcao para verificar/criar as perguntas 
-
-/*/
-Static Function VerPerg()
-	SX1->(DbSetOrder(1))
-	IF ! SX1->(DbSeek(cPerg+"01",.F.))
-		RecLock("SX1",.T.)
-		SX1->X1_GRUPO   := cPerg
-		SX1->X1_ORDEM   := "01"
-		SX1->X1_PERGUNT := "Data Lancamento    ?"
-		SX1->X1_VARIAVL := "Mv_ch1"
-		SX1->X1_TIPO    := "D"
-		SX1->X1_TAMANHO := 8
-		SX1->X1_DECIMAL := 0
-		SX1->X1_GSC     := "G"
-		SX1->X1_VAR01   := "Mv_Par01"
-		SX1->X1_DEF01   := ""
-		SX1->X1_DEF02   := ""
-		SX1->X1_F3      := ""
-		MsUnLock("SX1")
-	EndIf
-	IF ! SX1->(DbSeek(cPerg+"02",.F.))
-		RecLock("SX1",.T.)
-		SX1->X1_GRUPO   := cPerg
-		SX1->X1_ORDEM   := "02"
-		SX1->X1_PERGUNT := "Arquivo Orig. Dados?"
-		SX1->X1_VARIAVL := "Mv_ch2"
-		SX1->X1_TIPO    := "C"
-		SX1->X1_TAMANHO := 99
-		SX1->X1_DECIMAL := 0
-		SX1->X1_GSC     := "G"
-		SX1->X1_VAR01   := "Mv_Par02"
-		SX1->X1_DEF01   := ""
-		SX1->X1_DEF02   := ""
-		SX1->X1_F3      := ""
-		MsUnLock("SX1")
-	EndIf
-Return
 
 
 /*/{Protheus.doc} ReadLn
@@ -644,11 +600,7 @@ User Function UPDZ0017( lModo )
 		Return "Importacao Folha de Pagamento p/ EBS"
 	Endif
 	
-	dbSelectArea("SX2")
-	SX2->(DbSetOrder(1))
 	MsSeek("SC5")
-	cPath := SX2->X2_PATH
-	cNome := Substr(SX2->X2_ARQUIVO,4,5)
 	
 	// Campos para SX3
 	Aadd(aSX3,{"CTT",;			//Arquivo

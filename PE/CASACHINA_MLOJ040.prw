@@ -246,23 +246,23 @@ Static Function MakeColumns()
 
 			oColumn := FWBrwColumn():New()
 
-			oColumn:SetType(SX3->X3_TIPO)
+			oColumn:SetType(FWSX3Util():GetFieldType( aFields[n1] ))
 			oColumn:SetTitle( X3Titulo() )
-			oColumn:SetSize(SX3->X3_TAMANHO)
-			oColumn:SetDecimal(SX3->X3_DECIMAL)
+			oColumn:SetSize(TamSx3(aFields[n1])[1])
+			oColumn:SetDecimal(TamSx3(aFields[n1])[2])
 
 			do case
-				case "_FILIAL" $ SX3->X3_CAMPO
-					oColumn:SetData(&("{|| " + SX3->X3_CAMPO + " + '-' + FWFilialName(,"+SX3->X3_CAMPO+") }"))
+				case "_FILIAL" $ aFields[n1]
+					oColumn:SetData(&("{|| " + aFields[n1] + " + '-' + FWFilialName(,"+aFields[n1]+") }"))
 					oColumn:SetSize(40)
 				case SX3->X3_TIPO == "D"
-					oColumn:SetData(&("{|| StoD(" + SX3->X3_CAMPO + ")}"))
+					oColumn:SetData(&("{|| StoD(" + aFields[n1] + ")}"))
 				otherwise
-					oColumn:SetData(&("{||" + SX3->X3_CAMPO + "}"))
+					oColumn:SetData(&("{||" + aFields[n1] + "}"))
 			endcase
-
-			oColumn:SetPicture(SX3->X3_PICTURE)
-			oColumn:SetAlign( IIF(SX3->X3_TIPO == "N",COLUMN_ALIGN_RIGHT,IIF(SX3->X3_TIPO == "D",COLUMN_ALIGN_CENTER,COLUMN_ALIGN_LEFT)) )
+			// PesqPict(SX3->X3_ARQUIVO, cCampoAtu)
+			oColumn:SetPicture(PesqPict('SE1', aFields[n1]))
+			oColumn:SetAlign( IIF(FWSX3Util():GetFieldType( aFields[n1] ) == "N",COLUMN_ALIGN_RIGHT,IIF(FWSX3Util():GetFieldType( aFields[n1] ) == "D",COLUMN_ALIGN_CENTER,COLUMN_ALIGN_LEFT)) )
 
 			IF ! Empty( X3Cbox() )
 				oColumn:SetOptions( STRTOKARR ( X3Cbox() , ';' ) )

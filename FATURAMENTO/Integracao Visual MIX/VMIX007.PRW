@@ -59,11 +59,11 @@ User Function VMIX007(__cEmpresa, __cFilial)
 
 		Next nW
 
-		ConOut("GERANDO RELATORIO. INICIO")
+		//conout("GERANDO RELATORIO. INICIO")
 
 		U_VMIX008()
 
-		ConOut("GERANDO RELATORIO. FIM")
+		//conout("GERANDO RELATORIO. FIM")
 
 	EndIf
 
@@ -83,7 +83,7 @@ Static Function Execute(cDtCorte)
 	Private __cMsgErro  := ""
 	Private __oError    := Nil
 
-	ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX007 VERSAO INICIADA...")
+	//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX007 VERSAO INICIADA...")
 
 	cSql := " SELECT * "
 	cSql += " FROM " + RetSqlName("SE1")
@@ -108,7 +108,7 @@ Static Function Execute(cDtCorte)
 
 	(cQry)->(DbCloseArea())
 
-	ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX007 CONCLUIDA.")
+	//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX007 CONCLUIDA.")
 
 Return Nil
 
@@ -170,11 +170,11 @@ Static Function ExecBaixaCR(cQry)
 
 		cLogTxt += GetErrorLog(aAutoErro)
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] " + "VMIX007 >>> ERRO BAIXA AUTOMATICA (BAIXA - ERRO)- (PREF+NUM+PARC+TIPO) = "+(SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO)+": ERRO: "+cLogTxt)
+		//conout("[" + cEmpAnt + cFilAnt + "] " + "VMIX007 >>> ERRO BAIXA AUTOMATICA (BAIXA - ERRO)- (PREF+NUM+PARC+TIPO) = "+(SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO)+": ERRO: "+cLogTxt)
 
 	Else
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] " + "VMIX007 >>> BAIXA AUTOMATICA (BAIXA - SUCESSO) - (PREF+NUM+PARC+TIPO) = "+(SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO))
+		//conout("[" + cEmpAnt + cFilAnt + "] " + "VMIX007 >>> BAIXA AUTOMATICA (BAIXA - SUCESSO) - (PREF+NUM+PARC+TIPO) = "+(SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO))
 
 	EndIf
 
@@ -201,19 +201,7 @@ Static Function SavePar(cPar, cTipo, cConteudo)
 	Local lExist  := .F.
 
 	If !PutMv(cPar, cConteudo)
-
-		DbSelectArea("SX6")
-		SX6->(DbSetOrder(1)) // X6_FIL, X6_VAR, R_E_C_N_O_, D_E_L_E_T_
-
-		nLenFil := Len(SX6->X6_FIL)
-
-		lExist := SX6->(DBSeek(Space(nLenFil) + cPar))
-
-		RecLock("SX6", !lExist)
-		SX6->X6_VAR		:= cPar
-		SX6->X6_TIPO	:= cTipo
-		SX6->X6_CONTEUD	:= cConteudo
-		SX6->(MsUnlock())
+		
 
 	EndIf
 
