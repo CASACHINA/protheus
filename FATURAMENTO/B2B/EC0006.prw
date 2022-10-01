@@ -264,8 +264,8 @@ static function fInsPedido(cId, lJob)
         cCodTra := "000004"
 
     elseif ("RETIRE" $ cFreteB2b)
-        cCodTra := "000002"
-        cTipFre := "S"
+        cCodTra := ""
+        cTipFre := "D"
         
         // Tratamento de retira no CD
         if val(oJsonPed["Order"]["shipment_value"]) == 0 .and. val(oJsonPed["Order"]["total"]) < 250
