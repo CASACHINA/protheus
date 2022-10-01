@@ -31,6 +31,7 @@ User function USELTES1(_cTpTES)
 	Local _aVar    := {}
 	Local aSaveLines:= {}
 	Local _cRet := ""
+	Local _i := 0
 
 
 	If Alltrim(_cYSTPR) == ""
@@ -44,14 +45,14 @@ User function USELTES1(_cTpTES)
 
 	aAdd(_aVar,{'PR','PR','1','1','509','253'})
 	aAdd(_aVar,{'PR','PR','1','2','509','253'})
-	aAdd(_aVar,{'PR','PR','2','2','505','251'})
+	aAdd(_aVar,{'PR','PR','2','2','505','333'})
 	aAdd(_aVar,{'PR','PR','3','3','671','254'})
 	aAdd(_aVar,{'PR','SC','1','1','509','253'})
 	aAdd(_aVar,{'PR','SC','1','2','505','251'})
 	aAdd(_aVar,{'PR','SC','2','2','505','251'})
 	aAdd(_aVar,{'PR','SC','3','3','671','254'})
 	aAdd(_aVar,{'SC','SC','1','1','509','253'})
-	aAdd(_aVar,{'SC','SC','2','2','505','251'})
+	aAdd(_aVar,{'SC','SC','2','2','505','334'})
 	aAdd(_aVar,{'SC','SC','1','2','505','251'})
 	aAdd(_aVar,{'SC','SC','3','3','671','254'})
 	aAdd(_aVar,{'SC','PR','1','2','505','251'})
