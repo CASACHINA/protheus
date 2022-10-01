@@ -53,8 +53,22 @@ Static Function fGrid()
 	SX3->(DbSetOrder(2))
 	For nX := 1 to Len(aFields)
 		If SX3->(DbSeek(aFields[nX]))
-			Aadd(aHeaderEx, {AllTrim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,;
-			SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO})
+
+		Aadd(aHeaderEx, {   TRIM(FwX3Titulo(aFields[nX])),;
+                        aFieldsACC[nPos],;
+                        GetSx3Cache(aFields[nX], "X3_PICTURE"),;
+                        GetSx3Cache(aFields[nX], "X3_TAMANHO"),;
+                        GetSx3Cache(aFields[nX], "X3_DECIMAL"),;
+                        GetSx3Cache(aFields[nX], "X3_VALID"),;
+                        GetSx3Cache(aFields[nX], "X3_USADO" ),;
+                        FWSX3Util():GetFieldType( aFields[nX]),;
+                        GetSx3Cache(aFields[nX], "X3_F3"),;
+                        GetSx3Cache(aFields[nX], "X3_CONTEXT"),;
+                        GetSx3Cache(aFields[nX], "X3_CBOX"   ),;
+                        GetSx3Cache(aFields[nX], "X3_RELACAO"),;
+                        ".T."})
+			//Aadd(aHeaderEx, {AllTrim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,;
+			//SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO})
 		Endif
 	Next nX
 

@@ -255,7 +255,7 @@ Static Function MakeColumns()
 				case "_FILIAL" $ aFields[n1]
 					oColumn:SetData(&("{|| " + aFields[n1] + " + '-' + FWFilialName(,"+aFields[n1]+") }"))
 					oColumn:SetSize(40)
-				case SX3->X3_TIPO == "D"
+				case FWSX3Util():GetFieldType( aFields[n1] ) == "D"
 					oColumn:SetData(&("{|| StoD(" + aFields[n1] + ")}"))
 				otherwise
 					oColumn:SetData(&("{||" + aFields[n1] + "}"))

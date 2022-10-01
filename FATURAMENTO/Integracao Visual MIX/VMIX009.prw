@@ -44,11 +44,12 @@ Static Function ModelDef()
 	Local oFormPai := FWFormStruct(1, 'SZH', {|cCampo| AllTrim(cCampo) $ "SZH_NIVEL|SZH_DESCRI|SZH_MSBLQL"})
 	Local oFormFil := FWFormStruct(1, 'SZH', {|cCampo| AllTrim(cCampo) $ "SZH_CODFIL"})
 	Local aSZHRel  := {}
-
+	
+	Local bCommit   := {|oModel| MLOC003Com(oModel) }
 	oFormPai:SetProperty('SZH_NIVEL'	, MODEL_FIELD_WHEN	, FwBuildFeature(STRUCT_FEATURE_WHEN	, 'If(INCLUI,.T.,.F.)'))
 	oFormPai:SetProperty('SZH_MSBLQL'	, MODEL_FIELD_INIT	, FwBuildFeature(STRUCT_FEATURE_INIPAD	, '"2"'))
 
-	oModel := MPFormModel():New('VMIX009M',{|oModel| fPreValidCad(oModel)},{|oModel| fTudoOK(oModel)},{|oModel| fCommit(oModel)},{|oModel| fCancel(oModel)} )
+	oModel := MPFormModel():New('VMIX009M',{|oModel| fPreValidCad(oModel)},{|oModel| fTudoOK(oModel)},/*bCommit*/,{|oModel| fCancel(oModel)} )
 
 	oModel:AddFields("FORMCAB",/*cOwner*/,oFormPai)
 	oModel:AddGrid('SZHDETAIL',"FORMCAB",oFormFil)
@@ -60,6 +61,9 @@ Static Function ModelDef()
 
 	//Setando o campo único da grid para não ter repetição
 	oModel:GetModel('SZHDETAIL'):SetUniqueLine({"SZH_CODFIL"})
+
+	
+	oModel:InstallEvent("ML003CTBRUS", "ML003CTB", oObsCTB)
 
 	//Setando outras informações do Modelo de Dados
 	oModel:SetDescription(cTitulo)
