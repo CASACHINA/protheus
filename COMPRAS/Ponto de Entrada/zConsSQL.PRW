@@ -157,8 +157,12 @@ Static Function fCriaMsNew()
      
         //Se coneguir posicionar no campo
         If FWSX3Util():GetFieldType( cCampoAtu ) != ' '
+            _cNomTab := SUBSTR(cCampoAtu,1,3)
+            IF SUBSTR(_cNomTab,3,1) == '_'
+                _cNomTab:='S'+SUBSTR(_cNomTab,1,2)    
+            endif
             //Cabeçalho ...    Titulo        Campo        Mask                                    Tamanho                Dec                    Valid    Usado    Tip                F3    CBOX
-            aAdd(aHeadAux,{    X3Titulo(),    cCampoAtu,    PesqPict(SX3->X3_ARQUIVO, cCampoAtu),   TamSx3(cCampoAtu)[1],   TamSx3(cCampoAtu)[2],    ".F.",    ".F.",    FWSX3Util():GetFieldType( cCampoAtu ) ,    "",    ""})
+            aAdd(aHeadAux,{    X3Titulo(),    cCampoAtu,    PesqPict(_cNomTab, cCampoAtu),   TamSx3(cCampoAtu)[1],   TamSx3(cCampoAtu)[2],    ".F.",    ".F.",    FWSX3Util():GetFieldType( cCampoAtu ) ,    "",    ""})
 		
             //Se o campo atual for retornar, aumenta o tamanho do retorno
             If cCampoAtu $ cCampoRet

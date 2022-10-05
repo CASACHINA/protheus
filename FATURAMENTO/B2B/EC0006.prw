@@ -267,6 +267,8 @@ static function fInsPedido(cId, lJob)
         cCodTra := ""
         cTipFre := "D"
         
+
+        
         // Tratamento de retira no CD
         if val(oJsonPed["Order"]["shipment_value"]) == 0 .and. val(oJsonPed["Order"]["total"]) < 250
            lIndRes := .T.

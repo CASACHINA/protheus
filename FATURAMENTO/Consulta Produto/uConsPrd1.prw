@@ -75,7 +75,7 @@ Static Function fGrid()
 	// Define field values
 	For nX := 1 to Len(aFields)
 		If DbSeek(aFields[nX])
-			Aadd(aFieldFill, CriaVar(SX3->X3_CAMPO))
+			Aadd(aFieldFill, CriaVar(aFields[nX]))
 		Endif
 	Next nX
 	Aadd(aFieldFill, .F.)

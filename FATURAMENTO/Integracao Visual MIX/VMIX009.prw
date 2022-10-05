@@ -45,7 +45,7 @@ Static Function ModelDef()
 	Local oFormFil := FWFormStruct(1, 'SZH', {|cCampo| AllTrim(cCampo) $ "SZH_CODFIL"})
 	Local aSZHRel  := {}
 	
-	Local bCommit   := {|oModel| MLOC003Com(oModel) }
+	//Local bCommit   := {|oModel| MLOC003Com(oModel) }
 	oFormPai:SetProperty('SZH_NIVEL'	, MODEL_FIELD_WHEN	, FwBuildFeature(STRUCT_FEATURE_WHEN	, 'If(INCLUI,.T.,.F.)'))
 	oFormPai:SetProperty('SZH_MSBLQL'	, MODEL_FIELD_INIT	, FwBuildFeature(STRUCT_FEATURE_INIPAD	, '"2"'))
 
