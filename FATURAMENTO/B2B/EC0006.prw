@@ -260,6 +260,9 @@ static function fInsPedido(cId, lJob)
     elseif ("FRETE GR" $ cFreteB2b)
         cCodTra := ""
 
+    elseif ("FIXLOG" $ cFreteB2b)
+        cCodTra := ""
+
     elseif ("ASAP LOG" $ cFreteB2b)
         cCodTra := "000004"
 
