@@ -78,27 +78,28 @@ Função para verificar se pode e preparar a impressão
 @type function
 /*/
 static function Imprime()
+	//fUNCAO de impressão já estava comentada... Comentei o restante para não gerar erros
+	Alert('Função de impressão desabilitada.')
+	// IF ! Empty((cAlias)->E1_FILIAL)
 
-	IF ! Empty((cAlias)->E1_FILIAL)
+	// 	//muda a filial
+	// 	cFilAnt := (cAlias)->E1_FILIAL
 
-		//muda a filial
-		cFilAnt := (cAlias)->E1_FILIAL
+	// 	SM0->( dbSetOrder(1) )
+	// 	SM0->( dbSeek( cEmpAnt + cFilAnt ) )
 
-		SM0->( dbSetOrder(1) )
-		SM0->( dbSeek( cEmpAnt + cFilAnt ) )
+	// 	//posiciona na nota
+	//   	SE1->( dbGoTo( (cAlias)->SF1RECNO ) )
 
-		//posiciona na nota
-	  	SE1->( dbGoTo( (cAlias)->SF1RECNO ) )
+	// 	//cria a variavel se não existe
+	// 	IF type('oAutocom') == 'U'
+	// 		oAutocom := Autocom():New()
+	// 	EndIF
 
-		//cria a variavel se não existe
-		IF type('oAutocom') == 'U'
-			oAutocom := Autocom():New()
-		EndIF
+	// 	//chama a impressão
+	// 	//FwMsgRun(, {|| u_ReciboDev() }, "Imprimindo...", "Imprimindo Contra Vale")
 
-		//chama a impressão
-		//FwMsgRun(, {|| u_ReciboDev() }, "Imprimindo...", "Imprimindo Contra Vale")
-
-	EndIF
+	// EndIF
 
 return
 

@@ -91,7 +91,6 @@ static function readFile(cFile)
 
 	Local oFile := FWFileReader():New(cFile)
 	Local aLines := {}
-	Local nLine
 
 	Local cSeparator := ';'
 
@@ -220,7 +219,7 @@ static function ExportXML(cDirectory, cEntidade, cNota)
 
 return .T.
 
-function retVersao(oXmlExp)
+STATIC function retVersao(oXmlExp)
 Local _cVersao :=  IIf(Type("oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT") <> "U", oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT, '')
 
 return _cVersao

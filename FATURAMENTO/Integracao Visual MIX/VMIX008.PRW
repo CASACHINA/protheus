@@ -34,6 +34,14 @@ User Function VMIX008(dBaixaDe_, dBaixaAte_)
 			_dBaixaDe    := ParamLoad(cFileName,,3, dDataBase)
 			_dBaixaAte   := ParamLoad(cFileName,,4, dDataBase)
 
+			if type("mv_par01")
+				_dBaixaDe := mv_par01
+			endif
+
+			if type("mv_par02")
+				_dBaixaAte := mv_par02
+			endif
+
 			oReport := ReportDef()
 			oReport:PrintDialog()
 
@@ -114,7 +122,7 @@ Static Function ReportDef()
 
 		oMessage 	:= TMailMessage():New()
 
-		cTo 		:= GetNewPar("ZZ_EMABXVL", "diego@grupocasachina.com.br")
+		cTo 		:= 'egvieira01@gmail.com'//GetNewPar("ZZ_EMABXVL", "diego@grupocasachina.com.br")
 		cCc 		:= ""
 		cBcc 		:= ""
 		cSubject 	:= "Relatório de baixas"

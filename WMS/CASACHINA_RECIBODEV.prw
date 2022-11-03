@@ -27,7 +27,7 @@ user function ReciboDev(aDocDev, aRecSD2, aDadosNCC)
 	Local lGuil			:= SuperGetMV("MV_FTTEFGU",, .T.)	// Ativa guilhotina
 	Local nSaltoLn		:= SuperGetMV("MV_FTTEFLI",, 1)		// Linha pula entre comprovante
 	Local cPrefixo
-
+	lOCAL nX
 	Local nOldModulo := nModulo
 
 	IF valtype(aDocDev) != "A"

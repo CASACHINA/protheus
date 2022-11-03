@@ -24,6 +24,7 @@ Função de update de dicionários para compatibilização
 @since  04/10/2018
 @obs    Gerado por EXPORDIC - V.6.0.0.1 EFS / Upd. V.5.0.0 EFS
 @version 1.0
+@type function
 /*/
 //--------------------------------------------------------------------
 User Function UPDGED_1( cEmpAmb, cFilAmb ) 
@@ -156,9 +157,7 @@ Função de processamento da gravação dos arquivos
 Static Function FSTProc( lEnd, aMarcadas, lAuto )
 Local   aInfo     := {}
 Local   aRecnoSM0 := {}
-Local   cAux      := ""
 Local   cFile     := ""
-Local   cFileLog  := ""
 Local   cMask     := "Arquivos Texto" + "(*.TXT)|*.txt|"
 Local   cTCBuild  := "TCGetBuild"
 Local   cTexto    := ""
@@ -167,7 +166,6 @@ Local   lOpen     := .F.
 Local   lRet      := .T.
 Local   nI        := 0
 Local   nPos      := 0
-Local   nRecno    := 0
 Local   nX        := 0
 Local   oDlg      := NIL
 Local   oFont     := NIL
@@ -338,6 +336,7 @@ Função de processamento da gravação do SX3 - Campos
 @since  04/10/2018
 @obs    Gerado por EXPORDIC - V.6.0.0.1 EFS / Upd. V.5.0.0 EFS
 @version 1.0
+@type function
 /*/
 //--------------------------------------------------------------------
 Static Function FSAtuSX3()
