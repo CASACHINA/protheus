@@ -60,8 +60,6 @@ User function USELTES1(_cTpTES)
 	aAdd(_aVar,{'SC','PR','2','2','505','251'})
 	aAdd(_aVar,{'SC','PR','3','3','671','254'})
 	aAdd(_aVar,{'SC','PR','1','1','509','253'})
-	
-
 	aAdd(_aVar,{'PR','PR','4','4','686','317'})
 	aAdd(_aVar,{'PR','SC','4','4','686','317'})
 	aAdd(_aVar,{'SC','PR','4','4','686','317'})
