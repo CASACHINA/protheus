@@ -41,7 +41,7 @@ User function USELTES1(_cTpTES)
 		_cYSTSC:= "2"
 	Endif
 
-	//Alert(_cFilOri+ "."+_cFilDes+ "."+_cYSTPR+ "."+_cYSTSC)
+	Alert(_cFilOri+ "."+_cFilDes+ "."+_cYSTPR+ "."+_cYSTSC)
 
 	aAdd(_aVar,{'PR','PR','1','1','509','253'})
 	aAdd(_aVar,{'PR','PR','1','2','509','253'})
@@ -52,6 +52,7 @@ User function USELTES1(_cTpTES)
 	aAdd(_aVar,{'PR','SC','2','2','505','251'})
 	aAdd(_aVar,{'PR','SC','3','3','671','254'})
 	aAdd(_aVar,{'PR','SC','5','5','505','251'})
+	//aAdd(_aVar,{'PR','SC','5','2','505','251'})
 	aAdd(_aVar,{'SC','SC','1','1','509','253'})
 	aAdd(_aVar,{'SC','SC','2','2','705','334'})
 	aAdd(_aVar,{'SC','SC','1','2','505','251'})
