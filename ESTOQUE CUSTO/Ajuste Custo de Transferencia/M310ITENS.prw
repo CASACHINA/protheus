@@ -62,7 +62,7 @@ User  Function M310ITENS()
 
 				DbSelectArea("NNT")
 				DbSetOrder(1)
-				If DbSeek(xFilial("NNT")+NNS_COD)
+				If DbSeek(xFilial("NNT")+NNS->NNS_COD)
 
 					If NNT->NNT_FILDES $ "010106,010107,010109,010110"
 
