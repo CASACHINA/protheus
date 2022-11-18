@@ -1,0 +1,41 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} TCyberlogDTORecebimentoConferencia
+@author Wlysses Cerqueira (WlyTech)
+@since 17/05/2022
+@version 1.0
+@description Classe responsavel para DTO.
+@type Class
+/*/
+
+Class TCyberlogDTORecebimentoConferencia
+
+	Public Data Campos
+
+	Public Method New() Constructor
+
+EndClass
+
+Method New() Class TCyberlogDTORecebimentoConferencia
+
+	Local itensRecebimento := {}
+	
+	// TODO: type Date
+
+	aAdd(itensRecebimento, {;
+		"sequenciaERP":			{ "type": "C", "allowEmpty": .F. },;
+		"erpId":				{ "type": "C", "allowEmpty": .F. },;
+		"codigoReduzido":		{ "type": "C", "allowEmpty": .F. },;
+		"qtdNf":				{ "type": "N", "allowEmpty": .F. },;
+		"qtdRecebida":			{ "type": "N", "allowEmpty": .F. };
+	})
+
+	::Campos := {;
+		"deposito":				{ "type": "C", "allowEmpty": .F. },;
+		"deposito": 			{ "type": "C", "allowEmpty": .F. },;
+		"status":				{ "type": "C", "allowEmpty": .F., "valueList": { "Conferido", "EstornoConferencia" } },;
+		"itensRecebimento":		itensRecebimento;
+	}
+	
+Return(Self)

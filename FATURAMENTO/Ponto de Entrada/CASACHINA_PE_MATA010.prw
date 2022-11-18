@@ -21,6 +21,7 @@ user function ITEM()
 	Local cIdModel //ParamIXB[3]
 
 	Local xRetorno := .T.
+	Local oObjCyberLog := Nil
 
 	IF ! Empty(ParamIXB)
 
@@ -54,6 +55,18 @@ user function ITEM()
 				EndIF
 			EndIF
 
+			oObjCyberLog := TCyberlogIntegracao():New()
+
+			oObjCyberLog:SendProduct(oModel:GetValue("SB1MASTER","B1_CYBERW") == "S", oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+
+			If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+			
+				oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+				oObjCyberLog:SendProduct(oModel:GetValue("SB1MASTER","B1_CYBERW") == "S", oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+			
+			EndIf
+
 		Case cIdPonto == "FORMCOMMITTTSPOS"
 
 			  /*	If Inclui
@@ -64,13 +77,14 @@ user function ITEM()
 					U_GT12M003("SB1","EXCLUI")
 		EndIf
                 */
-	case cIdPonto == "BUTTONBAR"
 
-		xRetorno := {}
+		case cIdPonto == "BUTTONBAR"
 
-	endcase
+			xRetorno := {}
 
-EndIF
+		endcase
+
+	EndIF
 
 return xRetorno
 

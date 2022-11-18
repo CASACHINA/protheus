@@ -1,0 +1,235 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} TDto
+@author Wlysses Cerqueira (WlyTech)
+@since 17/05/2022
+@version 1.0
+@description Classe responsavel por validar os campos de uma DTO.
+@type Class
+/*/
+
+Class TDto
+
+	Public Data Mensagem as Character
+
+	Public Method New() Constructor
+	Public Method DTO(jBodyReceived, oObj, aAnnotation)
+	Public Method Validate(jBodyReceived, aFieldsDTO)
+	Public Method TypeDescription(cType)
+
+EndClass
+
+Method New() Class TDto
+
+	::Mensagem	:= ""
+
+Return(Self)
+
+Method DTO(jBodyReceived, jBodyDTO) Class TDto
+
+	Local lRet	:= .T.
+
+	lRet := ::Validate(jBodyReceived, jBodyDTO)
+
+Return(lRet)
+
+Method Validate(jBodyReceived, jBodyDTO, cNameObjRaiz) Class TDto
+
+	Local lRet			    := .T.
+	Local lFound		    := .T.
+	Local nW			    := 0
+	Local nX			    := 0
+	Local nY			    := 0
+	Local jObjAux			:= Nil
+	Local cValueReceived	:= ""
+	Local cTypeReceived		:= ""
+	Local cTypeDTO			:= ""
+	Local lAllowEmpty		:= .T.
+	Local aValueList		:= {}
+	Local cValueList		:= ""
+	Local nPos				:= 0
+	Local aFieldsReceived   := jBodyReceived:GetNames()
+	Local aFieldsDTO		:= jBodyDTO:GetNames()
+
+	Default cNameObjRaiz	:= ""
+
+	For nW := 1 To Len(aFieldsDTO)
+
+		If !lRet
+
+			Exit
+
+		EndIf
+
+		lFound := .F.
+
+		For nX := 1 To Len(aFieldsReceived)
+
+			If !lRet
+
+				Exit
+
+			EndIf
+
+			If aFieldsDTO[nW] == aFieldsReceived[nX]
+
+				lFound := .T.
+
+				If ValType(jBodyReceived[aFieldsReceived[nX]]) == "A"
+
+					jObjAux := jBodyReceived[aFieldsReceived[nX]]
+
+					cNameObjRaiz := aFieldsReceived[nX]
+
+					For nY := 1 To Len(jObjAux)
+
+						If ::Validate(jObjAux[nY], jBodyDTO:GetJsonObject(aFieldsDTO[nW])[1], cNameObjRaiz)
+
+							cNameObjRaiz := ""
+
+						Else
+
+							lRet := .F.
+
+							Exit
+
+						EndIf
+
+					Next nY
+
+				Else
+
+					cValueReceived	:= jBodyReceived:GetJsonObject(aFieldsDTO[nW])
+					cTypeReceived	:= ValType(cValueReceived)
+					cTypeDTO		:= jBodyDTO:GetJsonObject(aFieldsDTO[nW])['type']
+					lAllowEmpty		:= jBodyDTO:GetJsonObject(aFieldsDTO[nW])['allowEmpty']
+					aValueList		:= jBodyDTO:GetJsonObject(aFieldsDTO[nW])['valueList']
+
+					If ( cTypeReceived <> cTypeDTO )
+
+						If ( lAllowEmpty .And. cTypeReceived <> "U" ) .Or. ( !lAllowEmpty )
+
+							lRet := .F.
+
+							::Mensagem := "O tipo do campo [" + If(Empty(cNameObjRaiz), "", cNameObjRaiz + ":") + aFieldsDTO[nW] + "] deveria ser [" + ::TypeDescription(cTypeDTO) + "]."
+
+							Exit
+
+						EndIf
+
+					EndIf
+
+					If Valtype(aValueList) == "A" .And. Len(aValueList) > 0
+
+						nPos := aScan(aValueList, {|x| AllTrim(x) == cValueReceived })
+
+						If nPos == 0
+
+							lRet := .F.
+
+							For nPos := 1 To Len(aValueList)
+
+								cValueList := cValueList + If(Empty(cValueList), "", "|") + aValueList[nPos]
+
+							Next nPos
+
+							::Mensagem := "O campo [" + If(Empty(cNameObjRaiz), "", cNameObjRaiz + ":") + aFieldsDTO[nW] + "] permite os seguintes valores: [" + cValueList + "]."
+
+							Exit
+
+						EndIf
+
+					EndIf
+
+					If !lAllowEmpty
+
+						If ( cTypeReceived == "C" .And. Empty(cValueReceived) )
+
+							lRet := .F.
+
+						EndIf
+
+						If !lRet
+
+							::Mensagem := "O campo [" + If(Empty(cNameObjRaiz), "", cNameObjRaiz + ":") + aFieldsDTO[nW] + "] é obrigatório."
+
+							Exit
+
+						EndIf
+
+					EndIf
+
+				EndIf
+
+			EndIf
+
+		Next nX
+
+		If !lRet
+
+			Exit
+
+		EndIf
+
+		If !lFound
+
+			lRet := .F.
+
+			::Mensagem := "Não encontrado o campo [" + If(Empty(cNameObjRaiz), "", cNameObjRaiz + ":") + aFieldsDTO[nW] + "]."
+
+			Exit
+
+		EndIf
+
+	Next nW
+
+Return(lRet)
+
+Method TypeDescription(cType) Class TDto
+
+	Local cDescription := ""
+
+	If cType == "A"
+
+		cDescription := "Array"
+
+	ElseIf cType == "B"
+
+		cDescription := "Bloco de Código"
+
+	ElseIf cType == "C"
+
+		cDescription := "Caracter"
+
+	ElseIf cType == "D"
+
+		cDescription := "Date"
+
+	ElseIf cType == "L"
+
+		cDescription := "Boolean"
+
+	ElseIf cType == "M"
+
+		cDescription := "Memo"
+
+	ElseIf cType == "N"
+
+		cDescription := "Numeric"
+
+	ElseIf cType == "O"
+
+		cDescription := "Object"
+
+	ElseIf cType == "U"
+
+		cDescription := "Null"
+
+	ElseIf cType == "J"
+
+		cDescription := "Json"
+
+	EndIf
+
+Return(cDescription)

@@ -1,0 +1,412 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} TCyberlogHistory
+@author Wlysses Cerqueira (WlyTech)
+@since 03/07/2022 
+@version 1.0
+@description Classe padrao responsavel pela construcao da tela com grid de importacao de arquivo xls.
+@type Class
+/*/
+
+Class TCyberlogHistory
+
+	Public Data cTitle
+	Public Data oWindow // Janela principal - FWDialogModal
+	Public Data oContainer	// Divisor de janelas - FWFormContainer
+	Public Data cHeaderBox // Identificador do cabecalho da janela
+	Public Data cFooterBox // Identificador dos itens da janela
+
+	Public Data cTexto
+	Public Data oMGet1
+
+	Public Data oPanelHeader
+	Public Data oPanelFooter
+
+	Public Data oImportFile
+	Public Data oGrid // Grid - MsNewGetDados
+	Public Data oHeader // EStrutura dos campos do grid - TGDField
+	Public Data aCols
+	Public Data aEditFields
+	Public Data lValidHeaderField
+	Public Data oFatherSelf
+
+	Public Method New() Constructor
+	Public Method Load()
+
+	Public Method Show()
+	Public Method LoadWindow()
+	Public Method LoadContainer()
+	Public Method GetHistory(cTab, cChave)
+	Public Method GDFieldProperty()
+
+	Public Method GDFieldData()
+	Public Method GetCount(bFilter)
+	Public Method GetTot(cField, lDeleted)
+	Public Method LoadBrowser()
+	Public Method SetArray(aItens)
+	Public Method ClearGrid()
+
+	Public Method MoveCellDown()
+	Public Method OrdenarGrid(nCol, oGrid)
+
+EndClass
+
+Method New(cTitle, lValidHeaderField) Class TCyberlogHistory
+
+	Default cTitle := "Log de integrações com o Cyberlog"
+	Default lValidHeaderField := .T.
+
+	::oWindow := Nil
+	::oContainer := Nil
+	::oPanelHeader := Nil
+	::oPanelFooter := Nil
+
+	::cHeaderBox := ""
+	::cFooterBox := ""
+
+	::cTexto := ""
+
+	::cTitle := cTitle
+	::lValidHeaderField := lValidHeaderField
+
+	::oGrid := Nil
+	::oHeader := TGDField():New()
+	::oImportFile := Nil
+
+	::aCols := {}
+
+	::aEditFields := {}
+
+	// ::LoadWindow()
+
+	// ::LoadContainer()
+
+Return(Self)
+
+Method LoadWindow() Class TCyberlogHistory
+
+	// Local aCoors := MsAdvSize()
+	Local aCoors := {0, 0, 1500, 300}
+
+	::oWindow := FWDialogModal():New()
+
+	::oWindow:SetBackground(.T.)
+	::oWindow:SetTitle(::cTitle)
+	::oWindow:SetSubTitle("Quantidade total: 0 ")
+	::oWindow:SetEscClose(.T.)
+	::oWindow:SetSize(aCoors[4], aCoors[3] / 2)
+	::oWindow:EnableFormBar(.T.)
+	::oWindow:CreateDialog()
+	::oWindow:CreateFormBar()
+
+	::oWindow:AddCloseButton()
+
+	// ::oWindow:AddButton("GetHistory"	, {|| ::GetHistory() },,, .T., .F., .T.)
+
+Return()
+
+Method LoadContainer() Class TCyberlogHistory
+	
+	::oContainer := FWFormContainer():New()
+
+	::cHeaderBox := ::oContainer:CreateHorizontalBox(70)
+
+	::cFooterBox := ::oContainer:CreateHorizontalBox(30)
+
+	::oContainer:Activate(::oWindow:GetPanelMain(), .T.)
+
+Return()
+
+Method GDFieldProperty() Class TCyberlogHistory
+
+	Local aRet := {}
+
+	::oHeader:Clear()
+
+	::oHeader:AddField("MARK")
+	::oHeader:FieldName("MARK"):cTitle := ""
+	::oHeader:FieldName("MARK"):cPict := "@BMP"
+	::oHeader:AddField("ZA4_TABPRO")
+	::oHeader:AddField("ZA4_DEPOSI")
+	::oHeader:AddField("ZA4_CHAVE")
+	::oHeader:AddField("ZA4_OPER")
+	::oHeader:AddField("ZA4_TIPO")
+	::oHeader:AddField("ZA4_DTINC")
+	::oHeader:AddField("ZA4_HORA")
+	::oHeader:AddField("ZA4_STATUS")
+	::oHeader:AddField("ZA4_ERRO")
+	::oHeader:AddField("ZA4_JSONEN")
+	::oHeader:AddField("ZA4_JSONRE")
+	::oHeader:AddField("ZA4_OBS")
+	::oHeader:AddField("ZA4_ROTINA")
+	::oHeader:AddField("ZA4_USER")
+
+	aRet := ::oHeader:GetHeader()
+
+Return(aRet)
+
+Method GDFieldData() Class TCyberlogHistory
+
+	Local aRet := {}
+
+Return(aRet)
+
+Method GetTot(cField, lDeleted) Class TCyberlogHistory
+
+	Local nW := 0
+	Local nCount := 0
+
+	Default lDeleted := .F.
+
+	For nW := 1 To Len(::oGrid:aCols)
+
+		If lDeleted .Or. ( !lDeleted .And. !GDdeleted(nW, ::oGrid:aHeader, ::oGrid:aCols) )
+
+			nCount += ::oGrid:aCols[nW][::oHeader:FieldPos(cField)]
+
+		EndIf
+
+	Next nW
+
+Return(nCount)
+
+Method GetCount(lDeleted) Class TCyberlogHistory
+
+	Local nW := 0
+	Local nCount := 0
+
+	Default lDeleted := .F.
+
+	For nW := 1 To Len(::oGrid:aCols)
+
+		If lDeleted .Or. ( !lDeleted .And. !GDdeleted(nW, ::oGrid:aHeader, ::oGrid:aCols) )
+			
+			nCount++
+
+		EndIf
+
+	Next nW
+
+Return(nCount)
+
+Method LoadBrowser() Class TCyberlogHistory
+
+	Local cVldDef := "AllwayStrue"
+	Local nMaxLine := 9000
+
+	::oPanelHeader := ::oContainer:GetPanel(::cHeaderBox)
+
+	::oPanelFooter := ::oContainer:GetPanel(::cFooterBox)
+
+	::oMGet1 := TMultiGet():New( 016,004,{|u| If(PCount()>0,::cTexto:=u,::cTexto)},::oPanelFooter,444,164,/*::oFont_C08*/,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
+	
+	::oMGet1:Align := CONTROL_ALIGN_ALLCLIENT
+
+	::oGrid := MsNewGetDados():New(0, 0, 0, 0, GD_UPDATE, cVldDef, cVldDef, "", ::aEditFields,, nMaxLine, cVldDef,, cVldDef, ::oPanelHeader, ::GDFieldProperty(), ::aCols)
+
+	// oGet:= MSGetDados():New(038,003,120,250,2,,,"",,,,,,,,,,::oPanelFooter)
+	
+	::oGrid:oBrowse:bGotFocus := {|| ::MoveCellDown() }
+	// ::oGrid:oBrowse:bLostFocus := {|| ::MoveCellDown() }
+	// ::oGrid:oBrowse:bWhen := {|| ::MoveCellDown() }
+	// ::oGrid:oBrowse:bline := {|| ::MoveCellDown() }
+	// ::oGrid:oBrowse:bMove := {|| ::MoveCellDown() }
+
+	::oGrid:oBrowse:bHeaderClick := {|oGrid, nCol| ::OrdenarGrid(nCol, @::oGrid)}
+
+	::oGrid:oBrowse:Align := CONTROL_ALIGN_ALLCLIENT
+
+Return()
+
+Method OrdenarGrid(nCol, oGrid) Class TCyberlogHistory
+
+	Local nSort := 0
+	Local nCount := 0
+
+	If Len(::oGrid:aCols) > 1
+
+		For nCount := 1 To ::oHeader:Fields:GetCount()
+
+			If nCount <> nCol
+
+				::oHeader:Fields:GetValue(nCount):nSort := 0
+
+				::oGrid:oBrowse:SetHeaderImage(nCount, "")
+
+			EndIf
+
+		Next
+
+		If ::oHeader:Fields:GetValue(nCol):nSort == 1
+
+			nSort := 2
+
+			aSort(::oGrid:aCols,,, {|x,y| (x[nCol]) > (y[nCol])})
+
+		Else
+
+			nSort := 1
+
+			aSort(::oGrid:aCols,,, {|x,y| (x[nCol]) < (y[nCol])})
+
+		EndIf
+
+		::oHeader:Fields:GetValue(nCol):nSort := nSort
+
+		::oGrid:oBrowse:SetHeaderImage(nCol, If (nSort == 1, "COLDOWN", "COLRIGHT"))
+
+		::oGrid:Refresh()
+
+	EndIf
+
+Return()
+
+Method MoveCellDown() Class TCyberlogHistory
+
+	Local nPosC := ::oGrid:oBrowse:nAT
+	Local nPosP := ::oGrid:oBrowse:nColPos
+
+	If nPosC > 0 .And. Len(::oGrid:aCols) > 0 .And. ::oGrid:aHeader[::oGrid:oBrowse:nColPos][8] $ "C/M"
+
+		::cTexto := ::oGrid:aCols[nPosC][nPosP]
+
+		::oMGet1:Refresh()
+
+		::oGrid:oBrowse:Refresh()
+
+		// ::oGrid:oBrowse:SetFocus()
+
+	EndIf
+
+	::oMGet1:SetFocus()
+
+Return()
+
+Method SetArray(aItens) Class TCyberlogHistory
+
+	::oGrid:SetArray(aItens)
+
+	::oGrid:GoBottom()
+
+	::oGrid:oBrowse:GoColumn(9)
+
+	::oGrid:oBrowse:Refresh()
+
+	::oGrid:Refresh()
+
+	::oWindow:setSubTitle("Quantidade total: " + Alltrim(cValToChar(::GetCount())))
+
+Return()
+
+Method GetHistory(cTab, cChave) Class TCyberlogHistory
+
+	::aCols := {}
+
+	DbSelectArea("ZA4")
+	ZA4->(DbSetOrder(1)) // ZA4_FILIAL, ZA4_TABPRO, ZA4_CHAVE, R_E_C_N_O_, D_E_L_E_T_
+
+	If ZA4->(DBSeek(xFilial("ZA4") + cTab + cChave))
+
+		While ZA4->(!EOF()) .And. ZA4->(ZA4_FILIAL + ZA4_TABPRO + ZA4_CHAVE) = xFilial("ZA4") + cTab + cChave
+
+			aAdd(::aCols, {;
+				If(ZA4->ZA4_STATUS == "S", "BR_VERDE", "BR_VERMELHO"),;
+				ZA4->ZA4_TABPRO	,;
+				ZA4->ZA4_DEPOSI	,;
+				ZA4->ZA4_CHAVE	,;
+				ZA4->ZA4_OPER	,;
+				ZA4->ZA4_TIPO	,;
+				ZA4->ZA4_DTINC	,;
+				ZA4->ZA4_HORA	,;
+				ZA4->ZA4_STATUS	,;
+				ZA4->ZA4_ERRO	,;
+				ZA4->ZA4_JSONEN	,;
+				ZA4->ZA4_JSONRE	,;
+				ZA4->ZA4_OBS	,;
+				ZA4->ZA4_ROTINA	,;
+				ZA4->ZA4_USER	,;
+			})
+
+			ZA4->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	::SetArray(::aCols)
+
+Return()
+
+Method Load() Class TCyberlogHistory
+
+
+
+Return()
+
+Method ClearGrid() Class TCyberlogHistory
+
+	::SetArray({})
+
+Return()
+
+Method Show(cTab, cChave) Class TCyberlogHistory
+
+	Default cTab := ""
+	Default cChave := ""
+
+	::LoadWindow()
+
+	::LoadContainer()
+	
+	::LoadBrowser()
+
+	FWMsgRun(, {|| ::GetHistory(cTab, cChave) }, "Buscando...", "Lendo log")
+
+	::oWindow:Activate()
+
+Return()
+
+Class TCyberlogHistoryStruct
+
+    Public Data cChave
+    Public Data cTabela
+	Public Data cDeposito
+    Public Data dDataInc
+    Public Data cHoraInc
+    Public Data cStatus
+    Public Data cOperacao
+	Public Data cTipo
+    Public Data cRotina
+    Public Data cRetPost
+    Public Data cErro
+    Public Data cJsonEnv
+	Public Data cObs
+    Public Data cJsonRet
+    Public Data cUser
+	Public Data cUrl
+
+    Public Method New()
+
+EndClass
+
+Method New() Class TCyberlogHistoryStruct
+
+    ::cChave	:= ""
+    ::cTabela	:= ""
+	::cDeposito	:= ""
+    ::dDataInc	:= Date()
+    ::cHoraInc	:= Time()
+    ::cStatus	:= ""
+    ::cOperacao	:= ""
+	::cTipo		:= ""
+    ::cRotina	:= ""
+    ::cRetPost	:= ""
+    ::cErro		:= ""
+    ::cJsonEnv	:= ""
+	::cObs		:= ""
+    ::cJsonRet	:= ""
+    ::cUser		:= __cUserId
+	::cUrl		:= ""
+
+Return()

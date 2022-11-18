@@ -15,6 +15,8 @@ User Function MTA103MNU()
 
 	EndIf
 
+	TCyberLogIntegracao():AddMenu(.T.)
+
 	// Ponto de chamada ConexãoNF-e
 	U_GTPE010()
 

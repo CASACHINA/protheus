@@ -173,8 +173,7 @@ Method ValidaAnexo() Class TMT120APV
 	DBSelectArea(cAliasAx)
 	(cAliasAx)->(DBGoTop())
 
-	If (cAliasAx)->(EOF()) .AND. (((SC7->C7_CONTRAT == 'S' .AND. nTotal > nValMin ) .OR. SC7->C7_CONTRAT != 'S' ) .AND. !lPtoPed .AND. ;
-			(Empty(SC7->C7_NUMCOT) .OR. (!Empty(SC7->C7_NUMCOT) .AND. nTotal > nValMin ) ) .OR. MsgNoYes( "Anexos não são obrigatório para este pedido! Deseja adicionar mesmo assim ?", 'Adicionar Anexo.' ))
+	If (cAliasAx)->(EOF()) .AND. ( !lPtoPed .AND. (Empty(SC7->C7_NUMCOT) .OR. (!Empty(SC7->C7_NUMCOT) .AND. nTotal > nValMin ) ) .OR. MsgNoYes( "Anexos não são obrigatório para este pedido! Deseja adicionar mesmo assim ?", 'Adicionar Anexo.' ))
 
 		lRet := .F.
 

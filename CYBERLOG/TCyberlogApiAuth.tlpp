@@ -1,0 +1,132 @@
+#INCLUDE "TOTVS.CH"
+
+/*/{Protheus.doc} TCyberlogApiAuth
+@author Wlysses Cerqueira (WlyTech)
+@since 17/05/2022
+@version 1.0
+@description Classe responsavel pela autenticacao no cyberlog.
+@type Class
+/*/
+
+Class TCyberlogApiAuth
+
+	Public Data cDepositoB2B
+	Public Data cDeposito
+	Public Data oRest
+	Public Data cPathUrl
+	Public Data lIntAtiva
+
+	Public Data lFornecAuto
+	Public Data lClienteAuto
+	Public Data lProdutoAuto
+	Public Data lPVAuto
+	Public Data lPreNotaAuto
+	Public Data lTransfAuto
+	Public Data cTokenRetorno
+
+	Public Data cModulo
+	Public Data cConta
+	Public Data cSenha
+	Public Data cChave
+	Public Data cAddress
+
+	Public Data oResult
+
+	Public Method New() constructor
+	Public Method GetAuthToken()
+
+EndClass
+
+Method New() class TCyberlogApiAuth
+
+	::lIntAtiva := .F.
+
+	DbSelectArea("ZA2")
+	ZA2->(DbSetOrder(1)) // ZA2_FILIAL, ZA2_DEPOSI, ZA2_CONTA, R_E_C_N_O_, D_E_L_E_T_
+
+	If ZA2->(DBSeek(xFilial("ZA2")))
+
+		::cDeposito 	:= AllTrim(ZA2->ZA2_DEPOSI)	// 1
+
+		::cDepositoB2B	:= AllTrim(ZA2->ZA2_DEPB2B)	// 4
+
+		::cPathUrl 		:= AllTrim(ZA2->ZA2_URL)	// "http://10.1.1.109:9292/cyberweb/api"
+
+		::cConta 		:= AllTrim(ZA2->ZA2_CONTA)	// "sync_dep_1"
+
+		::cSenha 		:= AllTrim(ZA2->ZA2_SENHA)	// "5A245BEF62298E499FFD3177083B704F"
+
+		::cChave 		:= AllTrim(ZA2->ZA2_CHAVE)	// "b_rcVLRUsqLRIyPneDFVpLXvUYGFVqPUKKoSyDADL5E"
+
+		::lPVAuto		:= ZA2->ZA2_PVAUTO == "S"
+
+		::lPreNotaAuto	:= ZA2->ZA2_PNAUTO == "S"
+
+		::lFornecAuto	:= ZA2->ZA2_FOAUTO == "S"
+
+		::lClienteAuto	:= ZA2->ZA2_CLAUTO == "S"
+
+		::lProdutoAuto	:= ZA2->ZA2_PRAUTO == "S"
+
+		::lTransfAuto	:= ZA2->ZA2_TRAUTO == "S"
+
+		::cTokenRetorno	:= AllTrim(ZA2->ZA2_TOKENR)
+
+		::lIntAtiva 	:= .T.
+
+	EndIf
+
+	::cModulo := "SYNC"
+
+	::cAddress := ""
+
+	::oResult := { "accesToken": "" }
+
+Return(Self)
+
+Method GetAuthToken() class TCyberlogApiAuth
+
+	Local cResponse     := {}
+	Local aHeader       := {}
+	Local cBody         := ""
+	Local oJson         := ""
+	Local lRet			:= .T.
+
+	aadd(aHeader, "Content-Type: application/x-www-form-urlencoded")
+
+	aadd(aHeader, "chave: " + ::cChave)
+
+	cBody := "numeroDeposito=" + ::cDeposito + "&modulo=" + ::cModulo + "&conta=" + ::cConta  + "&senha=" + ::cSenha  //+ "&address=" + ::cAddress
+
+	::oRest := FWRest():New(::cPathUrl)
+
+	::oRest:SetPath("/autenticador/login")
+
+	::oRest:SetPostParams(cBody)
+
+	oJson := JsonObject():new()
+
+	If ::oRest:Post(aHeader)
+
+		oJson:fromJson(::oRest:GetResult())
+
+		::oResult["accesToken"] := oJson["token"]
+
+	Else
+
+		lRet := .F.
+
+		If Empty(::oRest:cResult)
+
+			aadd(cResponse,{2,"Error: " + ::oRest:cInternalError})
+
+
+		Else
+
+			aadd(cResponse,{2,::oRest:cResult})
+
+		EndIf
+
+	EndIf
+
+Return(lRet)
