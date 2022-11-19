@@ -1,0 +1,82 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE 'FWMVCDEF.CH'
+
+/*/{Protheus.doc} TPrepEnv
+@author Wlysses Cerqueira (WlyTech)
+@since 22/07/2021
+@version 1.0
+@description Classe responsavel por controlar a inicializacao da empresa em WS e REST.
+@type Class
+/*/
+
+Class TPrepEnv
+
+	Public Data lReturn
+	Public Data cMsg
+
+	Public Method New() Constructor
+	Public Method PrepEnv()
+
+EndClass
+
+Method New() Class TPrepEnv
+
+	::lReturn := .T.
+
+	::cMsg := ""
+
+Return(Self)
+
+Method PrepEnv(cEmpRequest, cFilRequest, cModulo_) Class TPrepEnv
+
+	Local cEmpFilLogada := If(Type( "cEmpAnt" ) == "C" .And. Type( "cFilAnt" ) == "C", cEmpAnt + cFilAnt, "")
+
+	Default cModulo_ 	:= "GPE"
+	Default cEmpRequest := ""
+	Default cFilRequest := ""
+
+	If Empty(cEmpRequest) .Or. Empty(cFilRequest) .Or. cEmpRequest == "?" .Or. cFilRequest == "?"
+
+		::lReturn := .F.
+
+		::cMsg := "Empresa [" + cEmpRequest + "]" + " filial [" + cFilRequest + "] não encontrada."
+
+		ConOut("Erro na inicialização da empresa: " + ::cMsg)
+
+	Else
+
+		::lReturn := FWFilExist( cEmpRequest, cFilRequest )
+
+		If ValType(::lReturn) == "L" .And. ::lReturn
+
+			If ( Type( "cEmpAnt" ) == "U" .Or. Type( "cFilAnt" ) == "U" )  .Or. ( cEmpFilLogada <> cEmpRequest + cFilRequest )
+
+				RPCClearEnv()
+				RPCSetType( 3 )
+
+				RPCSetEnv( cEmpRequest, cFilRequest,,, cModulo_ )
+
+				ConOut("Logado na empresa: [" + cEmpAnt + cFilAnt + "]")
+
+			EndIf
+
+			If cModulo_ <> cModulo
+
+				SetModulo("SIGA" + cModulo_, cModulo_)
+
+			EndIf
+
+		Else
+
+			::lReturn := .F.
+
+			::cMsg := "Empresa [" + cEmpRequest + "]" + " filial [" + cFilRequest + "] não encontrada."
+
+			ConOut("Erro na inicialização da empresa: " + ::cMsg)
+
+		EndIf
+
+	EndIf
+
+Return( ::lReturn )

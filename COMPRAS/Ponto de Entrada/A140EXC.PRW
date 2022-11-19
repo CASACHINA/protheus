@@ -1,4 +1,9 @@
 User Function A140EXC()
+
+    Local oCyberLog := TCyberLogIntegracao():New()
+
+    oCyberLog:SendDocEntrada(.T., .F., .F., .F., .T.)
+
     // If
     //     Regra existente
     //     [...]

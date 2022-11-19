@@ -23,6 +23,8 @@ user function MATA311()
 	Local xRetorno := .T.
 	// Local aInfo := {}
 
+	Local oObjCyberLog := Nil
+
 	IF ! Empty(ParamIXB)
 
 		oModel   := ParamIXB[1]
@@ -55,6 +57,19 @@ user function MATA311()
 
 			//apos a gravação, dentro da transação
 		case cIdPonto $ "MODELCOMMITTTS"
+			
+			oObjCyberLog := TCyberlogIntegracao():New()
+
+			If oModel:GetValue('NNSMASTER', "NNS_CYBERW") == 'S'
+
+				oObjCyberLog:SendTransferencia(IsInCallStack('A311Efetiv'), oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+
+			Else
+
+				oObjCyberLog:SetPedidoConferenciaStatus("S", .T.)
+
+			EndIf
+
 			//na efetivação
 			IF IsInCallStack('A311Efetiv')
 				// Chamada função por Paulo Camata - 23/04/2019
@@ -88,7 +103,16 @@ user function MATA311()
 			EndIF
 
 		case cIdPonto == 'MODELPOS' .And. cIdModel == 'MATA311'
-			IF !IsBlind() .And. ( oModel:GetOperation() == MODEL_OPERATION_INSERT .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE )
+
+			IF IsInCallStack('A311Efetiv') .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
+
+				oObjCyberLog := TCyberlogIntegracao():New()
+
+				xRetorno := oObjCyberLog:ValidEnvioTransferencia(.T., .F., .F., .F., .F.)
+
+			EndIf
+
+			IF xRetorno .And. !IsBlind() .And. ( oModel:GetOperation() == MODEL_OPERATION_INSERT .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE )
 				IF TesNaoInformada(oModel:GetModel('NNTDETAIL'))
 					xRetorno := .F.
 					Help('',1,'CASA-SOL.TRANSF',,'A TES precisa ser informado onde o campo estiver com conteúdo "***".',4)
@@ -105,7 +129,7 @@ user function MATA311()
 			//grava quantidade original
 			oModel:GetModel('NNTDETAIL'):GetStruct():AddTrigger('NNT_QUANT','NNT_QTDORI',{|model|  model:GetDataID() == 0 }, {|model| model:GetValue('NNT_QUANT') }, "")
 
-			If oModel:GetOperation() == MODEL_OPERATION_INSERT //.Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
+			If oModel:GetOperation() == MODEL_OPERATION_INSERT .And. !IsBlind() //.Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
 
 				If INCLUI
 

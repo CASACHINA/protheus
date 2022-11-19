@@ -1,0 +1,475 @@
+#INCLUDE 'PROTHEUS.CH'
+
+User Function CYBER_PROD()
+
+	Local aParam	    := {"01", "010104"}
+	Local nRecno        := 96615
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	oObjCyberLog:oEmpAuth:lProdutoAuto := .T.
+
+	DbSelectArea("SB1")
+	SB1->(DbSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+	SB1->(DBGOTO( nRecno ))
+
+	paramIxb := {1}
+	INCLUI := .T.
+	ALTERA := .F.
+	__cUserID := "000000"
+
+	oObjCyberLog:SendProduct()
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_FORNECEDOR()
+
+	Local aParam	    := {"01", "010104"}
+	Local nRecno        := 1446
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	oObjCyberLog:oEmpAuth:lFornecAuto := .T.
+	oObjCyberLog:oEmpAuth:lIntAtiva := .T.
+
+	DbSelectArea("SA2")
+	SA2->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA2->(DBGOTO( nRecno ))
+
+	paramIxb := {1}
+	INCLUI := .T.
+	ALTERA := .F.
+	__cUserID := "000000"
+
+	oObjCyberLog:SendProvider()
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_CLIENTE()
+
+	Local aParam	    := {"01", "010104"}
+	Local nRecno        := 17326
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	oObjCyberLog:oEmpAuth:lClienteAuto := .T.
+
+	DbSelectArea("SA1")
+	SA1->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA1->(DBGOTO( nRecno ))
+
+	paramIxb := {1}
+	INCLUI := .T.
+	ALTERA := .F.
+	__cUserID := "000000"
+
+	oObjCyberLog:SendCustomer()
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_LOG(cAlias)
+
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	Default nRecno      := 90644
+
+	If Select("SX2") == 0
+
+		RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	EndIf
+
+	oObjCyberLog  := TCyberlogHistory():New()
+
+	DbSelectArea("NNS")
+	NNS->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	NNS->(DBGOTO( nRecno ))
+
+	paramIxb := {1}
+	INCLUI := .T.
+	ALTERA := .F.
+	__cUserID := "000000"
+
+	oObjCyberLog:Show("NNS", NNS->(NNS_FILIAL + NNS_COD))
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_DOCENT()
+
+	Local aParam	    := {"01", "010104"}
+	Local aRecno        := {222823}
+	Local nW            := 0
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	For nW := 1 To Len(aRecno)
+
+		oObjCyberLog  := TCyberlogIntegracao():New()
+
+		oObjCyberLog:oEmpAuth:lPreNotaAuto := .T.
+
+		DbSelectArea("SF1")
+		SF1->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+		SF1->(DBGOTO( aRecno[nW] ))
+
+		paramIxb := {3}
+		INCLUI := .T.
+		ALTERA := .F.
+		__cUserID := "000000"
+
+		oObjCyberLog:lManual := .T.
+
+		oObjCyberLog:GenericRun(6)
+
+		oObjCyberLog:GenericRun(4)
+
+		oObjCyberLog:SendDocEntrada()
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_PEDIDO()
+
+	Local aParam	    := {"01", "010104"}
+	Local aRecno        := {106302}
+	Local nW            := 0
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	DbSelectArea("SC5")
+	SC5->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	For nW := 1 To Len(aRecno)
+
+		oObjCyberLog  := TCyberlogIntegracao():New()
+
+		SC5->(DBGOTO( aRecno[nW] ))
+
+		paramIxb := {3}
+		INCLUI := .T.
+		ALTERA := .F.
+		__cUserID := "000000"
+
+		oObjCyberLog:lManual := .T.
+
+		oObjCyberLog:GenericRun(3)
+
+		oObjCyberLog:GenericRun(4)
+
+		oObjCyberLog:SendPedido()
+
+		oObjCyberLog := TCyberlogHistory():New()
+
+		Private ACOLS   := {}
+		private AHEADER := {}
+		Private oGet    := {}
+		Private aROTINA := {}
+
+		// AAdd(AROTINA, {"Atualiz. Todos Produtos", "U_EC0002AL", 0, 2, 0, NIL})
+
+		oObjCyberLog:Show("SC5", SC5->(C5_FILIAL + C5_NUM))
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_TRANSF()
+
+	Local aParam	    := {"01", "010104"}
+	Local aRecno        := {90644}
+	Local nW            := 0
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	DbSelectArea("NNS")
+	NNS->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	For nW := 1 To Len(aRecno)
+
+		NNS->(DBGOTO( aRecno[nW] ))
+
+		paramIxb := {3}
+		INCLUI := .T.
+		ALTERA := .F.
+		__cUserID := "000000"
+
+		oObjCyberLog:lManual := .T.
+
+		oObjCyberLog:GenericRun(3)
+
+		oObjCyberLog:GenericRun(4)
+
+		oObjCyberLog:SendTransferencia()
+
+		// oObjCyberLog := TCyberlogHistory():New()
+
+		Private ACOLS   := {}
+		private AHEADER := {}
+		Private oGet    := {}
+		Private aROTINA := {}
+
+		AAdd(AROTINA, {"Atualiz. Todos Produtos", "U_EC0002AL", 0, 2, 0, NIL})
+
+		// oObjCyberLog:Show("NNS", NNS->(NNS_FILIAL + NNS_COD))
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_SETCONF()
+
+	Local aParam	    := {"01", "010104"}
+	Local aRecno        := {90644}
+	Local nW            := 0
+	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	DbSelectArea("NNS")
+	NNS->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	For nW := 1 To Len(aRecno)
+
+		NNS->(DBGOTO( aRecno[nW] ))
+
+		__cUserID := "000000"
+
+		oObjCyberLog:PedidoConferencia()
+
+		oObjCyberLog := TCyberlogHistory():New()
+
+		oObjCyberLog:Show("NNS", NNS->(NNS_FILIAL + NNS_COD))
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_SETCONFPC()
+
+	Local aParam	    := {"01", "010104"}
+	Local aRecno        := {106302}
+	Local nW            := 0
+	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	DbSelectArea("SC5")
+	SC5->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	For nW := 1 To Len(aRecno)
+
+		SC5->(DBGOTO( aRecno[nW] ))
+
+		__cUserID := "000000"
+
+		oObjCyberLog:PedidoConferencia()
+
+		oObjCyberLog := TCyberlogHistory():New()
+
+		oObjCyberLog:Show("SC5", SC5->(C5_FILIAL + C5_NUM))
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_CROSS()
+
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	DbSelectArea("SC5")
+	SC5->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	__cUserID := "000000"
+
+	oObjCyberLog:TransferenciaCrossdocking()
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_GRAFICO()
+
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	oObjCyberLog:Grafico("Documento de Entrada" , oObjCyberLog:LoadDataGraficoDocEntrada())
+	oObjCyberLog:Grafico("Pedido"               , oObjCyberLog:LoadDataGraficoPedido())
+	oObjCyberLog:Grafico("Transferencia"        , oObjCyberLog:LoadDataGraficoTransferencia())
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_LIBMA()
+
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	oObjCyberLog:LiberaSemConferencia()
+
+	RPCClearEnv()
+
+Return()
+
+Class oRestEmulation
+
+	Public Method New() Constructor
+
+	Public Method setResponse()
+	Public Method getBodyRequest()
+	Public Method setStatusCode()
+	Public Method getFullURLRequest()
+	Public Method getHeaderRequest()
+
+EndClass
+
+Method New() Class oRestEmulation
+
+Return()
+
+Method setResponse() Class oRestEmulation
+
+Return()
+
+Method getBodyRequest() Class oRestEmulation
+
+	Local cBody := ""
+
+	cBody += '{    "transferencia": [
+	cBody += '	     {
+	cBody += '	         "filial": "010101",
+	cBody += '	         "codProduto": "149338         ",
+	cBody += '	         "armazem": "01",
+	cBody += '	         "quantidade": 1
+	cBody += '	     },
+	cBody += '	     {
+	cBody += '	         "filial": "010101",
+	cBody += '	         "codProduto": "148638         ",
+	cBody += '	         "armazem": "01",
+	cBody += '	         "quantidade": 1
+	cBody += '	     },	
+	cBody += '	     {
+	cBody += '	         "filial": "010102",
+	cBody += '	         "codProduto": "054741         ",
+	cBody += '	         "armazem": "01",
+	cBody += '	         "quantidade": 2
+	cBody += '	     },
+	cBody += '	     {
+	cBody += '	         "filial": "010102",
+	cBody += '	         "codProduto": "112185         ",
+	cBody += '	         "armazem": "01",
+	cBody += '	         "quantidade": 13
+	cBody += '	     }
+	cBody += '	 ]
+	cBody += '}
+
+	// cBody += '{
+	// cBody += '	"deposito": "1",
+	// // cBody += '	"erpId": "0101040000088921",
+	// cBody += '	"erpId": "010104102048",
+	// cBody += '	"status": "Conferido",
+	// cBody += '	"itensPedido": [
+	// cBody += '		{
+	// cBody += '			"sequenciaERP": "01",
+	// cBody += '			"erpId": "01",
+	// cBody += '			"codigoReduzido": "143643",
+	// cBody += '			"qtdPedido": 24,
+	// cBody += '			"qtdSeparada": 23
+	// cBody += '		},
+	// cBody += '		{
+	// cBody += '			"sequenciaERP": "02",
+	// cBody += '			"erpId": "02",
+	// cBody += '			"codigoReduzido": "143645",
+	// cBody += '			"qtdPedido": 6,
+	// cBody += '			"qtdSeparada": 5
+	// cBody += '		}
+	// // cBody += '		{
+	// // cBody += '			"sequenciaERP": "03",
+	// // cBody += '			"erpId": "03",
+	// // cBody += '			"codigoReduzido": "143646",
+	// // cBody += '			"qtdPedido": 6,
+	// // cBody += '			"qtdSeparada": 5
+	// // cBody += '		}
+	// cBody += '	]
+	// cBody += '}
+
+Return(cBody)
+
+Method setStatusCode() Class oRestEmulation
+
+Return()
+
+Method getFullURLRequest() Class oRestEmulation
+
+Return("http://localhost:8080/teste")
+
+Method getHeaderRequest() Class oRestEmulation
+
+	Local jBody := JsonObject():New()
+
+	jBody:FromJson(DecodeUTF8('{"token": "IXtFDg5WXiwl30R0Pt7bOY4eizTqbYAk"}', "cp1252"))
+
+Return(jBody)
+
