@@ -58,15 +58,19 @@ user function MATA311()
 			//apos a gravação, dentro da transação
 		case cIdPonto $ "MODELCOMMITTTS"
 			
-			oObjCyberLog := TCyberlogIntegracao():New()
+			If !IsInCallStack('A311Efetiv')
 
-			If oModel:GetValue('NNSMASTER', "NNS_CYBERW") == 'S'
+				oObjCyberLog := TCyberlogIntegracao():New()
 
-				oObjCyberLog:SendTransferencia(IsInCallStack('A311Efetiv'), oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				If oModel:GetValue('NNSMASTER', "NNS_CYBERW") == 'S'
 
-			Else
+					oObjCyberLog:SendTransferencia(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
 
-				oObjCyberLog:SetPedidoConferenciaStatus("S", .T.)
+				Else
+
+					oObjCyberLog:SetPedidoConferenciaStatus("S", .T.)
+
+				EndIf
 
 			EndIf
 
@@ -108,7 +112,7 @@ user function MATA311()
 
 				oObjCyberLog := TCyberlogIntegracao():New()
 
-				xRetorno := oObjCyberLog:ValidEnvioTransferencia(.T., .F., .F., .F., .F.)
+				xRetorno := oObjCyberLog:ValidEnvioTransferencia()
 
 			EndIf
 

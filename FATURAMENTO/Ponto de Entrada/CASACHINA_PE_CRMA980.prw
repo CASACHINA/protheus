@@ -56,17 +56,21 @@ user function CRMA980()
 
 		Case cIdPonto == "MODELCOMMITNTTS"
 
-			oObjCyberLog := TCyberlogIntegracao():New()
+			//If oModel:GetValue("SA1MASTER","A1_CYBERW") == 'S'
 
-			oObjCyberLog:SendCustomer(oModel:GetValue("SA1MASTER","A1_CYBERW") == 'S', oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				oObjCyberLog := TCyberlogIntegracao():New()
 
-			If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
 
-				oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
 
-				oObjCyberLog:SendCustomer(oModel:GetValue("SA1MASTER","A1_CYBERW") == 'S', oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
 
-			EndIf
+					oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+
+				EndIf
+
+			//EndIf
 
 		case cIdPonto == "BUTTONBAR"
 
