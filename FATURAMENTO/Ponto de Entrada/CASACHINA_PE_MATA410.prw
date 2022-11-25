@@ -89,9 +89,9 @@ user function M410STTS()
 	Local _aArea := GetArea()
 	Local oCyberLog := TCyberLogIntegracao():New()
 
-	If !IsInCallStack('A311Efetiv')
+	If !IsInCallStack('A311Efetiv') .And. SC5->C5_CYBERW == 'S'
 
-		oCyberLog:SendPedido(SC5->C5_CYBERW == 'S', IsInCallStack('A410Inclui'), IsInCallStack('A410Copia'), IsInCallStack('A410Altera'), IsInCallStack('A410Deleta'))
+		oCyberLog:SendPedido(IsInCallStack('A410Inclui'), IsInCallStack('A410Copia'), IsInCallStack('A410Altera'), IsInCallStack('A410Deleta'))
 
 	EndIf
 

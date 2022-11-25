@@ -1,0 +1,138 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE 'tlpp-core.th'
+#INCLUDE 'tlpp-object.th'
+#INCLUDE 'tlpp-rest.th'
+
+/*/{Protheus.doc} TAutomacaoTransferenciaFilialEfetivar
+@author Wlysses
+@since 11/06/2022
+@version 1.0
+@description Integracao ERP com CyberLog.
+@type Class
+/*/
+
+Class TAutomacaoTransferenciaFilialEfetivar
+
+
+	Public Method New() Constructor
+
+	Public Method Run()
+	Public Method Processa()
+
+EndClass
+
+Method New() Class TAutomacaoTransferenciaFilialEfetivar
+
+Return(Self)
+
+Method Run() Class TAutomacaoTransferenciaFilialEfetivar
+
+	Local cAlias		:= GetNextAlias()
+	Local cSql			:= ""
+
+	cSql := " SELECT TOP 1 NNS_COD, R_E_C_N_O_ RECNO "
+	cSql += " FROM " + RetSqlName("NNS")
+	cSql += " WHERE NNS_FILIAL 	= " + ValToSql(xFilial("NNS"))
+	cSql += " AND NNS_STATUS	= '1' " // 1=Aprovado;2=Finalizado;3=Em Aprovação;4=Rejeitado
+	cSql += " AND NNS_DATA		= '20221118' "
+	cSql += " AND D_E_L_E_T_ 	= '' "
+
+	TCQUERY cSql New Alias (cAlias)
+
+	DbSelectArea("NNS")
+	NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
+
+	DbSelectArea("NNT")
+	NNT->(DbSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+
+	While (cAlias)->(!EOF())
+
+		NNS->(DBGoTo((cAlias)->RECNO))
+
+		NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Faturando...")
+
+		::Processa((cAlias)->NNS_COD)
+
+		(cAlias)->(DBSkip())
+
+	EndDo
+
+	(cAlias)->(DBCloseArea())
+
+Return()
+
+Method Processa(cCodTransf) Class TAutomacaoTransferenciaFilialEfetivar
+
+	Local oModel := FWLoadModel("MATA311")
+	Local oLog := TCyberlogHistoryStruct():New()
+	Local aFields := {}
+	Local aErro := {}
+	Local cMessage := ""
+	Local oCyberlog := TCyberlogIntegracao():New()
+
+	Private cOpId311 := "011"
+	Private lMsErroAuto := .F.
+
+	oModel:SetOperation(4)
+
+	aAdd(aFields, {"NNS_COD", cCodTransf, Nil})
+
+	lRet := FWMVCRotAuto(oModel, "NNS", 4, {{"NNSMASTER", aFields}} ,,.T.)
+
+	If lRet
+
+		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Nota: " + SF2->(F2_SERIE + F2_DOC))
+
+	Else
+
+		aErro := oModel:GetErrorMessage()
+
+		cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aErro[01]) + '], ' + CRLF
+		cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aErro[02]) + '], ' + CRLF
+		cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aErro[03]) + '], ' + CRLF
+		cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aErro[04]) + '], ' + CRLF
+		cMessage += "Id do erro: "                 + ' [' + cValToChar(aErro[05]) + '], ' + CRLF
+		cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aErro[06]) + '], ' + CRLF
+		cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aErro[07]) + '], ' + CRLF
+		cMessage += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], ' + CRLF
+		cMessage += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'
+
+		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Erro: " + cMessage)
+
+	EndIf
+
+	oLog:cChave		:= NNS->(NNS_FILIAL + NNS_COD)
+	oLog:cTabela	:= "NNS"
+	oLog:cOperacao	:= "I"
+	oLog:cRotina	:= "FATAUTO"
+	oLog:cTipo		:= "F"
+	oLog:cStatus	:= If(lRet, "S", "E")
+	oLog:cErro		:= If(lRet, "Nota: " + SF2->(F2_SERIE + F2_DOC), If(Len(cMessage) > 0, cMessage, "Erro"))
+
+	oCyberlog:Log(oLog)
+
+	oModel:DeActivate()
+
+	FreeObj(oModel)
+
+	oModel := Nil
+
+Return()
+
+User Function TRFFATAUT(aParam)
+
+	Local oObjTransf := Nil
+	Default aParam := {"01", "010104"}
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	oObjTransf  := TAutomacaoTransferenciaFilialEfetivar():New()
+
+	oObjTransf:Run()
+
+	RPCClearEnv()
+
+Return()

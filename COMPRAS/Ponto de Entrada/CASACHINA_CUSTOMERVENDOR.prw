@@ -59,15 +59,19 @@ User Function CUSTOMERVENDOR()
 			// Chamada após a gravação total do modelo e fora da transação
 		ElseIf cIdPonto == "MODELCOMMITNTTS"
 
-			oObjCyberLog := TCyberlogIntegracao():New()
+			If M->A2_CYBERW == "S"
 
-			oObjCyberLog:SendProvider(M->A2_CYBERW == "S", FWIsInCallStack("A020Inclui"), FWIsInCallStack("A020Copia"), FWIsInCallStack("A020Altera"), FWIsInCallStack("A020Exclui"))
+				oObjCyberLog := TCyberlogIntegracao():New()
 
-			If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
-			
-				oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+				oObjCyberLog:SendProvider(FWIsInCallStack("A020Inclui"), FWIsInCallStack("A020Copia"), FWIsInCallStack("A020Altera"), FWIsInCallStack("A020Exclui"))
 
-				oObjCyberLog:SendProvider(M->A2_CYBERW == "S", FWIsInCallStack("A020Inclui"), FWIsInCallStack("A020Copia"), FWIsInCallStack("A020Altera"), FWIsInCallStack("A020Exclui"))
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+					oObjCyberLog:SendProvider(FWIsInCallStack("A020Inclui"), FWIsInCallStack("A020Copia"), FWIsInCallStack("A020Altera"), FWIsInCallStack("A020Exclui"))
+
+				EndIf
 
 			EndIf
 

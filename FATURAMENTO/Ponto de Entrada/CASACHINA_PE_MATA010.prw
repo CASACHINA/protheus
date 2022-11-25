@@ -55,16 +55,20 @@ user function ITEM()
 				EndIF
 			EndIF
 
-			oObjCyberLog := TCyberlogIntegracao():New()
+			If oModel:GetValue("SB1MASTER","B1_CYBERW") == "S"
 
-			oObjCyberLog:SendProduct(oModel:GetValue("SB1MASTER","B1_CYBERW") == "S", oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				oObjCyberLog := TCyberlogIntegracao():New()
 
-			If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
-			
-				oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+				oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
 
-				oObjCyberLog:SendProduct(oModel:GetValue("SB1MASTER","B1_CYBERW") == "S", oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
-			
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+					oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				EndIf
+
 			EndIf
 
 		Case cIdPonto == "FORMCOMMITTTSPOS"

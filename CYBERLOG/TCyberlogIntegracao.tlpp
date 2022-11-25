@@ -39,8 +39,8 @@ Class TCyberlogIntegracao
 	Public Method SendProvider()
 	Public Method SendCustomer()
 	Public Method SendDocEntrada()
-	Public Method SendTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_)
-	Public Method SendPedido(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method SendTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method SendPedido(lInclui_, lCopia_, lAltera_, lExclui_)
 
 	Public Method LoadJsonPedido(cAcao)
 	Public Method LoadJsonTransferencia()
@@ -56,7 +56,7 @@ Class TCyberlogIntegracao
 	Public Method ValidProdutoWMS(cProduto)
 
 	Public Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_)
-	Public Method ValidEnvioTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
 	Public Method ValidEnvioPedidoM460MARK(aParam)
 
 	Public Method FormatDate(dData, nOption)
@@ -90,6 +90,8 @@ Class TCyberlogIntegracao
 
 	Public Method SetNumDocSaida()
 	Public Method LiberaSemConferencia()
+
+	Public Method AjusteCodProduto(cProduto, nDigitos)
 
 EndClass
 
@@ -166,7 +168,7 @@ Method Send(cPath, cBody) Class TCyberlogIntegracao
 
 Return(::oResult["status"])
 
-Method SendProduct(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendProduct(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -174,7 +176,6 @@ Method SendProduct(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyb
 	Local oLog		:= TCyberlogHistoryStruct():New()
 	Local cAcao		:= ""
 
-	Default lConfirma_	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -182,7 +183,7 @@ Method SendProduct(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyb
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lProdutoAuto ) .Or. ( ::oEmpAuth:lProdutoAuto .And. lConfirma_ .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lProdutoAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
 			lInclui_ 	:= If(::lManual, .T., lInclui_)
 			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
@@ -213,7 +214,7 @@ Method SendProduct(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyb
 
 Return()
 
-Method SendProvider(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendProvider(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -221,7 +222,6 @@ Method SendProvider(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 	Local oLog		:= TCyberlogHistoryStruct():New()
 	Local cAcao		:= ""
 
-	Default lConfirma_	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -229,7 +229,7 @@ Method SendProvider(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lFornecAuto ) .Or. ( ::oEmpAuth:lFornecAuto .And. lConfirma_ .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lFornecAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
 			lInclui_ 	:= If(::lManual, .T., lInclui_)
 			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
@@ -260,7 +260,7 @@ Method SendProvider(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 
 Return()
 
-Method SendCustomer(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendCustomer(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -268,7 +268,6 @@ Method SendCustomer(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 	Local oLog		:= TCyberlogHistoryStruct():New()
 	Local cAcao		:= ""
 
-	Default lConfirma_	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -276,7 +275,7 @@ Method SendCustomer(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lClienteAuto ) .Or. ( ::oEmpAuth:lClienteAuto .And. lConfirma_ .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lClienteAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
 			lInclui_ 	:= If(::lManual, .T., lInclui_)
 			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
@@ -307,7 +306,7 @@ Method SendCustomer(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCy
 
 Return()
 
-Method SendDocEntrada(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendDocEntrada(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -320,7 +319,6 @@ Method SendDocEntrada(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 	Local aAreaSB1	:= SB1->(GetArea())
 	Local aAreaSF1	:= SF1->(GetArea())
 
-	Default lConfirma_	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -328,9 +326,9 @@ Method SendDocEntrada(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lPreNotaAuto ) .Or. ( ::oEmpAuth:lPreNotaAuto .And. lConfirma_ .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lPreNotaAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
-			If !lExclui_ // Nao tem que validar exclusao
+			If ::lManual
 
 				lRet := ::ValidEnvioPreNota(.F., lInclui_, lCopia_, lAltera_, lExclui_)
 
@@ -380,7 +378,7 @@ Method SendDocEntrada(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 Return()
 
-Method SendPedido(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendPedido(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -393,7 +391,6 @@ Method SendPedido(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCybe
 	Local aAreaSB1	:= SB1->(GetArea())
 	Local aAreaSA1	:= SA1->(GetArea())
 
-	Default lConfirma_	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -401,9 +398,9 @@ Method SendPedido(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCybe
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lPVAuto ) .Or. ( ::oEmpAuth:lPVAuto .And. lConfirma_ .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lPVAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
-			If !lExclui_ // Nao tem que validar exclusao
+			If ::lManual
 
 				lRet := ::ValidEnvioPedido(.F., lInclui_, lCopia_, lAltera_, lExclui_)
 
@@ -453,7 +450,7 @@ Method SendPedido(lConfirma_, lInclui_, lCopia_, lAltera_, lExclui_) Class TCybe
 
 Return()
 
-Method SendTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method SendTransferencia(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet		:= .T.
 	Local cBody 	:= ""
@@ -466,7 +463,6 @@ Method SendTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_) Class
 	Local aAreaSB1	:= SB1->(GetArea())
 	Local aAreaSA1	:= SA1->(GetArea())
 
-	Default lEfetivar	:= .F.
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -474,7 +470,7 @@ Method SendTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_) Class
 
 	If ::oEmpAuth:lIntAtiva
 
-		If ( ::lManual .Or. ::oEmpAuth:lTransfAuto ) .Or. ( ::oEmpAuth:lTransfAuto .And. lEfetivar .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lTransfAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
 
 			DBSelectArea("NNT")
 			NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
@@ -483,9 +479,9 @@ Method SendTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_) Class
 
 			::oEmpCad:SeekEmpFil(NNT->NNT_FILDES)
 
-			If !lExclui_ // Nao tem que validar exclusao
+			If ::lManual
 
-				lRet := ::ValidEnvioTransferencia(.F., lInclui_, lCopia_, lAltera_, lExclui_)
+				lRet := ::ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
 
 			EndIf
 
@@ -593,7 +589,7 @@ Method LoadJsonPedido(cAcao) Class TCyberlogIntegracao
 
 		While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_NUM) == cChaveSC5
 
-			jJsonItem := { "operacao": cAcao, "sequenciaERP": SC6->C6_ITEM, "codigoReduzido": SC6->C6_PRODUTO, "erpId": SC6->C6_ITEM, "quantidade": SC6->C6_QTDVEN, "qtdFaturado": SC6->C6_QTDVEN, "qtdAvaria": 0, "noLayout": 0 }
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": SC6->C6_ITEM, "codigoReduzido": self:AjusteCodProduto(SC6->C6_PRODUTO), "erpId": SC6->C6_ITEM, "quantidade": SC6->C6_QTDVEN, "qtdFaturado": SC6->C6_QTDVEN, "qtdAvaria": 0, "noLayout": 0 }
 
 			aAdd(aItens, jJsonItem)
 
@@ -661,7 +657,7 @@ Method LoadJsonTransferencia(cAcao) Class TCyberlogIntegracao
 
 			cItem := StrZero(nItem++, 2)
 
-			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": NNT->NNT_PROD, "erpId": cItem, "quantidade": NNT->NNT_QUANT, "qtdFaturado": NNT->NNT_QUANT, "qtdAvaria": 0, "noLayout": 0 }
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": self:AjusteCodProduto(NNT->NNT_PROD), "erpId": cItem, "quantidade": NNT->NNT_QUANT, "qtdFaturado": NNT->NNT_QUANT, "qtdAvaria": 0, "noLayout": 0 }
 
 			aAdd(aItens, jJsonItem)
 
@@ -703,7 +699,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 
 			EndIf
 
-			jJsonItem := { "sequenciaERP": SD1->D1_ITEM, "codigoReduzido": SD1->D1_COD, "erpId": SD1->D1_ITEM, "quantidade": SD1->D1_QUANT, "noLayout": 1 }
+			jJsonItem := { "sequenciaERP": SD1->D1_ITEM, "codigoReduzido": self:AjusteCodProduto(SD1->D1_COD), "erpId": SD1->D1_ITEM, "quantidade": SD1->D1_QUANT, "noLayout": 1 }
 
 			aAdd(aItens, jJsonItem)
 
@@ -740,9 +736,9 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 
 	jJson := {;
 		"operacao":				cAcao,;
-		"erpId":				SB1->B1_COD,;
+		"erpId":				self:AjusteCodProduto(SB1->B1_COD),;
 		"empresa":				self:cDeposito,;
-		"codigoReduzido":		SB1->B1_COD,;
+		"codigoReduzido":		self:AjusteCodProduto(SB1->B1_COD),;
 		"codigoBarras":			SB1->B1_CODBAR,;
 		"codigoEstruturado":	"",;
 		"nome":					AllTrim(SB1->B1_DESC),;
@@ -782,7 +778,7 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"npAltura":				0,;
 		"shelfLife":			0,;
 		"empilhamento":			0,;
-		"codigoDisplay":		SB1->B1_COD,;
+		"codigoDisplay":		self:AjusteCodProduto(SB1->B1_COD),;
 		"unidadeDisplay":		SB1->B1_SEGUM,;
 		"fatorDisplay":			SB1->B1_CONV,;
 		"converterMedida":		SB1->B1_CONV;
@@ -1091,14 +1087,18 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 					For nW := 1 To Len(jBody["itensPedido"])
 
-						If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD + NNS_FILIAL) + jBody["itensPedido"][nW]['codigoReduzido']))
+						If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD + NNS_FILIAL) + self:AjusteCodProduto(jBody["itensPedido"][nW]['codigoReduzido'], 6)))
 
 							RecLock("NNT", .F.)
 							NNT->NNT_QTDWMS	:= jBody["itensPedido"][nW]['qtdSeparada']
 							NNT->NNT_QUANT	:= jBody["itensPedido"][nW]['qtdSeparada']
 							NNT->(MsUnlock())
 
-							aAdd(aRecno, NNT->(Recno()))
+							If jBody["itensPedido"][nW]['qtdSeparada'] > 0
+
+								aAdd(aRecno, NNT->(Recno()))
+
+							EndIf
 
 						EndIf
 
@@ -1132,6 +1132,8 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 					::SetPedidoConferenciaStatus(If(jBody['status'] == "Conferido", "R", "T"), .T.)
 
+					::mensagem := "Sucess"
+					
 				Else
 
 					::mensagem := "Transferencia já esta com status conferido."
@@ -1173,34 +1175,36 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 						EndIf
 
 					Next nW
-				/*
-				SC6->(DBGoTop())
+					/*
+					SC6->(DBGoTop())
 
-				If SC6->(DBSeek(SC5->(C5_FILIAL + C5_NUM)))
+					If SC6->(DBSeek(SC5->(C5_FILIAL + C5_NUM)))
 
-					While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_PRODUTO) == SC5->(C5_FILIAL + C5_NUM)
+						While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_PRODUTO) == SC5->(C5_FILIAL + C5_NUM)
 
-						If aScan(aRecno, {|x| x == SC6->(Recno()) }) == 0
+							If aScan(aRecno, {|x| x == SC6->(Recno()) }) == 0
 
-							RecLock("SC6", .F.)
-							SC6->(DBDelete())
-							SC6->(MsUnlock())
+								RecLock("SC6", .F.)
+								SC6->(DBDelete())
+								SC6->(MsUnlock())
 
-							cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] não foi separado, portanto foi excluido da transferencia." + CRLF
+								cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] não foi separado, portanto foi excluido da transferencia." + CRLF
 
-						Else
+							Else
 
-							cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] " + If(SC6->C6_PRCVEN == SC6->C6_QUANT, " foi separado.", " foi separado parcial [" + TransForm(SC6->C6_QUANT, "999.999.999.99") + "]") + CRLF
+								cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] " + If(SC6->C6_PRCVEN == SC6->C6_QUANT, " foi separado.", " foi separado parcial [" + TransForm(SC6->C6_QUANT, "999.999.999.99") + "]") + CRLF
 
-						EndIf
+							EndIf
 
-						SC6->(DBSkip())
+							SC6->(DBSkip())
 
-					EndDo
+						EndDo
 
-				EndIf
-				*/
+					EndIf
+					*/
 					::SetPedidoConferenciaStatus(If(jBody['status'] == "Conferido", "C", "T"), .F.)
+
+					::mensagem := "Sucess"
 
 				Else
 
@@ -1219,8 +1223,6 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 			EndIf
 
 		EndIf
-
-		::mensagem := "Sucess"
 
 	Else
 
@@ -1336,10 +1338,14 @@ Return(oRest:setResponse(EncodeUTF8( ::oResult:toJSON() )))
 
 Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
+	Local lRet := .F.
 	Local nW := 0
 	Local nX := 0
 	Local nPos := 0
+	Local cMessage := ""
+	Local aMsgDeErro := {}
 	Local aTransferencia := {}
+	Local oLog := TCyberlogHistoryStruct():New()
 
 	Local oModel 	:= Nil
 	Local oModelNNS	:= Nil
@@ -1378,8 +1384,9 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 			oModel:Activate()
 
 			oModel:SetValue("NNSMASTER", "NNS_FILIAL"    , xFilial("NNS"))
+			oModel:SetValue("NNSMASTER", "NNS_SOLICT"    , "000000")
 			oModel:SetValue("NNSMASTER", "NNS_CYBERW"    , "S") // S=Sim;N=Nao
-			oModel:SetValue("NNSMASTER", "NNS_CYBERS"    , "N") // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+			oModel:SetValue("NNSMASTER", "NNS_CYBERS"    , "R") // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
 
 			For nX := 1 To Len(aTransferencia[nW])    
 
@@ -1391,6 +1398,8 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 					oModel:SetValue("NNTDETAIL", "NNT_PROD"		, aTransferencia[nW][nX][3])  
 					oModel:SetValue("NNTDETAIL", "NNT_LOCAL"	, aTransferencia[nW][nX][2]) 
 					oModel:SetValue("NNTDETAIL", "NNT_QUANT"	, aTransferencia[nW][nX][1])
+					oModel:SetValue("NNTDETAIL", "NNT_QTDWMS"	, aTransferencia[nW][nX][1])
+					oModel:SetValue("NNTDETAIL", "NNT_SERIE"	, "1")
 
 					If nX <> Len(aTransferencia[nW]) 
 
@@ -1410,15 +1419,39 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 		EndIf
 		
-		If oModel:HasErrorMessage()
+		If lRet := oModel:HasErrorMessage()
 
 			aMsgDeErro := oModel:GetErrorMessage()
 
+			cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aMsgDeErro[01]) + '], ' + CRLF
+			cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aMsgDeErro[02]) + '], ' + CRLF
+			cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aMsgDeErro[03]) + '], ' + CRLF
+			cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aMsgDeErro[04]) + '], ' + CRLF
+			cMessage += "Id do erro: "                 + ' [' + cValToChar(aMsgDeErro[05]) + '], ' + CRLF
+			cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aMsgDeErro[06]) + '], ' + CRLF
+			cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aMsgDeErro[07]) + '], ' + CRLF
+			cMessage += "Valor atribuído: "            + ' [' + cValToChar(aMsgDeErro[08]) + '], ' + CRLF
+			cMessage += "Valor anterior: "             + ' [' + cValToChar(aMsgDeErro[09]) + ']'
+			
 		Else
         
 			oModel:DeActivate()
 			
 		EndIf
+
+		oLog:cChave		:=  If(lRet, DTOS(dDataBase), NNS->(NNS_FILIAL + NNS_COD))
+		oLog:cDeposito	:= ::cDeposito
+		oLog:cTabela	:= "NNS"
+		oLog:cOperacao	:= "I"
+		oLog:cRotina	:= "REST"
+		oLog:cJsonEnv	:= jBody:toJson()
+		oLog:cTipo		:= "R"
+		oLog:cUrl		:= oRest:getFullURLRequest()
+		oLog:cJsonRet	:= ""
+		oLog:cStatus	:= If(lRet, "E", "S")
+		oLog:cErro		:= If(lRet, If(Len(cMessage) > 0, cMessage, "Erro"), "")
+
+		::Log(oLog)
 
 		FreeObj(oModel)
 
@@ -1501,7 +1534,7 @@ Return(lRet)
 Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet := .T.
-	Local cMsg := ""
+	// Local cMsg := ""
 
 	Default lFaturar 	:= .F. // Caso for faturamento verificar se o pedido foi enviado para o WMS, caso sim, deve estar com status de conferido!
 	Default lInclui_ 	:= .F.
@@ -1513,7 +1546,7 @@ Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 		If lRet .And. !lFaturar .And. ( !Empty(SC5->C5_NOTA) .Or. SC5->C5_LIBEROK == 'E' .And. Empty(SC5->C5_BLQ) )
 
-			Aviso("Cyberlog WMS", 'Este pedido já esta encerrado.', {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, "Este pedido já esta encerrado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1521,7 +1554,7 @@ Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 		If lRet .And. !lFaturar .And. !SC5->C5_TIPO $ 'NDB'
 
-			Aviso("Cyberlog WMS", 'Tipo de pedido não pode ser enviada para WMS', {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, 'Tipo de pedido não pode ser enviada para WMS!', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1529,7 +1562,7 @@ Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 		If lRet .And. SC5->C5_XCONFCB == "A" .And. lFaturar
 
-			Aviso("Cyberlog WMS", "O Pedido " + SC5->C5_NUM + " está em fase de separação!", {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, "O Pedido " + SC5->C5_NUM + " está em fase de separação!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1537,7 +1570,7 @@ Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 		// If lRet .And. !lFaturar //.And. !::ValidClienteWMS(SC5->C5_CLIENTE, SC5->C5_LOJACLI)
 
-		// 	Aviso("Cyberlog WMS", "Cliente não configurado para o Cyberlog WMS!", {"Ok"}, 3)
+		//	Help(NIL, NIL, "HELP", NIL, "Cliente não configurado para o Cyberlog WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 		// 	lRet := .F.
 
@@ -1569,7 +1602,7 @@ Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class T
 
 			If !lRet
 
-				Aviso("Cyberlog WMS", cMsg, {"Ok"}, 3)
+				Help(NIL, NIL, "HELP", NIL, cMsg, 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			EndIf
 
@@ -1593,7 +1626,7 @@ Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_) Cl
 
 		If lRet .And. !lClassificar .And. !SF1->F1_STATUS $ " /B"
 
-			Aviso("Cyberlog WMS", "Esta pre-nota já foi classificada!", {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, "Esta pre-nota já foi classificada!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1601,7 +1634,7 @@ Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_) Cl
 
 		If lRet .And. !lClassificar .And. !SF1->F1_TIPO $ 'NDB'
 
-			Aviso("Cyberlog WMS", "Tipo de nota não pode ser enviada para WMS!", {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, "Tipo de nota não pode ser enviada para WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1609,7 +1642,7 @@ Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_) Cl
 
 		If SF1->F1_XCONFCB == "A" .And. ( lClassificar .Or. ( !lClassificar .And. !lAltera_ ) )
 
-			Aviso("Cyberlog WMS", "O documento de entrada está em fase de conferência!", {"Ok"}, 3)
+			Help(NIL, NIL, "HELP", NIL, "O documento de entrada está em fase de conferência!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			lRet := .F.
 
@@ -1619,12 +1652,11 @@ Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_) Cl
 
 Return(lRet)
 
-Method ValidEnvioTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
 
 	Local lRet := .T.
 	Local cMsg := ""
 
-	Default lEfetivar 	:= .F. // Caso for faturamento verificar se o pedido foi enviado para o WMS, caso sim, deve estar com status de conferido!
 	Default lInclui_ 	:= .F.
 	Default lCopia_ 	:= .F.
 	Default lAltera_	:= .F.
@@ -1634,7 +1666,7 @@ Method ValidEnvioTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_)
 
 		// If lRet .And. !lEfetivar .And. ( !Empty(NNS->NNS_NOTA) .Or. NNS->NNS_LIBEROK == 'E' .And. Empty(NNS->NNS_BLQ) )
 
-		// 	Aviso("Cyberlog WMS", 'Este pedido já esta encerrado.', {"Ok"}, 3)
+		//	Help(NIL, NIL, "HELP", NIL, 'Este pedido já esta encerrado.', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 		// 	lRet := .F.
 
@@ -1642,23 +1674,23 @@ Method ValidEnvioTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_)
 
 		// If lRet .And. !lEfetivar .And. !NNS->NNS_TIPO $ 'NDB'
 
-		// 	Aviso("Cyberlog WMS", 'Tipo de pedido não pode ser enviada para WMS', {"Ok"}, 3)
+		// Help(NIL, NIL, "HELP", NIL, 'Tipo de pedido não pode ser enviada para WMS', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 		// 	lRet := .F.
 
 		// EndIf
 
-		If lRet .And. NNS->NNS_CYBERS <> "R" .And. NNS->NNS_CYBERW == "S" .And. lEfetivar
+		If lRet .And. NNS->NNS_CYBERS <> "R" .And. NNS->NNS_CYBERW == "S"
 
-			Aviso("Cyberlog WMS", "A Solicitação " + NNS->NNS_COD + " está em fase de separação!", {"Ok"}, 3)
-
+			Help(NIL, NIL, "HELP", NIL, "A Solicitação " + NNS->NNS_COD + " deve estar com status 'Recebido' para efetivação!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique o processo."})
+		
 			lRet := .F.
 
 		EndIf
 
 		// If lRet .And. !lEfetivar .And. !::ValidClienteWMS(NNS->NNS_CLIENTE, NNS->NNS_LOJACLI)
 
-		// 	Aviso("Cyberlog WMS", "Cliente não configurado para o Cyberlog WMS!", {"Ok"}, 3)
+		//	Help(NIL, NIL, "HELP", NIL, "Cliente não configurado para o Cyberlog WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 		// 	lRet := .F.
 
@@ -1690,7 +1722,7 @@ Method ValidEnvioTransferencia(lEfetivar, lInclui_, lCopia_, lAltera_, lExclui_)
 
 			If !lRet
 
-				Aviso("Cyberlog WMS", cMsg, {"Ok"}, 3)
+				Help(NIL, NIL, "HELP", NIL, cMsg, 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 			EndIf
 
@@ -1904,6 +1936,7 @@ Method SetNumDocSaida() Class TCyberlogIntegracao
 			oLog:cRotina	:= FunName()
 			oLog:cJsonEnv	:= cBody
 			oLog:cTipo		:= "E"
+			oLog:cObs		:= "Envio numero da nota."
 			oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
 
 			::Log(oLog)
@@ -1942,19 +1975,19 @@ Method LiberaSemConferencia() Class TCyberlogIntegracao
 
 				Else
 
-					Aviso("Usuário não autenticado", "Senha inválida.",{"OK"})
+					Help(NIL, NIL, "HELP", NIL, "Usuário não autenticado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique sua senha."})
 
 				Endif
 
 			Else
 
-				Aviso("Usuário não autenticado", "Usuário inválido.",{"OK"})
+				Help(NIL, NIL, "HELP", NIL, "Usuário não encontrado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique seu usuário."})
 
 			Endif
 
 		Else
 
-			Aviso("Usuário não autenticado", "Usuário não autorizado.",{"OK"})
+			Help(NIL, NIL, "HELP", NIL, "Usuário sem permissão!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique o parâmetro CH_USRLCYB."})
 
 		Endif
 
@@ -2153,7 +2186,7 @@ Method GenericRun(nAcao) Class TCyberlogIntegracao
 
 				oLog := TCyberlogHistoryStruct():New()
 
-				::SetPedidoConferenciaStatus("C", .T.)
+				::SetPedidoConferenciaStatus("C", .F.)
 
 				oLog:cChave		:= SC5->(C5_FILIAL + C5_NUM)
 				oLog:cDeposito	:= ::cDeposito
@@ -2311,11 +2344,27 @@ Method GenericRun(nAcao) Class TCyberlogIntegracao
 
 	If !Empty(Replace(cMsg, CRLF, ""))
 
-		Aviso("Retorno Cyberlog", Replace(Replace(Replace(cMsg, "{", ""), "}", ""), '"', ""), {"Ok"}, 3)
+		Help(NIL, NIL, "HELP", NIL, Replace(Replace(Replace(cMsg, "{", ""), "}", ""), '"', ""), 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
 
 	EndIf
 
 Return()
+
+Method AjusteCodProduto(cProduto, nDigitos) Class TCyberlogIntegracao
+
+	Default nDigitos := 8
+
+	If Len(AllTrim(cProduto)) < nDigitos
+
+		cProduto := PadL(AllTrim(cProduto), 8, "0")
+
+	ElseIf Len(AllTrim(cProduto)) > nDigitos
+
+		cProduto := SubStr(AllTrim(cProduto), (Len(AllTrim(cProduto)) - nDigitos) + 1, 6)
+
+	EndIf
+
+Return(cProduto)
 
 Method GetFilial(cDeposito) Class TCyberlogIntegracao
 

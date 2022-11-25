@@ -31,7 +31,7 @@ User function M460MARK()
 
     // While (SC9->(!EOF()))
 
-        If _lRet .And. SC9->(IsMark("C9_OK"))
+        If _lRet .And. u_CChWMSAtivo() .And. SC9->(IsMark("C9_OK"))
 
             DBSelectArea("SC5")
             DBSetOrder(1)
