@@ -52,7 +52,7 @@ Method Run() Class TAutomacaoTransferenciaFilialEfetivar
 
 		NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
 
-		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Faturando...")
+		TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Faturando...")
 
 		::Processa((cAlias)->NNS_COD)
 
@@ -84,7 +84,7 @@ Method Processa(cCodTransf) Class TAutomacaoTransferenciaFilialEfetivar
 
 	If lRet
 
-		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Nota: " + SF2->(F2_SERIE + F2_DOC))
+		TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Nota: " + SF2->(F2_SERIE + F2_DOC))
 
 	Else
 
@@ -100,7 +100,7 @@ Method Processa(cCodTransf) Class TAutomacaoTransferenciaFilialEfetivar
 		cMessage += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], ' + CRLF
 		cMessage += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'
 
-		ConOut("[TAutomacaoTransferenciaFilialEfetivar] Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Erro: " + cMessage)
+		TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Erro: " + cMessage)
 
 	EndIf
 
