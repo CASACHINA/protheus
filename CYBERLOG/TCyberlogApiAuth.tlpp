@@ -24,6 +24,9 @@ Class TCyberlogApiAuth
 	Public Data lTransfAuto
 	Public Data cTokenRetorno
 
+	Public Data cLocalPadrao
+	Public Data cLocalB2B
+
 	Public Data cModulo
 	Public Data cConta
 	Public Data cSenha
@@ -57,6 +60,10 @@ Method New() class TCyberlogApiAuth
 		::cSenha 		:= AllTrim(ZA2->ZA2_SENHA)	// "5A245BEF62298E499FFD3177083B704F"
 
 		::cChave 		:= AllTrim(ZA2->ZA2_CHAVE)	// "b_rcVLRUsqLRIyPneDFVpLXvUYGFVqPUKKoSyDADL5E"
+
+		::cLocalPadrao	:= "01" //ZA2->ZA2_LOCPAD
+
+		::cLocalB2B		:= "90" //ZA2->ZA2_LOCB2B
 
 		::lPVAuto		:= ZA2->ZA2_PVAUTO == "S"
 

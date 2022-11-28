@@ -41,6 +41,7 @@ Class TCyberlogIntegracao
 	Public Method SendDocEntrada()
 	Public Method SendTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
 	Public Method SendPedido(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method SendTransferenciaArmazem()
 
 	Public Method LoadJsonPedido(cAcao)
 	Public Method LoadJsonTransferencia()
@@ -48,6 +49,7 @@ Class TCyberlogIntegracao
 	Public Method LoadJsonProvider()
 	Public Method LoadJsonCustomer()
 	Public Method LoadJsonDocEntrada()
+	Public Method LoadJsonTransferenciaArmazem(cAcao)
 
 	Public Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_)
 
@@ -57,6 +59,7 @@ Class TCyberlogIntegracao
 
 	Public Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_)
 	Public Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_)
 	Public Method ValidEnvioPedidoM460MARK(aParam)
 
 	Public Method FormatDate(dData, nOption)
@@ -828,6 +831,148 @@ Method LoadJsonCustomer(cAcao) Class TCyberlogIntegracao
 		"longitude":	0,;
 		"crossDocking":	.F.;
 		}
+
+Return(jJson)
+
+Method SendTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaZA5	:= ZA5->(GetArea())
+	Local aAreaNNT	:= NNT->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSA1	:= SA1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ )
+
+			::oEmpCad:SeekEmpFil(cFilAnt)
+		
+			// If ::lManual
+
+				lRet := ::ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_)
+
+			// EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonTransferenciaArmazem(cAcao)
+
+				cBody := "pedido=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarPedido", cBody)
+
+				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROC)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "ZA5"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "MATA311"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetPedidoConferenciaStatus(If(lRet, "E", "X"), .T.)
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		::SetPedidoConferenciaStatus("S", .T.)
+
+	EndIf
+
+	RestArea(aAreaZA5)
+	RestArea(aAreaNNT)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSA1)
+
+Return()
+
+Method LoadJsonTransferenciaArmazem(cAcao) Class TCyberlogIntegracao
+
+	Local jJson 		:= NIL
+	Local jJsonItem		:= NIL
+	Local aItens		:= {}
+	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROC)
+	Local nItem			:= 1
+	Local cItem			:= ""
+
+	DbSelectArea("SA1")
+	SA1->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA1->(DBSeek(xFilial("SA1") + ::oEmpCad:cCodCliente + ::oEmpCad:cLojCliente))
+
+	jJson := {;
+		"operacao":				cAcao,;
+		"erpId":				ZA5->(ZA5_FILIAL + ZA5_PROC) + "-" + self:cDeposito,;
+		"empresa":				self:cDeposito,;
+		"data":					self:FormatDate(ZA5->ZA5_DATA),;
+		"noPedido":				0,;
+		"clienteErpId":			self:oEmpCad:cCodCliente + self:oEmpCad:cLojCliente,;
+		"nomeCliente":			SA1->A1_NOME,;
+		"noCliente":			0,;
+		"faturado":				.F.,;
+		"notaFiscal":			Nil,;
+		"serie":				Nil,;
+		"clienteRetira":		.F.,;
+		"observacao":			"",;
+		"prioridade":			50,;
+		"avaria":				.F.,;
+		"dataEntrega":			self:FormatDate(ZA5->ZA5_DATA),;
+		"docasConsolidacao":	"0",;
+		"loteInformado":		.F.,;
+		"documento":			ZA5->(ZA5_FILIAL + ZA5_PROC),;
+		"noRota":				"1",;
+		"descRota":				"Rota 1",;
+		"equipe":				"Equipe Cyberlog",;
+		"tipoPedido":			"Normal",;
+		"volumes":				1,;
+		"representante":		"",;
+		"vinculo":				Nil,;
+		"embalado":				.T.;
+		}
+
+	DBSelectArea("ZA6")
+	ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROC, R_E_C_N_O_, D_E_L_E_T_
+	ZA6->(DBGoTop())
+
+	If ZA6->(DBSeek(cChaveZA5))
+
+		While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROC) == cChaveZA5
+
+			cItem := StrZero(nItem++, 2)
+
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": self:AjusteCodProduto(ZA6->ZA6_PRODUT), "erpId": cItem, "quantidade": ZA6->ZA6_QUANT, "qtdFaturado": ZA6->ZA6_QUANT, "qtdAvaria": 0, "noLayout": 0 }
+
+			aAdd(aItens, jJsonItem)
+
+			ZA6->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson['itensPedido'] := aItens
 
 Return(jJson)
 
@@ -1728,6 +1873,24 @@ Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyb
 
 		EndIf
 	*/
+	EndIf
+
+Return(lRet)
+
+
+Method ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+	Local cMsg := ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+	
 	EndIf
 
 Return(lRet)

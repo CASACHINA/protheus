@@ -373,6 +373,50 @@ User Function CYBER_LIBMA()
 
 Return()
 
+User Function CYBER_ARMA()
+
+	Local nW			:= 0
+	Local aRecno        := {1}
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+
+	// RecLock("ZA5", .T.)
+	// ZA5->ZA5_FILIAL	:= xFilial("ZA5")
+	// // ZA5->ZA5_PROC	:= GetSXENum("ZA5", "ZA5_PROC")
+	// ZA5->ZA5_DATA	:= dDataBase
+	// ZA5->ZA5_HORA	:= Time()
+	// ZA5->ZA5_CONFCB	:= "A"
+	// ZA5->ZA5_STATUS	:= "A"
+	// ZA5->(MsUnlock())
+
+	// RecLock("ZA6", .T.)
+	// ZA6->ZA6_FILIAL	:= xFilial("ZA6")
+	// ZA6->ZA6_PROC	:= ZA5->ZA5_PROC
+	// ZA6->ZA6_PRODUT	:= "001218"
+	// ZA6->ZA6_LOCORI	:= "01"
+	// ZA6->ZA6_LOCDES	:= "90"
+	// ZA6->ZA6_QUANT	:= 100
+	// ZA6->(MsUnlock())
+	For nW := 1 To Len(aRecno)
+
+		ZA5->(DBGOTO( aRecno[nW] ))
+
+		oObjCyberLog:SendTransferenciaArmazem(.T.)
+
+		oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+		oObjCyberLog:SendTransferenciaArmazem(.T.)
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
 Class oRestEmulation
 
 	Public Method New() Constructor
