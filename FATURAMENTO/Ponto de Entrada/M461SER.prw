@@ -8,7 +8,7 @@ O ponto de entrada é executado após a seleção da série na rotina de documento de
 @since 19/08/2020
 /*/
 
-User Function M461SER()
+User Function _M461SER()
 
     cNumero := NxtSX5Nota(cSerie,.T.,SuperGetMV("MV_TPNRNFS")) // Apenas para nao mostrar tela na JOB TRFFATAUT
 

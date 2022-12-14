@@ -32,8 +32,9 @@ Method New() Class TCyberlogDTOPedidoConferencia
 	})
 
 	::Campos := {;
-		"deposito":				{ "type": "C", "allowEmpty": .F. },;
+		"erpId":				{ "type": "C", "allowEmpty": .F. },;
 		"deposito": 			{ "type": "C", "allowEmpty": .F. },;
+		"volume": 				{ "type": "N", "allowEmpty": .F. },;
 		"status":				{ "type": "C", "allowEmpty": .F., "valueList": { "Conferido", "EstornoConferencia" } },;
 		"itensPedido":			itensPedido;
 	}

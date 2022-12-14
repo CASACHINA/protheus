@@ -32,8 +32,8 @@ Method New() Class TCyberlogDTORecebimentoConferencia
 	})
 
 	::Campos := {;
+		"erpId":				{ "type": "C", "allowEmpty": .F. },;
 		"deposito":				{ "type": "C", "allowEmpty": .F. },;
-		"deposito": 			{ "type": "C", "allowEmpty": .F. },;
 		"status":				{ "type": "C", "allowEmpty": .F., "valueList": { "Conferido", "EstornoConferencia" } },;
 		"itensRecebimento":		itensRecebimento;
 	}

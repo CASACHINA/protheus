@@ -30,8 +30,8 @@ Class TEmpUtil
 
 	Method SeekFil(cCgc)
 	Method SeekFor(cEmp)
-	Method ForCod(cCod,cLoja)
-	Method CliCod(cCod,cLoja)
+	Method ForCod(cCod_Loja)
+	Method CliCod(cCod_Loja)
 	Method SeekEmpFil(cCodFil)
 
 EndClass
@@ -76,7 +76,7 @@ Method SeekFil(cCgc) Class TEmpUtil
 	While (SM0->(!EOF()) .And. (SM0->M0_CODIGO == cEmpAnt))
 
 		If(SM0->M0_CGC == ::cCgc)
-			::cCodFilial := SM0->M0_CODFIL
+			::cCodFilial := AllTrim(SM0->M0_CODFIL)
 			::lFilial := .T.
 			Exit
 		EndIf
@@ -202,9 +202,9 @@ Method SeekFor(cEmp) Class TEmpUtil
 
 Return()
 
-Method CliCod(cCod,cLoja) Class TEmpUtil
+Method CliCod(cCod_Loja) Class TEmpUtil
 
-	Local cChave := xFilial("SA1") + cCod + cLoja
+	Local cChave := xFilial("SA1") + cCod_Loja
 	Local aAreaA1 := SA1->(GetArea())
 
 	::Load()
@@ -227,9 +227,9 @@ Method CliCod(cCod,cLoja) Class TEmpUtil
 
 Return()
 
-Method ForCod(cCod,cLoja) Class TEmpUtil
+Method ForCod(cCod_Loja) Class TEmpUtil
 
-	Local cChave := xFilial("SA2") + cCod + cLoja
+	Local cChave := xFilial("SA2") + cCod_Loja
 	Local aAreaA2 := SA2->(GetArea())
 
 	::Load()

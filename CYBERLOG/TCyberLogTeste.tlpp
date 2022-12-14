@@ -1,4 +1,5 @@
 #INCLUDE 'PROTHEUS.CH'
+#INCLUDE "TOPCONN.CH"
 
 User Function CYBER_PROD()
 
@@ -119,7 +120,7 @@ Return()
 User Function CYBER_DOCENT()
 
 	Local aParam	    := {"01", "010104"}
-	Local aRecno        := {222823}
+	Local aRecno        := {221937}
 	Local nW            := 0
 	Local oObjCyberLog  := Nil
 
@@ -143,7 +144,7 @@ User Function CYBER_DOCENT()
 
 		oObjCyberLog:lManual := .T.
 
-		oObjCyberLog:GenericRun(6)
+		oObjCyberLog:GenericRun(3)
 
 		oObjCyberLog:GenericRun(4)
 
@@ -254,11 +255,12 @@ Return()
 User Function CYBER_SETCONF()
 
 	Local aParam	    := {"01", "010104"}
-	Local aRecno        := {90644}
+	Local aRecno        := {106350}
 	Local nW            := 0
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
+	Private cBody := '{     "deposito": "1",     "erpId": "010104102088",     "status": "Conferido",     "volume": 10,     "itensPedido": [         {             "sequenciaERP": "02",             "erpId": "02",             "codigoReduzido": "149338",             "qtdPedido": 1,             "qtdSeparada": 1         },         {             "sequenciaERP": "01",             "erpId": "01",             "codigoReduzido": "148638",             "qtdPedido": 1,             "qtdSeparada": 1         }     ] }'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -293,6 +295,7 @@ User Function CYBER_SETCONFPC()
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
+	Private cBody := '{     "deposito": "1",     "erpId": "010104102088",     "status": "Conferido",     "volume": 10,     "itensPedido": [         {             "sequenciaERP": "02",             "erpId": "02",             "codigoReduzido": "149338",             "qtdPedido": 1,             "qtdSeparada": 1         },         {             "sequenciaERP": "01",             "erpId": "01",             "codigoReduzido": "148638",             "qtdPedido": 1,             "qtdSeparada": 1         }     ] }'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -325,6 +328,7 @@ User Function CYBER_CROSS()
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
+	Private cBody := '{"transferencia":[{"quantidade":96,"filial":"99900102","armazem":"01","codProduto":"00037629"}]}'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -376,7 +380,7 @@ Return()
 User Function CYBER_ARMA()
 
 	Local nW			:= 0
-	Local aRecno        := {1}
+	Local aRecno        := {3}
 	Local aParam	    := {"01", "010104"}
 	Local oObjCyberLog  := Nil
 
@@ -384,38 +388,173 @@ User Function CYBER_ARMA()
 
 	oObjCyberLog  := TCyberlogIntegracao():New()
 
-	// RecLock("ZA5", .T.)
-	// ZA5->ZA5_FILIAL	:= xFilial("ZA5")
-	// // ZA5->ZA5_PROC	:= GetSXENum("ZA5", "ZA5_PROC")
-	// ZA5->ZA5_DATA	:= dDataBase
-	// ZA5->ZA5_HORA	:= Time()
-	// ZA5->ZA5_CONFCB	:= "A"
-	// ZA5->ZA5_STATUS	:= "A"
-	// ZA5->(MsUnlock())
+	DbSelectArea("ZA5")
+	ZA5->(DbSetOrder(1))
 
-	// RecLock("ZA6", .T.)
-	// ZA6->ZA6_FILIAL	:= xFilial("ZA6")
-	// ZA6->ZA6_PROC	:= ZA5->ZA5_PROC
-	// ZA6->ZA6_PRODUT	:= "001218"
-	// ZA6->ZA6_LOCORI	:= "01"
-	// ZA6->ZA6_LOCDES	:= "90"
-	// ZA6->ZA6_QUANT	:= 100
-	// ZA6->(MsUnlock())
+	// If !ZA5->(DBSeek("0101040000000001"))
+
+	// 	RecLock("ZA5", .T.)
+	// 	ZA5->ZA5_FILIAL	:= xFilial("ZA5")
+	// 	ZA5->ZA5_PROCES	:= "0000000001" // GetSXENum("ZA5", "ZA5_PROCES")
+	// 	ZA5->ZA5_DATA	:= dDataBase
+	// 	ZA5->ZA5_HORA	:= Time()
+	// 	ZA5->ZA5_STAREC	:= "A"
+	// 	ZA5->ZA5_STAPED	:= "A"
+	// 	ZA5->ZA5_STATUS	:= "N"
+	// 	ZA5->(MsUnlock())
+
+	// 	RecLock("ZA6", .T.)
+	// 	ZA6->ZA6_FILIAL	:= xFilial("ZA6")
+	// 	ZA6->ZA6_PROCES	:= ZA5->ZA5_PROCES
+	// 	ZA6->ZA6_ITEM	:= "0001"
+	// 	ZA6->ZA6_PRODUT	:= "001218"
+	// 	ZA6->ZA6_LOCORI	:= "01"
+	// 	ZA6->ZA6_LOCDES	:= "90"
+	// 	ZA6->ZA6_QUANT	:= 100
+	// 	ZA6->(MsUnlock())
+
+	// EndIf
+	
 	For nW := 1 To Len(aRecno)
 
 		ZA5->(DBGOTO( aRecno[nW] ))
 
-		oObjCyberLog:SendTransferenciaArmazem(.T.)
+		oObjCyberLog:lManual := .T.
 
-		oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+		oObjCyberLog:GenericRun(2)
 
-		oObjCyberLog:SendTransferenciaArmazem(.T.)
+		oObjCyberLog:GenericRun(1)
 
 	Next nW
 
 	RPCClearEnv()
 
 Return()
+
+User Function CYBER_ARMA_MOV()
+
+	Local nW			:= 0
+	Local aRecno        := {3}
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+	
+	For nW := 1 To Len(aRecno)
+
+		ZA5->(DBGOTO( aRecno[nW] ))
+
+		oObjCyberLog:lManual := .T.
+
+		oObjCyberLog:GenericRun(6)
+
+		oObjCyberLog:GenericRun(1)
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function CYBER_ARMA_CONF()
+
+	Local nW			:= 0
+	Local aRecno        := {3}
+	Local aParam	    := {"01", "010104"}
+	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+	Private cBody := '{ "deposito": "4", "erpId": "0101040000000008", "status": "Conferido", "itensPedido": [ { "sequenciaERP": "01", "erpId": "01", "codigoReduzido": "011022", "qtdPedido": 100, "qtdSeparada": 100 } ] }'
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjCyberLog  := TCyberlogIntegracao():New()
+	
+	For nW := 1 To Len(aRecno)
+
+		ZA5->(DBGOTO( aRecno[nW] ))
+
+		oObjCyberLog:lManual := .T.
+
+		oObjCyberLog:PedidoConferencia()
+
+		oObjCyberLog:GenericRun(1)
+
+	Next nW
+
+	RPCClearEnv()
+
+Return()
+
+User Function AJUSTSXE(cTab, cField, lDeleted)
+
+	Local cNextSX8	:= ""
+	Local cMax		:= ""
+
+	Default cTab		:= "NNS"
+	Default cField		:= "NNS_COD"
+	Default lDeleted	:= .F.
+
+	RPCSetEnv("01", "010104")
+
+	cNextSX8 := GetSx8Num(cTab, cField)
+
+	cMax	 := GetMax(cTab, cField)
+
+	If ( cMax > cNextSX8 )
+
+		ConfirmSX8()
+
+		While cMax > cNextSX8
+
+			TLogConsole():Log("O Código " + cField + " [" + cNextSX8 + "] é menor que o último registro [" + cMax + "]. Atualizando sequencial ...", "TControleNumeracao", "2")
+
+			cNextSX8 := GetSx8Num(cTab, cField)
+			ConfirmSX8()
+
+			cMax := GetMax(cTab, cField)
+
+		EndDo
+
+	EndIf
+
+	RPCClearEnv()
+
+Return(cNextSX8)
+
+Static Function GetMax(cTab, cField, lDeleted)
+
+	Local aArea		:= GetArea()
+	Local nTamSeq	:= TamSX3(cField)[1]
+	Local cAglImp	:= StrZero(1,nTamSeq)
+	Local cQuery	:= ""
+	Local cAlias1   := GetNextAlias()
+	
+	Default lDeleted	:= .F.
+	
+	cQuery := "SELECT MAX(" + cField + ") MAXNUMPRC FROM " + RetSqlName(cTab) + " "
+
+	If lDeleted
+		
+		cQuery += "WHERE D_E_L_E_T_ = ' ' "
+
+	EndIf
+
+	TCQUERY cQuery NEW ALIAS (cAlias1)
+
+	If (cAlias1)->(!EOF())
+
+		cAglImp := (cAlias1)->MAXNUMPRC
+
+	EndIf
+
+	(cAlias1)->(DBCloseArea())
+
+	RestArea(aArea)
+
+Return(cAglImp)
 
 Class oRestEmulation
 
@@ -438,66 +577,6 @@ Method setResponse() Class oRestEmulation
 Return()
 
 Method getBodyRequest() Class oRestEmulation
-
-	Local cBody := ""
-
-	cBody += '{    "transferencia": [
-	cBody += '	     {
-	cBody += '	         "filial": "010101",
-	cBody += '	         "codProduto": "149338         ",
-	cBody += '	         "armazem": "01",
-	cBody += '	         "quantidade": 1
-	cBody += '	     },
-	cBody += '	     {
-	cBody += '	         "filial": "010101",
-	cBody += '	         "codProduto": "148638         ",
-	cBody += '	         "armazem": "01",
-	cBody += '	         "quantidade": 1
-	cBody += '	     },	
-	cBody += '	     {
-	cBody += '	         "filial": "010102",
-	cBody += '	         "codProduto": "054741         ",
-	cBody += '	         "armazem": "01",
-	cBody += '	         "quantidade": 2
-	cBody += '	     },
-	cBody += '	     {
-	cBody += '	         "filial": "010102",
-	cBody += '	         "codProduto": "112185         ",
-	cBody += '	         "armazem": "01",
-	cBody += '	         "quantidade": 13
-	cBody += '	     }
-	cBody += '	 ]
-	cBody += '}
-
-	// cBody += '{
-	// cBody += '	"deposito": "1",
-	// // cBody += '	"erpId": "0101040000088921",
-	// cBody += '	"erpId": "010104102048",
-	// cBody += '	"status": "Conferido",
-	// cBody += '	"itensPedido": [
-	// cBody += '		{
-	// cBody += '			"sequenciaERP": "01",
-	// cBody += '			"erpId": "01",
-	// cBody += '			"codigoReduzido": "143643",
-	// cBody += '			"qtdPedido": 24,
-	// cBody += '			"qtdSeparada": 23
-	// cBody += '		},
-	// cBody += '		{
-	// cBody += '			"sequenciaERP": "02",
-	// cBody += '			"erpId": "02",
-	// cBody += '			"codigoReduzido": "143645",
-	// cBody += '			"qtdPedido": 6,
-	// cBody += '			"qtdSeparada": 5
-	// cBody += '		}
-	// // cBody += '		{
-	// // cBody += '			"sequenciaERP": "03",
-	// // cBody += '			"erpId": "03",
-	// // cBody += '			"codigoReduzido": "143646",
-	// // cBody += '			"qtdPedido": 6,
-	// // cBody += '			"qtdSeparada": 5
-	// // cBody += '		}
-	// cBody += '	]
-	// cBody += '}
 
 Return(cBody)
 

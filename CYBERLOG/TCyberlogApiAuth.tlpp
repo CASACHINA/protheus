@@ -61,9 +61,9 @@ Method New() class TCyberlogApiAuth
 
 		::cChave 		:= AllTrim(ZA2->ZA2_CHAVE)	// "b_rcVLRUsqLRIyPneDFVpLXvUYGFVqPUKKoSyDADL5E"
 
-		::cLocalPadrao	:= "01" //ZA2->ZA2_LOCPAD
+		::cLocalPadrao	:= ZA2->ZA2_LOCPAD
 
-		::cLocalB2B		:= "90" //ZA2->ZA2_LOCB2B
+		::cLocalB2B		:= ZA2->ZA2_LOCB2B
 
 		::lPVAuto		:= ZA2->ZA2_PVAUTO == "S"
 

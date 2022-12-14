@@ -127,8 +127,12 @@ user function MATA311()
 			// 	IF IsInCallStack('A311Altera')
 			// 		oModel:GetModel('NNSMASTER'):GetStruct():SetProperty("NNS_TRANSP",MODEL_FIELD_WHEN,{||.T.})
 			// 	EndIF
-
+			
 		case cIdPonto == 'MODELVLDACTIVE' .And. cIdModel == 'MATA311'
+
+			oModel:GetModel('NNSMASTER'):SetFldNoCopy( {'NNS_STATUS', 'NNS_SOLICT', 'NNS_DATA', 'NNS_CYBERS'} )
+
+			oModel:GetModel('NNTDETAIL'):SetFldNoCopy( {'NNT_DOC', 'NNT_SERIE', "NNT_QTDWMS"} )
 
 			//grava quantidade original
 			oModel:GetModel('NNTDETAIL'):GetStruct():AddTrigger('NNT_QUANT','NNT_QTDORI',{|model|  model:GetDataID() == 0 }, {|model| model:GetValue('NNT_QUANT') }, "")
