@@ -51,8 +51,7 @@ User function USELTES1(_cTpTES)
 	aAdd(_aVar,{'PR','SC','1','2','505','251'})
 	aAdd(_aVar,{'PR','SC','2','2','505','251'})
 	aAdd(_aVar,{'PR','SC','3','3','671','254'})
-	//aAdd(_aVar,{'PR','SC','5','5','505','251'})
-	
+	//aAdd(_aVar,{'PR','SC','5','5','505','251'}) ajuste na regra
 	aAdd(_aVar,{'PR','SC','5','2','505','251'})
 	aAdd(_aVar,{'PR','PR','5','5','505','251'})
 	aAdd(_aVar,{'SC','SC','1','1','509','253'})
