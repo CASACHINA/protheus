@@ -1625,7 +1625,9 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 				ElseIf ZA5->ZA5_DEPREC == jBody['deposito']
 
-					::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+					// ::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+
+					TLogConsole():Log("Não deveria entrar nesse if devido mudança de regra.")
 
 				EndIf
 
@@ -1640,6 +1642,16 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 				ElseIf ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "A"
 
 					::SetMovimentoAlmoxarifadoConferenciaStatus("S")
+
+				EndIf
+
+				If !Empty(::oEmpAuth:cDepositoB2B)
+
+					::cDeposito := ::oEmpAuth:cDepositoB2B
+
+					::SendTransferenciaArmazemDocEntrada()
+
+					::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
 
 				EndIf
 
@@ -1802,7 +1814,7 @@ Return(oRest:setResponse(EncodeUTF8( ::oResult:toJSON() )))
 
 Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
-	Local lRet 				:= .F.
+	Local lRet 				:= .T.
 	Local nW 				:= 0
 	Local nRetAddLine 		:= Nil
 	Local nX 				:= 0
@@ -1854,10 +1866,10 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 			oModel:Activate()
 
-			oModel:LoadValue("NNSMASTER", "NNS_FILIAL"    , xFilial("NNS"))
-			oModel:LoadValue("NNSMASTER", "NNS_SOLICT"    , "000000")
-			oModel:LoadValue("NNSMASTER", "NNS_CYBERW"    , "S") // S=Sim;N=Nao
-			// oModel:LoadValue("NNSMASTER", "NNS_CYBERS"    , "R") // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_FILIAL"    , xFilial("NNS")), .F.)
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_SOLICT"    , "000000"), .F.)
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_CYBERW"    , "N"), .F.) // S=Sim;N=Nao
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_CYBERS"    , "R"), .F.) // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
 
 			For nX := 1 To Len(aTransferencia[nW])
 
@@ -1865,18 +1877,18 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 					oEmpCad:CliCod(aTransferencia[nW][1])
 
-					oModel:LoadValue("NNTDETAIL", "NNT_FILORI"	, xFilial("NNT"))
-					oModel:LoadValue("NNTDETAIL", "NNT_FILDES"	, oEmpCad:cCodFilial)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_FILORI"	, xFilial("NNT")), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_FILDES"	, oEmpCad:cCodFilial), .F.)
 
-					oModel:SetValue("NNTDETAIL", "NNT_PROD"		, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6))
-					oModel:SetValue("NNTDETAIL", "NNT_PRODD"	, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6))
-					
-					oModel:LoadValue("NNTDETAIL", "NNT_LOCAL"	, aTransferencia[nW][nX][2])
-					oModel:LoadValue("NNTDETAIL", "NNT_LOCLD"	, aTransferencia[nW][nX][2])
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_PROD"	, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6)), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_PRODD"	, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6)), .F.)
 
-					oModel:LoadValue("NNTDETAIL", "NNT_QUANT"	, aTransferencia[nW][nX][1])
-					oModel:LoadValue("NNTDETAIL", "NNT_QTDWMS"	, aTransferencia[nW][nX][1])
-					oModel:LoadValue("NNTDETAIL", "NNT_SERIE"	, "1")
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_LOCAL"	, aTransferencia[nW][nX][2]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_LOCLD"	, aTransferencia[nW][nX][2]), .F.)
+
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_QUANT"	, aTransferencia[nW][nX][1]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_QTDWMS"	, aTransferencia[nW][nX][1]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_SERIE"	, "1"), .F.)
 
 					If nX <> Len(aTransferencia[nW])
 
@@ -1888,15 +1900,31 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 			Next nX
 
-			If oModel:VldData()
+			If lRet .And. oModel:VldData()
 
 				oModel:CommitData()
+
+			Else
+
+				lRet := .F.
 
 			EndIf
 
 		EndIf
 
-		If lRet := oModel:HasErrorMessage()
+		If lRet
+
+			oModel:DeActivate()
+			oModel:Destroy()
+			oModel := NIL
+
+			nRetorno := 200
+
+			::mensagem := "Sucess"
+
+			// FreeObj(oModel)
+
+		Else
 
 			aMsgDeErro := oModel:GetErrorMessage()
 
@@ -1912,21 +1940,9 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 			::mensagem := cMessage
 
-		Else
-
-			oModel:DeActivate()
-			oModel:Destroy()
-			oModel := NIL
-
-			nRetorno := 200
-
-			::mensagem := "Sucess"
-
-			// FreeObj(oModel)
-
 		EndIf
 
-		oLog:cChave		:=  If(lRet, DTOS(dDataBase), NNS->(NNS_FILIAL + NNS_COD))
+		oLog:cChave		:=  If(lRet, NNS->(NNS_FILIAL + NNS_COD), DTOS(dDataBase))
 		oLog:cDeposito	:= ::cDeposito
 		oLog:cTabela	:= "NNS"
 		oLog:cOperacao	:= "I"
@@ -1935,8 +1951,9 @@ Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
 		oLog:cTipo		:= "R"
 		oLog:cUrl		:= oRest:getFullURLRequest()
 		oLog:cJsonRet	:= ""
-		oLog:cStatus	:= If(lRet, "E", "S")
-		oLog:cErro		:= If(lRet, If(Len(cMessage) > 0, cMessage, "Erro"), "")
+		oLog:cObs		:= "Criado via crossdocking."
+		oLog:cStatus	:= If(lRet, "S", "E")
+		oLog:cErro		:= If(lRet, "", If(Len(cMessage) > 0, cMessage, "Erro"))
 
 		::Log(oLog)
 
@@ -2472,7 +2489,7 @@ Method LiberaSemConferencia() Class TCyberlogIntegracao
 
 				If PswName(AllTrim(aRet[3]))
 
-					lRet:= .T.
+					lRet := .T.
 
 				Else
 
@@ -2602,7 +2619,7 @@ Method GenericRun(nAcao) Class TCyberlogIntegracao
 
 				EndIf
 
-				::SetPedidoConferenciaStatus("R", .T.)
+				::SetTransferenciaConferenciaStatus("R", .T.)
 
 				oLog := TCyberlogHistoryStruct():New()
 
@@ -2867,16 +2884,6 @@ Method GenericRun(nAcao) Class TCyberlogIntegracao
 			If ZA5->ZA5_STAPED == "C"
 
 				cMsg += "Não é possível envio do Recebimento com status 'C=Conferido'!"
-
-			Else
-
-				If !Empty(::oEmpAuth:cDepositoB2B)
-
-					::cDeposito := ::oEmpAuth:cDepositoB2B
-
-					::SendTransferenciaArmazemDocEntrada()
-
-				EndIf
 
 			EndIf
 

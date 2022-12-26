@@ -328,7 +328,7 @@ User Function CYBER_CROSS()
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
-	Private cBody := '{"transferencia":[{"quantidade":96,"filial":"99900102","armazem":"01","codProduto":"00037629"}]}'
+	Private cBody := '{"transferencia":[{"quantidade":1,"filial":"99900102","armazem":"01","codProduto":"116429"}, {"quantidade":1,"filial":"99900102","armazem":"01","codProduto":"116432"}]}'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
