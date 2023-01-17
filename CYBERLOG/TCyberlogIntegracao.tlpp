@@ -709,7 +709,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 
 			If SC7->(DBSeek(xFilial("SC7") + SD1->D1_PEDIDO))
 
-				cCliXDocking := SC7->C7_YCLIENT
+				// cCliXDocking := SC7->C7_YCLIENT // TICKET 3915 - Em stand by
 
 				::cDeposito := If(SC7->C7_B2B == "S", If(Empty(self:oEmpAuth:cDepositoB2B), self:oEmpAuth:cDeposito, self:oEmpAuth:cDepositoB2B), self:oEmpAuth:cDeposito)
 
@@ -949,7 +949,7 @@ Method SendTransferenciaArmazemPedido(lInclui_, lCopia_, lAltera_, lExclui_) Cla
 	RestArea(aAreaSB1)
 	RestArea(aAreaSA1)
 
-Return()
+Return(lRet)
 
 Method LoadJsonTransferenciaArmazemPedido(cAcao) Class TCyberlogIntegracao
 
@@ -965,7 +965,7 @@ Method LoadJsonTransferenciaArmazemPedido(cAcao) Class TCyberlogIntegracao
 
 	jJson := {;
 		"operacao":				cAcao,;
-		"erpId":				ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"erpId":				"ZA5" + ZA5->(ZA5_FILIAL + ZA5_PROCES),;
 		"empresa":				self:cDeposito,;
 		"data":					self:FormatDate(ZA5->ZA5_DATA),;
 		"noPedido":				0,;
@@ -1076,6 +1076,10 @@ Method SendTransferenciaArmazemDocEntrada(lInclui_, lCopia_, lAltera_, lExclui_)
 
 			EndIf
 
+		Else
+
+			lRet := .F.
+
 		EndIf
 
 	Else
@@ -1091,7 +1095,7 @@ Method SendTransferenciaArmazemDocEntrada(lInclui_, lCopia_, lAltera_, lExclui_)
 	RestArea(aAreaSB1)
 	RestArea(aAreaSA1)
 
-Return()
+Return(lRet)
 
 Method LoadJsonTransferenciaArmazemDocEntrada(cAcao) Class TCyberlogIntegracao
 
@@ -1107,13 +1111,13 @@ Method LoadJsonTransferenciaArmazemDocEntrada(cAcao) Class TCyberlogIntegracao
 
 	jJson := {;
 		"operacao": 		cAcao,;
-		"erpId":			ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"erpId":			"ZA5" + ZA5->(ZA5_FILIAL + ZA5_PROCES),;
 		"empresa":			self:cDeposito,;
 		"data":				self:FormatDate(ZA5->ZA5_DATA),;
 		"documento":		ZA5->(ZA5_FILIAL + ZA5_PROCES),;
 		"codFornecedor":	self:oEmpCad:cCodFornecedor + self:oEmpCad:cLojFornecedor,;
 		"avaria":			.F.,;
-		"confCega":			.T.,;
+		"confCega":			.F.,;
 		"tipo":				"N",;
 		"doca":				0,;
 		"prioridade":		0,;
@@ -1426,27 +1430,53 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 	Local lRotinaTransf		:= .F.
 	Local lRotinaPedido		:= .F.
 	Local lRotinaTrfArmazem := .F.
+	Local cChave			:= ""
 	Local aRecno			:= {}
 	Local nW				:= 0
 	Local cMensagem			:= ""
+	Local oObjInteg			:= TCyberlogIntegracao():New()
 
-	DBSelectArea("NNS")
-	NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
-	NNS->(DBGoTop())
+	If SubStr(jBody['erpId'], 1, 3) == "NNS"
 
-	lRotinaTransf := NNS->(DBSeek(Rtrim(jBody['erpId'])))
+		lRotinaTransf := .T.
 
-	DBSelectArea("SC5")
-	SC5->(DBSetOrder(1)) // C5_FILIAL, C5_NUM, R_E_C_N_O_, D_E_L_E_T_
-	SC5->(DBGoTop())
+	ElseIf SubStr(jBody['erpId'], 1, 3) == "SC5"
 
-	lRotinaPedido := SC5->(DBSeek(Rtrim(jBody['erpId'])))
+		lRotinaPedido := .T.
 
-	DBSelectArea("ZA5")
-	ZA5->(DBSetOrder(1)) // ZA5_FILIAL, ZA5_PROCES, R_E_C_N_O_, D_E_L_E_T_
-	ZA5->(DBGoTop())
+	ElseIf SubStr(jBody['erpId'], 1, 3) == "ZA5"
 
-	lRotinaTrfArmazem := ZA5->(DBSeek(Rtrim(jBody['erpId'])))
+		lRotinaTrfArmazem := .T.
+
+	EndIf
+
+	cChave := jBody['erpId']
+
+	If lRotinaTrfArmazem
+
+		DBSelectArea("ZA5")
+		ZA5->(DBSetOrder(1)) // ZA5_FILIAL, ZA5_PROCES, R_E_C_N_O_, D_E_L_E_T_
+		ZA5->(DBGoTop())
+
+		cChave := Replace(Rtrim(jBody['erpId']), "ZA5", "")
+
+		lRotinaTrfArmazem := ZA5->(DBSeek(cChave))
+
+	Else
+
+		DBSelectArea("NNS")
+		NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
+		NNS->(DBGoTop())
+
+		lRotinaTransf := NNS->(DBSeek(Rtrim(jBody['erpId'])))
+
+		DBSelectArea("SC5")
+		SC5->(DBSetOrder(1)) // C5_FILIAL, C5_NUM, R_E_C_N_O_, D_E_L_E_T_
+		SC5->(DBGoTop())
+
+		lRotinaPedido := SC5->(DBSeek(Rtrim(jBody['erpId'])))
+
+	EndIf
 
 	If lRotinaTransf .Or. lRotinaPedido .Or. lRotinaTrfArmazem
 
@@ -1512,6 +1542,10 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 					::mensagem := "Sucess"
 
 				Else
+
+					lRet := .T.
+
+					nRetorno := 200
 
 					::mensagem := "Transferencia já esta com status conferido."
 
@@ -1595,6 +1629,10 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 				Else
 
+					lRet := .T.
+
+					nRetorno := 200
+
 					::mensagem := "Pedido já esta com status conferido."
 
 				EndIf
@@ -1631,27 +1669,31 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 				EndIf
 
-				If ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "C"
+				If ZA5->ZA5_STAPED == "C"
 
 					::SetMovimentoAlmoxarifadoConferenciaStatus("P")
 
-				ElseIf ZA5->ZA5_STAREC == "A" .And. ZA5->ZA5_STAPED == "C"
-
-					::SetMovimentoAlmoxarifadoConferenciaStatus("R")
-
-				ElseIf ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "A"
-
-					::SetMovimentoAlmoxarifadoConferenciaStatus("S")
-
 				EndIf
 
-				If !Empty(::oEmpAuth:cDepositoB2B)
+				If !Empty(oObjInteg:oEmpAuth:cDepositoB2B) .And. ::cDeposito <> oObjInteg:oEmpAuth:cDepositoB2B
 
-					::cDeposito := ::oEmpAuth:cDepositoB2B
+					oObjInteg:cDeposito := oObjInteg:oEmpAuth:cDepositoB2B // Rest nao faz new nesta classe.
 
-					::SendTransferenciaArmazemDocEntrada()
+					If oObjInteg:SendTransferenciaArmazemDocEntrada(.T.)
 
-					::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+						::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+
+						If !oObjInteg:MovimentaEstoque()
+
+							TLogConsole():Log(ZA5->ZA5_ERRO)
+
+						EndIf
+
+					EndIF
+
+				Else
+
+					TLogConsole():Log("Não é B2B ")
 
 				EndIf
 
@@ -1677,7 +1719,7 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 	EndIf
 
-	oLog:cChave		:= jBody['erpId']
+	oLog:cChave		:= cChave
 	oLog:cDeposito	:= ::cDeposito
 	oLog:cOperacao	:= "I"
 	oLog:cRotina	:= "REST"
@@ -1720,7 +1762,7 @@ Return()
 Method SetMovimentoAlmoxarifadoConferenciaStatusPedido(cStatus) Class TCyberlogIntegracao
 
 	RecLock("ZA5", .F.)
-	ZA5->ZA5_STAPED := cStatus // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+	ZA5->ZA5_STAPED := cStatus // N=Não Enviado;A=Aguar.Separação;C=Conferido;X=Erro ao Enviar WMS
 	ZA5->(MsUnlock())
 
 Return()
@@ -1728,7 +1770,7 @@ Return()
 Method SetMovimentoAlmoxarifadoConferenciaStatusRecebimento(cStatus) Class TCyberlogIntegracao
 
 	RecLock("ZA5", .F.)
-	ZA5->ZA5_STAREC := cStatus // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+	ZA5->ZA5_STAREC := cStatus // N=Não Enviado;A=Aguar.Conferência;C=Conferido;X=Erro ao Enviar WMS
 	ZA5->(MsUnlock())
 
 Return()
@@ -2996,6 +3038,7 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 	Local aAuto			:= {}
 	Local aLinha 		:= {}
 	Local cErro			:= ""
+	Local oLog			:= Nil
 	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
 
 	Private lMSErroAuto 	:= .F.
@@ -3006,9 +3049,9 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 
 	If ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "C" .And. ZA5->ZA5_STATUS <> "T"
 
-		If Aviso("ATENCAO", "Este processo não pode ser interrompido e os movimentos gerados não poderão ser EXCLUÍDOS, somente estornados. Tem certeza que deseja processar?", {"Ok", "Cancelar"}, 2) == 1
+		// If Aviso("ATENCAO", "Este processo não pode ser interrompido e os movimentos gerados não poderão ser EXCLUÍDOS, somente estornados. Tem certeza que deseja processar?", {"Ok", "Cancelar"}, 2) == 1
 
-			If MsgYesNo("Confirma Transferencia?")
+			// If MsgYesNo("Confirma Transferencia?")
 
 				lMSHelpAuto := .T.
 
@@ -3078,6 +3121,8 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 
 						EndDo
 
+						TLogConsole():Log("Iniciando Execauto mata261")
+
 						MSExecAuto( {|x, y| mata261(x, y)}, aAuto, 3 )
 
 						If lMSErroAuto
@@ -3088,6 +3133,8 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 
 							// RollBackSX8()
 
+							TLogConsole():Log(cErro)
+
 						Else
 
 							// ConfirmSX8()
@@ -3097,6 +3144,8 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 							ZA5->ZA5_DOC 	:= U_XMA261TR()
 							ZA5->ZA5_DATATR	:= Date()
 							ZA5->(MsUnlock())
+
+							TLogConsole():Log("Processo: " + ZA5->ZA5_PROCES + " Movimentando com Sucesso!")
 
 						EndIf
 
@@ -3114,9 +3163,22 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 
 				EndIf
 
-			EndIf
+				oLog := TCyberlogHistoryStruct():New()
 
-		EndIf
+				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "ZA5"
+				oLog:cOperacao	:= "I"
+				oLog:cTipo		:= "M"
+				oLog:cStatus	:= If(lMSErroAuto, "E", "S")
+				oLog:cRotina	:= FunName()
+				oLog:cObs		:= "Almoxarifados movimentados com sucesso."
+
+				::Log(oLog)
+
+			// EndIf
+
+		// EndIf
 
 	ElseIf ZA5->ZA5_STATUS == "T"
 

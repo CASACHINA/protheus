@@ -188,6 +188,9 @@ User Function MT410CPY()
 	Local aArea := GetArea()
 
 	M->C5_CYBERW := "N"
+	M->C5_XCONFCB := ""
+	M->C5_VOLUME1 := 0
+
 	RestArea(aArea)
 	RestArea(_aArea)
 Return

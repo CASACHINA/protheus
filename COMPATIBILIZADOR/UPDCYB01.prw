@@ -1250,7 +1250,7 @@ aAdd( aSX3, { ;
 	{ '03'																	, .T. }, ; //X3_ORDEM
 	{ 'ZA6_ITEM'															, .T. }, ; //X3_CAMPO
 	{ 'C'																	, .T. }, ; //X3_TIPO
-	{ 2																		, .T. }, ; //X3_TAMANHO
+	{ 4																		, .T. }, ; //X3_TAMANHO
 	{ 0																		, .T. }, ; //X3_DECIMAL
 	{ 'Item'																, .T. }, ; //X3_TITULO
 	{ 'Item'																, .T. }, ; //X3_TITSPA

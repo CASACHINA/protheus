@@ -379,10 +379,11 @@ Return()
 
 User Function CYBER_ARMA()
 
-	Local nW			:= 0
-	Local aRecno        := {3}
 	Local aParam	    := {"01", "010104"}
 	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+	Private cBody := '{ "deposito": "1", "erpId": "ZA50101040000000003", "volume": 10, "status": "Conferido", "itensPedido": [ { "sequenciaERP": "0001", "erpId": "01", "codigoReduzido": "011022", "qtdPedido": 100, "qtdSeparada": 100 } ] }'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -391,41 +392,39 @@ User Function CYBER_ARMA()
 	DbSelectArea("ZA5")
 	ZA5->(DbSetOrder(1))
 
-	// If !ZA5->(DBSeek("0101040000000001"))
+	If !ZA5->(DBSeek("0101040000000003"))
 
-	// 	RecLock("ZA5", .T.)
-	// 	ZA5->ZA5_FILIAL	:= xFilial("ZA5")
-	// 	ZA5->ZA5_PROCES	:= "0000000001" // GetSXENum("ZA5", "ZA5_PROCES")
-	// 	ZA5->ZA5_DATA	:= dDataBase
-	// 	ZA5->ZA5_HORA	:= Time()
-	// 	ZA5->ZA5_STAREC	:= "A"
-	// 	ZA5->ZA5_STAPED	:= "A"
-	// 	ZA5->ZA5_STATUS	:= "N"
-	// 	ZA5->(MsUnlock())
+		RecLock("ZA5", .T.)
+		ZA5->ZA5_FILIAL	:= xFilial("ZA5")
+		ZA5->ZA5_PROCES	:= "0000000003" // GetSXENum("ZA5", "ZA5_PROCES")
+		ZA5->ZA5_DATA	:= dDataBase
+		ZA5->ZA5_HORA	:= Time()
+		ZA5->ZA5_DEPPED	:= "1"
+		ZA5->ZA5_DEPREC	:= "4"
+		ZA5->ZA5_STAREC	:= "A"
+		ZA5->ZA5_STAPED	:= "A"
+		ZA5->ZA5_STATUS	:= "N"
+		ZA5->(MsUnlock())
 
-	// 	RecLock("ZA6", .T.)
-	// 	ZA6->ZA6_FILIAL	:= xFilial("ZA6")
-	// 	ZA6->ZA6_PROCES	:= ZA5->ZA5_PROCES
-	// 	ZA6->ZA6_ITEM	:= "0001"
-	// 	ZA6->ZA6_PRODUT	:= "001218"
-	// 	ZA6->ZA6_LOCORI	:= "01"
-	// 	ZA6->ZA6_LOCDES	:= "90"
-	// 	ZA6->ZA6_QUANT	:= 100
-	// 	ZA6->(MsUnlock())
+		RecLock("ZA6", .T.)
+		ZA6->ZA6_FILIAL	:= xFilial("ZA6")
+		ZA6->ZA6_PROCES	:= ZA5->ZA5_PROCES
+		ZA6->ZA6_ITEM	:= "0001"
+		ZA6->ZA6_PRODUT	:= "001218"
+		ZA6->ZA6_LOCORI	:= "01"
+		ZA6->ZA6_LOCDES	:= "90"
+		ZA6->ZA6_QUANT	:= 100
+		ZA6->(MsUnlock())
 
-	// EndIf
+	EndIf
 	
-	For nW := 1 To Len(aRecno)
+	oObjCyberLog:lManual := .T.
 
-		ZA5->(DBGOTO( aRecno[nW] ))
+	oObjCyberLog:GenericRun(2)
 
-		oObjCyberLog:lManual := .T.
+	oObjCyberLog:PedidoConferencia()
 
-		oObjCyberLog:GenericRun(2)
-
-		oObjCyberLog:GenericRun(1)
-
-	Next nW
+	oObjCyberLog:GenericRun(1)
 
 	RPCClearEnv()
 
@@ -437,6 +436,9 @@ User Function CYBER_ARMA_MOV()
 	Local aRecno        := {3}
 	Local aParam	    := {"01", "010104"}
 	Local oObjCyberLog  := Nil
+
+	Private oRest := oRestEmulation():New()
+	Private cBody := '{ "deposito": "1", "erpId": "ZA50101040000000001", "volume": 10, "status": "Conferido", "itensPedido": [ { "sequenciaERP": "01", "erpId": "01", "codigoReduzido": "011022", "qtdPedido": 100, "qtdSeparada": 100 } ] }'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -461,20 +463,19 @@ Return()
 User Function CYBER_ARMA_CONF()
 
 	Local nW			:= 0
-	Local aRecno        := {3}
+	Local aRecno        := {7}
 	Local aParam	    := {"01", "010104"}
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
-	Private cBody := '{ "deposito": "4", "erpId": "0101040000000008", "status": "Conferido", "itensPedido": [ { "sequenciaERP": "01", "erpId": "01", "codigoReduzido": "011022", "qtdPedido": 100, "qtdSeparada": 100 } ] }'
-
+	Private cBody := '{ "deposito":"1", "erpId":"ZA50101040000000017", "status":"Conferido", "volume":0, "itensPedido":[ {"sequenciaERP":"0002", "erpId":"00001219", "codigoReduzido":"00001219", "qtdPedido":15, "qtdSeparada":15},{"sequenciaERP":"0001", "erpId":"00001218", "codigoReduzido":"00001218", "qtdPedido":20, "qtdSeparada":20},{"sequenciaERP":"0003", "erpId":"00000007", "codigoReduzido":"00000007", "qtdPedido":20, "qtdSeparada":20}]}'
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
 	oObjCyberLog  := TCyberlogIntegracao():New()
 	
 	For nW := 1 To Len(aRecno)
 
-		ZA5->(DBGOTO( aRecno[nW] ))
+		// ZA5->(DBGOTO( aRecno[nW] ))
 
 		oObjCyberLog:lManual := .T.
 
