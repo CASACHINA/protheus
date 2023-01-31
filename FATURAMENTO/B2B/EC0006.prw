@@ -266,7 +266,7 @@ static function fInsPedido(cId, lJob)
     elseif ("ASAP LOG" $ cFreteB2b)
         cCodTra := "000004"
 
-    elseif ("CHASLOG" $ cFreteB2b)
+    elseif ("JADLOG" $ cFreteB2b)
         cCodTra := "000013"
 
     elseif ("RETIRE" $ cFreteB2b)
