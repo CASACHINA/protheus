@@ -12,7 +12,7 @@
 #Include "Colors.ch"
 
 /*---------------------------------------------------------------------------+
-!                       FICHA TECNICA DO PROGRAMA                            !
+!                       FICHA TECNICA DO PROGRAMA  - 31/01/2023              !
 +------------------+---------------------------------------------------------+
 !Tipo              ! Web Service	                               			 !
 !Módulo            ! Protheus x Fluig			       	                     !
