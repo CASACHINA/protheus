@@ -1606,7 +1606,7 @@ aAdd( aSX3, { ;
 	{ 'R'																	, .T. }, ; //X3_CONTEXT
 	{ ''																	, .T. }, ; //X3_OBRIGAT
 	{ ''																	, .T. }, ; //X3_VLDUSER
-	{ 'E=Envio;R=Recebimento;I=Controle Interno'							, .T. }, ; //X3_CBOX
+	{ 'E=Envio;R=Recebimento;I=Controle Interno;M=Movimento Estoque;F=Fat.Automático', .T. }, ; //X3_CBOX
 	{ ''																	, .T. }, ; //X3_CBOXSPA
 	{ ''																	, .T. }, ; //X3_CBOXENG
 	{ ''																	, .T. }, ; //X3_PICTVAR

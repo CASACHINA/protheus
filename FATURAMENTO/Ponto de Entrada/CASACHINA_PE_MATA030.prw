@@ -47,17 +47,21 @@ user function MATA030()
 				EndIF
 			EndIF
 
-			oObjCyberLog := TCyberlogIntegracao():New()
+			//If oModel:GetValue("MATA030_SA1","A1_CYBERW") == 'S'
 
-			oObjCyberLog:SendCustomer(.T., oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
-			
-			If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
-			
-				oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+				oObjCyberLog := TCyberlogIntegracao():New()
 
-				oObjCyberLog:SendCustomer(.T., oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
-			
-			EndIf
+				oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+					oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				EndIf
+
+			//EndIf
 
 		Case cIdPonto == "FORMCOMMITTTSPOS"
 
@@ -135,7 +139,7 @@ user function M030INC()
 
 		oObjCyberLog := TCyberlogIntegracao():New()
 
-		oObjCyberLog:SendCustomer(.T., INCLUI, .F., ALTERA, .F.)
+		oObjCyberLog:SendCustomer(INCLUI, .F., ALTERA, .F.)
 
 	ElseIf PARAMIXB == 3 // Clicou em cancelar
 
@@ -154,6 +158,6 @@ user function MALTCLI()
 
 	oObjCyberLog := TCyberlogIntegracao():New()
 
-	oObjCyberLog:SendCustomer(.T., INCLUI, .F., ALTERA, .F.)
+	oObjCyberLog:SendCustomer(INCLUI, .F., ALTERA, .F.)
 
 return

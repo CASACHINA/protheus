@@ -11,6 +11,6 @@ User Function SF1140I()
 
     Local oCyberLog := TCyberLogIntegracao():New()
 
-    oCyberLog:SendDocEntrada(.T., INCLUI, .F., ALTERA, .F.)
+    oCyberLog:SendDocEntrada(INCLUI, .F., ALTERA, .F.)
 
 Return()
