@@ -274,6 +274,7 @@ WSMETHOD NFTransferencia WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 	Local _aItens	:= {}
 	Local _nOpc		:= 3
 	Local nValCusto := 0
+	Local cMenNota 	:= ""
 
 	PRIVATE lMsErroAuto := .F.
 
@@ -282,6 +283,16 @@ WSMETHOD NFTransferencia WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 	BEGIN TRANSACTION
 		SC5->(DbGoTop())
 		SC5->(DbSetOrder(1))
+
+		If Posicione("SA1",1,xFilial("SA1")+oNFCab['CLICOD']+oNFCab['CLILOJA'],"A1_EST") == "SC"
+			cMenNota 	:= "ICMS Estorno - Não Ocorrência do Fato Gerador Conforme Art. 1º RICMS/SC e Art. 180º Anexo V RICMS/SC."
+		else
+			cMenNota 	:= "ICMS Estorno - Não Ocorrência do Fato Gerador Conforme Art. 2º do RICMS/PR e Art. 213, IV, alínea a e § 11, I do RICMS/PR. "
+			cMenNota 	+= "PIS Estorno - Não Ocorrência do Fato Gerador Conforme Art. 3º Lei 10.833/03. "
+			cMenNota 	+= "COFINS Estorno - Não Ocorrência do Fato Gerador Conforme Art. 1º Lei 10.637/02."
+		Endif
+
+		conout(cMenNota)
 
 		cFilAnt := oNFCab['ORIGEM']
 
@@ -306,26 +317,15 @@ WSMETHOD NFTransferencia WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 			
 			conout("@@@ SB2: " + cValToChar(nValCusto))
 			
-			If oNFCab['TIPO'] == "D"
-				Aadd( _aItens, {;
-					{"C6_ITEM"		, StrZero(nI, 2)		, Nil},;
-					{"C6_PRODUTO"	, oItem['PRODCOD']		, Nil},;
-					{"C6_QTDVEN"	, oItem['QUANTIDADE']	, Nil},;
-					{"C6_PRCVEN"	, SB2->B2_CM1			, Nil},;
-					{"C6_OPER"		, cOper					, Nil},;
-					{"C6_TES"		, "504"					, Nil},;
-					{"C6_QTDLIB"	, oItem['QUANTIDADE']	, Nil};
-				})
-			else
-				Aadd( _aItens, {;
-					{"C6_ITEM"		, StrZero(nI, 2)		, Nil},;
-					{"C6_PRODUTO"	, oItem['PRODCOD']		, Nil},;
-					{"C6_QTDVEN"	, oItem['QUANTIDADE']	, Nil},;
-					{"C6_PRCVEN"	, SB2->B2_CM1			, Nil},;
-					{"C6_OPER"		, cOper					, Nil},;
-					{"C6_QTDLIB"	, oItem['QUANTIDADE']	, Nil};
-				})
-			Endif
+			Aadd( _aItens, {;
+				{"C6_ITEM"		, StrZero(nI, 2)		, Nil},;
+				{"C6_PRODUTO"	, oItem['PRODCOD']		, Nil},;
+				{"C6_QTDVEN"	, oItem['QUANTIDADE']	, Nil},;
+				{"C6_PRCVEN"	, SB2->B2_CM1			, Nil},;
+				{"C6_OPER"		, cOper					, Nil},;
+				{"C6_QTDLIB"	, oItem['QUANTIDADE']	, Nil},;
+				{"C6_PRUNIT"	, SB2->B2_CM1			, Nil};
+			})
 		Next nI
 
 		MsExecAuto( { | x, y, z | MATA410( x, y , z ) }, _aCab, _aItens , _nOpc )
@@ -340,6 +340,10 @@ WSMETHOD NFTransferencia WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 			
 			cPedFil := SC5->C5_FILIAL
 			cPedNum := SC5->C5_NUM
+
+			RecLock("SC5", .f.)
+				SC5->C5_MENNOTA := cMenNota
+			SC5->(MsUnlock())
 		ENDIF
 
 	END TRANSACTION
@@ -531,7 +535,7 @@ WSMETHOD TRANSFFILIAL WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 	Local cFilDes	:= "010104"
 	Local cArmDes	:= "09"
 	Local aCposDet	:= {}
-	Local cTESPad	:= "509"
+//	Local cTESPad	:= "509"
 	Local cMens		:= ""
 
 	Private lMsErroAuto := .F.
@@ -579,7 +583,7 @@ WSMETHOD TRANSFFILIAL WSRECEIVE oNFCab WSSEND cStatus WSSERVICE FluigProtheus
 		aAdd(aAux,{"NNT_PRODD" , oItem['PRODCOD'] })
 		aAdd(aAux,{"NNT_LOCLD" , cArmDes }) //Local do tipo de operação (destino)
 
-		aAdd(aAux,{"NNT_TS" , cTESPad }) 
+		//aAdd(aAux,{"NNT_TS" , cTESPad }) 
 		aAdd(aAux,{"NNT_SERIE" , "1" }) 
 
 		aAdd(aAux,{"NNT_OBS"   , "Fluig: "+oNFCab['IDFLUIG']})
@@ -2121,7 +2125,9 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			oModelSB1:SetValue("SB1MASTER","B1_YFORLIN"		,oProdutoProtheus:ForaLinha)
 			oModelSB1:SetValue("SB1MASTER","B1_01CODMA"		,oProdutoProtheus:CODMA)
 
-			
+			oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,oProdutoProtheus:StPr)
+			oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,oProdutoProtheus:StSc)
+
 			oModelSB1:SetValue("SB1MASTER","B1_UBLQB2B"		,AsString(oProdutoProtheus:UBLQB2B))
 			oModelSB1:SetValue("SB1MASTER","B1_YB2B"		,AsString(oProdutoProtheus:YB2B))
 			oModelSB1:SetValue("SB1MASTER","B1_YCATECO"		,AsString(oProdutoProtheus:YCATECO))
@@ -2132,23 +2138,13 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			oModelSB1:SetValue("SB1MASTER","B1_YPRVB2B"		,oProdutoProtheus:YPRVB2B)
 			oModelSB1:SetValue("SB1MASTER","B1_YDESDET" 	,AsString(oProdutoProtheus:YDESDET))
 
-			
-
-			conout("######06! StPr Valor " + cValToChar(oProdutoProtheus:StPr))
-			conout("######06! StPr  valor" + cValToChar(oProdutoProtheus:StSc))
-
-			oModelSB1:SetValue("SB1MASTER","B1_GARANT"		,'2')
-			oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,cValToChar(oProdutoProtheus:StPr))
-			oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,cValToChar(oProdutoProtheus:StSc))
-
-
 			conout("######06! StPr " + VALTYPE(oProdutoProtheus:StPr))
 			conout("######06! StSc " + VALTYPE(oProdutoProtheus:StSc))
 
 			//oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,'2')
 			//oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,'2')
 			//oModelSB1:SetValue("SB1MASTER","B1_YALTB2B"	,'N')
-			
+			oModelSB1:SetValue("SB1MASTER","B1_GARANT"		,'2')
 			conout("######06!")
 
 			If oModelSB1:VldData()
@@ -2645,13 +2641,6 @@ Static Function saveAIA(oProdutoProtheus)
 	dbSelectArea("AIA")
 	AIA->(dbSetOrder(1))
 	AIA->(dbGoTop())
-
-	conout ( "@@@@@ tabela")
-
-	conout ( xFilial("AIA") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabPR)
-	
-	conout ( "@@@@@ tabela fim")
-
 	if AIA->(msSeek(xFilial("AIA") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabPR))
 		conout ( "@@@@@ 02 ")
 		dbSelectArea("AIB")
@@ -2660,16 +2649,12 @@ Static Function saveAIA(oProdutoProtheus)
 		if AIB->(msSeek(xFilial("AIB") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabPR + SB1->B1_COD)) // Tabela já possui o item
 			conout ( "@@@@@ 03 ")
 			recLock("AIB", .F.)
-			if !empty(oProdutoProtheus:PRCVENA)
-				AIB->AIB_PRCCOM := oProdutoProtheus:PRCVENA
-			endif
-
 			if !empty(oProdutoProtheus:CodTabPR) .or. trim(oProdutoProtheus:CodTabPR) != ''
 				AIB->AIB_CODTAB := oProdutoProtheus:CodTabPR
 			endif
 
 			if !empty(oProdutoProtheus:CodValPR)// Se o estado for informado no arquivo devera atualizar o preço do estado
-				AIB->AIB_YPRCSC := oProdutoProtheus:CodValPR
+				AIB->AIB_PRCCOM := oProdutoProtheus:CodValPR
 			endif
 
 			AIB->AIB_DATVIG := AIA->AIA_DATDE
@@ -2692,10 +2677,10 @@ Static Function saveAIA(oProdutoProtheus)
 			conout ( "@@@@@ 06 ")
 			if !empty(oProdutoProtheus:CodTabPR) // Se o estado for informado no arquivo devera atualizar o preço do estado
 				conout ( "@@@@@ 07 ")
-				AIB_YPRCSC := oProdutoProtheus:CodValPR
+				//AIB_YPRCSC := oProdutoProtheus:CodValPR
 			endif
 			conout ( "@@@@@ 08 ")
-			AIB->AIB_PRCCOM := oProdutoProtheus:PRCVENA
+			AIB->AIB_PRCCOM := oProdutoProtheus:CodValPR
 			AIB->(msUnlock())
 		endiF
 	else // Tabela de preço de compra nao existe (Erro - Deve ser cadastrado previamente)
@@ -2713,10 +2698,6 @@ Static Function saveAIA(oProdutoProtheus)
 		AIB->(dbGoTop())
 		if AIB->(msSeek(xFilial("AIB") + SB1->B1_PROC + SB1->B1_LOJPROC + oProdutoProtheus:CodTabSC + SB1->B1_COD)) // Tabela já possui o item
 			recLock("AIB", .F.)
-			if !empty(oProdutoProtheus:PRCVENA)
-				AIB->AIB_PRCCOM := oProdutoProtheus:PRCVENA
-			endif
-
 			if !empty(oProdutoProtheus:CodTabSC) .or. trim(oProdutoProtheus:CodTabSC) != ''
 				AIB->AIB_CODTAB := oProdutoProtheus:CodTabSC
 			endif
@@ -2743,7 +2724,7 @@ Static Function saveAIA(oProdutoProtheus)
 			if !empty(oProdutoProtheus:CodTabSC) // Se o estado for informado no arquivo devera atualizar o preço do estado
 				AIB->AIB_YPRCSC := oProdutoProtheus:CodValSC
 			endif
-			AIB->AIB_PRCCOM := oProdutoProtheus:PRCVENA
+			AIB->AIB_PRCCOM := oProdutoProtheus:CodValPR
 			AIB->(msUnlock())
 		endiF
 	else // Tabela de preço de compra nao existe (Erro - Deve ser cadastrado previamente)
