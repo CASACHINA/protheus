@@ -147,7 +147,7 @@ Static Function ValDad(aLinha,nLinha,oProc)
 		)
 		lCont := .F.
 
-	Case ! SB2->( dbSeek( xFilial('SB2',cFilDest) + cProduto + cArmazem ) )
+	Case ! SB2->( dbSeek( xFilial('SB2',cFilDest) + cProduto + "01" ) )
 		GERALOG(;
 			nLinha,;
 			"Local Destino",;
