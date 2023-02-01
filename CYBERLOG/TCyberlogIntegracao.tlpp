@@ -1134,7 +1134,7 @@ Method LoadJsonTransferenciaArmazemDocEntrada(cAcao) Class TCyberlogIntegracao
 
 		While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
 
-			jJsonItem := { "sequenciaERP": ZA6->ZA6_ITEM, "codigoReduzido": self:AjusteCodProduto(ZA6->ZA6_PRODUT), "erpId": ZA6->ZA6_ITEM, "quantidade": ZA6->ZA6_QUANT, "noLayout": 1 }
+			jJsonItem := { "sequenciaERP": ZA6->ZA6_ITEM, "codigoReduzido": self:AjusteCodProduto(ZA6->ZA6_PRODUT), "erpId": ZA6->ZA6_ITEM, "quantidade": ZA6->ZA6_QTDSEP, "noLayout": 1 }
 
 			aAdd(aItens, jJsonItem)
 
@@ -1674,6 +1674,22 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 					::SetMovimentoAlmoxarifadoConferenciaStatus("P")
 
 				EndIf
+
+				DBSelectArea("ZA6")
+				ZA6->(DBSetOrder(2)) // ZA6_FILIAL, ZA6_PROCES, ZA6_ITEM, R_E_C_N_O_, D_E_L_E_T_
+				ZA6->(DBGoTop())
+
+				For nW := 1 To Len(jBody["itensPedido"])
+
+					If ZA6->(DBSeek(ZA5->(ZA5_FILIAL + ZA5_PROCES) + jBody["itensPedido"][nW]['sequenciaERP']))
+
+						RecLock("ZA6", .F.)
+						ZA6->ZA6_QTDSEP	:= jBody["itensPedido"][nW]['qtdSeparada']
+						ZA6->(MsUnlock())
+
+					EndIf
+
+				Next nW
 
 				If !Empty(oObjInteg:oEmpAuth:cDepositoB2B) .And. ::cDeposito <> oObjInteg:oEmpAuth:cDepositoB2B
 
@@ -3102,8 +3118,8 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 							aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote origem
 							aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //data validade
 							aAdd(aLinha, {"D3_POTENCI"	, 0												, Nil}) // Potencia
-							aAdd(aLinha, {"D3_QUANT"	, ZA6->ZA6_QUANT								, Nil}) //Quantidade
-							aAdd(aLinha, {"D3_QTSEGUM"	, ConvUM(SB1->B1_COD, ZA6->ZA6_QUANT, 0, 2)		, Nil}) //Seg unidade medida
+							aAdd(aLinha, {"D3_QUANT"	, ZA6->ZA6_QTDSEP								, Nil}) //Quantidade
+							aAdd(aLinha, {"D3_QTSEGUM"	, ConvUM(SB1->B1_COD, ZA6->ZA6_QTDSEP, 0, 2)		, Nil}) //Seg unidade medida
 							aAdd(aLinha, {"D3_ESTORNO"	, ""											, Nil}) //Estorno
 							aAdd(aLinha, {"D3_NUMSEQ"	, ""											, Nil}) // Numero sequencia D3_NUMSEQ
 
