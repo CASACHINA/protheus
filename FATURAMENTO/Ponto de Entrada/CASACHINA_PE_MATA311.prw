@@ -58,7 +58,7 @@ user function MATA311()
 			//apos a gravação, dentro da transação
 		case cIdPonto $ "MODELCOMMITTTS"
 			
-			If !IsInCallStack('A311Efetiv')
+			If !IsInCallStack('A311Efetiv') .And. !IsInCallStack('U_TRFFATAUT') .And. !IsInCallStack('U_TRFFATJOB')
 
 				oObjCyberLog := TCyberlogIntegracao():New()
 
