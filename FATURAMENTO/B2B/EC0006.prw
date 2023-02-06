@@ -368,6 +368,7 @@ static function fInsPedido(cId, lJob)
     aadd(aCabec, {"C5_FRETE"  , nVlrFrete   , nil})
     aadd(aCabec, {"C5_TPFRETE", cTipFre     , nil})
     aadd(aCabec, {"C5_TRANSP" , cCodTra     , nil})
+    aadd(aCabec, {"C5_CYBERW" , "S"         , nil})
 
     // Campos personalizados
     aadd(aCabec, {"C5_YADMFIN", cAdmFin     , nil})

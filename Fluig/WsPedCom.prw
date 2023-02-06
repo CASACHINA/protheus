@@ -12,7 +12,7 @@
 #Include "Colors.ch"
 
 /*---------------------------------------------------------------------------+
-!                       FICHA TECNICA DO PROGRAMA  - 31/01/2023              !
+!                       FICHA TECNICA DO PROGRAMA  - 06/02/2023            !
 +------------------+---------------------------------------------------------+
 !Tipo              ! Web Service	                               			 !
 !Módulo            ! Protheus x Fluig			       	                     !
@@ -1849,6 +1849,8 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 					oModelSB1:SetValue("SB1MASTER","B1_UM"			,oProdutoProtheus:UnidadeMedida)
 				endif
 
+				ConOut("Estou na linha 1852: [oProdutoProtheus:CyberlogWMS] -> " + If(Type("oProdutoProtheus:CyberlogWMS") == "C", oProdutoProtheus:CyberlogWMS, "Veio Tipo: " + Type("oProdutoProtheus:CyberlogWMS")))
+
 				if !empty(oProdutoProtheus:CyberlogWMS) .or. trim(oProdutoProtheus:CyberlogWMS) != ''
 					oModelSB1:SetValue("SB1MASTER","B1_CYBERW"		,oProdutoProtheus:CyberlogWMS)
 				endif
@@ -1946,11 +1948,11 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 				endif
 
 				if !empty(oProdutoProtheus:StPr) 
-					oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,AsString(oProdutoProtheus:StPr))
+					oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,cValToChar(oProdutoProtheus:StPr))
 				endif
 
 				if !empty(oProdutoProtheus:StSc) 
-					oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,oProdutoProtheus:StSc)
+					oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,cValToChar(oProdutoProtheus:StSc))
 				endif
 
 				if !empty(oProdutoProtheus:UBLQB2B) .or. trim(oProdutoProtheus:UBLQB2B) != ''
@@ -2125,8 +2127,8 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			oModelSB1:SetValue("SB1MASTER","B1_YFORLIN"		,oProdutoProtheus:ForaLinha)
 			oModelSB1:SetValue("SB1MASTER","B1_01CODMA"		,oProdutoProtheus:CODMA)
 
-			oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,oProdutoProtheus:StPr)
-			oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,oProdutoProtheus:StSc)
+			//oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,oProdutoProtheus:StPr)
+			//oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,oProdutoProtheus:StSc)
 
 			oModelSB1:SetValue("SB1MASTER","B1_UBLQB2B"		,AsString(oProdutoProtheus:UBLQB2B))
 			oModelSB1:SetValue("SB1MASTER","B1_YB2B"		,AsString(oProdutoProtheus:YB2B))
@@ -2145,6 +2147,9 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 			//oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,'2')
 			//oModelSB1:SetValue("SB1MASTER","B1_YALTB2B"	,'N')
 			oModelSB1:SetValue("SB1MASTER","B1_GARANT"		,'2')
+			oModelSB1:SetValue("SB1MASTER","B1_YSTPR"		,cValToChar(oProdutoProtheus:StPr))
+			oModelSB1:SetValue("SB1MASTER","B1_YSTSC"		,cValToChar(oProdutoProtheus:StSc))
+
 			conout("######06!")
 
 			If oModelSB1:VldData()
