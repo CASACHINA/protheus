@@ -327,6 +327,11 @@ static function fInsPedido(cId, lJob)
         
         // Definindo a operador e bandeira
         cAdmFin := buscaAdm(idMetodo)
+        
+        //Quando for MercadoPago será gerado apenas 1 parcela
+        if (idMetodo = '149').and.(cAdmFin == '036')
+            cCondPag := "B04"
+        endif
 
         if!empty(cAdmFin)
             cAdmFin := cAdmFin
