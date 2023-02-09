@@ -195,6 +195,15 @@ Method SendProduct(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegra
 	Default lAltera_	:= .F.
 	Default lExclui_	:= .F.
 
+	TLogConsole():Log("::oEmpAuth:lIntAtiva 	-> " + If(::oEmpAuth:lIntAtiva 		, ".T.", ".F."))
+	TLogConsole():Log("::oEmpAuth:lProdutoAuto 	-> " + If(::oEmpAuth:lProdutoAuto 	, ".T.", ".F."))
+
+	TLogConsole():Log("::lManual 				-> " + If(::lManual 				, ".T.", ".F."))
+	TLogConsole():Log("lInclui_			 		-> " + If(lInclui_					, ".T.", ".F."))
+	TLogConsole():Log("lCopia_ 					-> " + If(lCopia_ 					, ".T.", ".F."))
+	TLogConsole():Log("lAltera_			 		-> " + If(lAltera_					, ".T.", ".F."))
+	TLogConsole():Log("lExclui_			 		-> " + If(lExclui_					, ".T.", ".F."))
+
 	If ::oEmpAuth:lIntAtiva
 
 		If ( ::lManual ) .Or. ( ::oEmpAuth:lProdutoAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
@@ -1575,6 +1584,16 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 						RecLock("SC5", .F.)
 						SC5->C5_VOLUME1 := jBody["volume"]
+						SC5->(MsUnlock())
+
+					EndIf
+
+					If jBody:HasProperty("peso")
+
+						RecLock("SC5", .F.)
+						SC5->C5_PESOL   := jBody["peso"]
+						SC5->C5_PBRUTO  := jBody["peso"]
+						SC5->C5_ESPECI1 := "VOLUMES"
 						SC5->(MsUnlock())
 
 					EndIf
