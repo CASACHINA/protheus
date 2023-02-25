@@ -669,7 +669,7 @@ Method LoadJsonTransferencia(cAcao) Class TCyberlogIntegracao
 
 		While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == cChaveNNS
 
-			cItem := StrZero(nItem++, 2)
+			cItem := StrZero(nItem++, 3)
 
 			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": self:AjusteCodProduto(NNT->NNT_PROD), "erpId": cItem, "quantidade": NNT->NNT_QUANT, "qtdFaturado": NNT->NNT_QUANT, "qtdAvaria": 0, "noLayout": 0 }
 
@@ -790,7 +790,7 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"item":					.T.,;
 		"pesoUnitario":			SB1->B1_PRV1,;
 		"altura":				0,;
-		"largura":				SB5->B5_LARG,;
+		"largura":				0,;
 		"profundidade":			0,;
 		"unidade":				SB1->B1_UM,;
 		"agrupaSeparacao":		.F.,;
@@ -1575,6 +1575,16 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 						RecLock("SC5", .F.)
 						SC5->C5_VOLUME1 := jBody["volume"]
+						SC5->(MsUnlock())
+
+					EndIf
+
+					If jBody:HasProperty("peso")
+
+						RecLock("SC5", .F.)
+						SC5->C5_PESOL   := jBody["peso"]
+						SC5->C5_PBRUTO  := jBody["peso"]
+						SC5->C5_ESPECI1 := "VOLUMES"
 						SC5->(MsUnlock())
 
 					EndIf

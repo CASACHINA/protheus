@@ -115,27 +115,27 @@ User Function ATUTESTE( cEmpAmb, cFilAmb )
 
 		If 'TESTE' $ cNomeAmb
 
-			cPrtWS 			:= '9184'
+			cPrtWS 			:= ''
 
-			cPrtTSS 		:= "8097"
+			cPrtTSS 		:= ""
 
-			cPrtTAFRest  	:= "8195"
+			cPrtTAFRest  	:= ""
 
-			cPrtTAFHttp 	:= "8194"
+			cPrtTAFHttp 	:= ""
 
-			cPrtSched 		:= "1333"
+			cPrtSched 		:= ""
 
 		ELSEif 'HOMOLOG' $ cNomeAmb
 
-			cPrtWS 			:= '9071'
+			cPrtWS 			:= ''
 
-			cPrtTSS 		:= "8097"
+			cPrtTSS 		:= ""
 
-			cPrtTAFRest  	:= "8191"
+			cPrtTAFRest  	:= ""
 
-			cPrtTAFHttp 	:= "8190"
+			cPrtTAFHttp 	:= ""
 
-			cPrtSched 		:= "1332"
+			cPrtSched 		:= "1271"
 
 		ElseIf 'QA' $ cNomeAmb
 
@@ -151,15 +151,15 @@ User Function ATUTESTE( cEmpAmb, cFilAmb )
 
 		ElseIf 'DEV' $ cNomeAmb
 
-			cPrtWS 			:= '8189'
+			cPrtWS 			:= ''
 
-			cPrtTSS 		:= "8097"
+			cPrtTSS 		:= ""
 
-			cPrtTAFRest  	:= "9104"
+			cPrtTAFRest  	:= ""
 
-			cPrtTAFHttp 	:= "9992"
+			cPrtTAFHttp 	:= ""
 
-			cPrtSched 		:= "1330"
+			cPrtSched 		:= ""
 
 		EndIf
 

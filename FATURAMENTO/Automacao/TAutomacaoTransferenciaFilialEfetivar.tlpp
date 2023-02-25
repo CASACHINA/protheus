@@ -104,7 +104,17 @@ Method Processa(cCodTransf) Class TAutomacaoTransferenciaFilialEfetivar
 
 	If NNS->NNS_STATUS == "1"
 
-		lRet := FWMVCRotAuto(oModel, "NNS", 4, {{"NNSMASTER", aFields}} ,,.T.)
+		Begin Transaction
+
+			lRet := FWMVCRotAuto(oModel, "NNS", 4, {{"NNSMASTER", aFields}} ,,.T.)
+
+			If !lRet
+		
+				DisarmTransaction()
+		
+			EndIf
+			
+		End Transaction
 
 		If lRet
 
@@ -202,7 +212,7 @@ User Function TRFFATJOB(cEmp_, cFil_, cCodTransf_)
 
 	RPCSetEnv(cEmp_,cFil_,,,"COM")
 
-	If MayIUseCode( cEmp_ + cFil_ + "TRFFATJOB" + cCodTransf_ )
+	If MayIUseCode( cEmp_ + cFil_ + "TRFFATJOB" )
 
 		oObjTransf := TAutomacaoTransferenciaFilialEfetivar():New()
 
@@ -210,7 +220,7 @@ User Function TRFFATJOB(cEmp_, cFil_, cCodTransf_)
 
 	Else
 
-		TLogConsole():Log("Transferencia: " + cFil_ + cCodTransf_ + " - " + " Já está em processo." )
+		TLogConsole():Log("Transferencia - TRFFATJOB: " + cFil_ + cCodTransf_ + " - " + " Já está em processo." )
 
 	EndIf
 
