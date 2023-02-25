@@ -207,9 +207,10 @@ Return()
 User Function CYBER_TRANSF()
 
 	Local aParam	    := {"01", "010104"}
-	Local aRecno        := {90644}
+	Local aRecno        := {109681, 109680, 109679, 109678}
 	Local nW            := 0
 	Local oObjCyberLog  := Nil
+	Local oLog			:= TCyberlogHistory():New()
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
@@ -244,7 +245,7 @@ User Function CYBER_TRANSF()
 
 		AAdd(AROTINA, {"Atualiz. Todos Produtos", "U_EC0002AL", 0, 2, 0, NIL})
 
-		// oObjCyberLog:Show("NNS", NNS->(NNS_FILIAL + NNS_COD))
+		oLog:Show("NNS", NNS->(NNS_FILIAL + NNS_COD))
 
 	Next nW
 

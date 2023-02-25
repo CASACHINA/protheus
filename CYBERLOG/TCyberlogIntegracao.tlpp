@@ -195,15 +195,6 @@ Method SendProduct(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegra
 	Default lAltera_	:= .F.
 	Default lExclui_	:= .F.
 
-	TLogConsole():Log("::oEmpAuth:lIntAtiva 	-> " + If(::oEmpAuth:lIntAtiva 		, ".T.", ".F."))
-	TLogConsole():Log("::oEmpAuth:lProdutoAuto 	-> " + If(::oEmpAuth:lProdutoAuto 	, ".T.", ".F."))
-
-	TLogConsole():Log("::lManual 				-> " + If(::lManual 				, ".T.", ".F."))
-	TLogConsole():Log("lInclui_			 		-> " + If(lInclui_					, ".T.", ".F."))
-	TLogConsole():Log("lCopia_ 					-> " + If(lCopia_ 					, ".T.", ".F."))
-	TLogConsole():Log("lAltera_			 		-> " + If(lAltera_					, ".T.", ".F."))
-	TLogConsole():Log("lExclui_			 		-> " + If(lExclui_					, ".T.", ".F."))
-
 	If ::oEmpAuth:lIntAtiva
 
 		If ( ::lManual ) .Or. ( ::oEmpAuth:lProdutoAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
@@ -678,7 +669,7 @@ Method LoadJsonTransferencia(cAcao) Class TCyberlogIntegracao
 
 		While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == cChaveNNS
 
-			cItem := StrZero(nItem++, 2)
+			cItem := StrZero(nItem++, 3)
 
 			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": self:AjusteCodProduto(NNT->NNT_PROD), "erpId": cItem, "quantidade": NNT->NNT_QUANT, "qtdFaturado": NNT->NNT_QUANT, "qtdAvaria": 0, "noLayout": 0 }
 
@@ -799,7 +790,7 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"item":					.T.,;
 		"pesoUnitario":			SB1->B1_PRV1,;
 		"altura":				0,;
-		"largura":				SB5->B5_LARG,;
+		"largura":				0,;
 		"profundidade":			0,;
 		"unidade":				SB1->B1_UM,;
 		"agrupaSeparacao":		.F.,;

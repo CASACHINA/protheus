@@ -22,6 +22,7 @@ user function ITEM()
 
 	Local xRetorno := .T.
 	Local oObjCyberLog := Nil
+	Local cFilBkp := ""
 
 	IF ! Empty(ParamIXB)
 
@@ -57,6 +58,18 @@ user function ITEM()
 
 			If oModel:GetValue("SB1MASTER","B1_CYBERW") == "S"
 
+				// O WS para o fluig starta a filial 010101, logo ao fazer um cad de produtos
+				// nao entra na integracao pois a parametrizacao na ZA2, esta para 010104
+				// Como o cadastro é compartilhado, optei por fazer dessa forma, sem ter que 
+				// alterar o fonte WsPedCom, pois existe outro fornecedor trabalhando no mesmo.
+				If cFilAnt <> "010104"
+
+					cFilBkp := cFilAnt
+
+					cFilAnt := "010104"
+
+				EndIf
+
 				oObjCyberLog := TCyberlogIntegracao():New()
 
 				oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
@@ -68,6 +81,8 @@ user function ITEM()
 					oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
 				
 				EndIf
+
+				cFilAnt := cFilBkp
 
 			EndIf
 
