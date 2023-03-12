@@ -77,6 +77,7 @@ user function MATA311()
 			//na efetivação
 			IF IsInCallStack('A311Efetiv')
 				// Chamada função por Paulo Camata - 23/04/2019
+				//Adicionada atualização do B1_YESTB2B para não precisar repetir o looping - Eduardo Vieira
 				u_RT004NF(oModel:GetValue('NNSMASTER', 'NNS_COD')) // atualizar NF da central de compras (Z01)
 
 				//na inclusao/alteração
@@ -231,6 +232,28 @@ Função para fazer o ajuste
 @type function
 /*/
 static function Ajusta(oModel)
+	Local nLinha
+	Local oModelNNT := oModel:GetModel('NNTDETAIL')
+
+	For nLinha := 1 to oModelNNT:Length()
+		oModelNNT:GoLine(nLinha)
+		IF ! oModelNNT:isDeleted()
+			do case
+				//se a quantidade estiver zero
+			case oModelNNT:GetValue('NNT_QTDWMS') == 0
+				//exclui a linha
+				oModelNNT:DeleteLine()
+
+				//se a quantidade estiver divergente
+			case oModelNNT:GetValue('NNT_QTDWMS') != oModelNNT:GetValue('NNT_QUANT')
+				//ajusta a quantidade conforme separado pelo WMS
+				oModelNNT:loadValue('NNT_QUANT', oModelNNT:GetValue('NNT_QTDWMS'))
+			endcase
+		EndIF
+	Next nLinha
+return
+
+static function atuYestB2(oModel)
 	Local nLinha
 	Local oModelNNT := oModel:GetModel('NNTDETAIL')
 
