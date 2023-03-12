@@ -2,7 +2,7 @@
 
 User function VLDSBTRB()
 
-//Estados que nao tem convenio
+//Estados que nao tem convenio-
 Local _cEstSub := GETNEWPAR('ZZ_ESTSCN',"")
 //Tes que tem substituicao tributaria
 Local _cTesSub := GETNEWPAR('ZZ_TESSUB',"")
