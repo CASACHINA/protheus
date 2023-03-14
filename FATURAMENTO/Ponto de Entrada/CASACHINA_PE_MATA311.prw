@@ -253,28 +253,6 @@ static function Ajusta(oModel)
 	Next nLinha
 return
 
-static function atuYestB2(oModel)
-	Local nLinha
-	Local oModelNNT := oModel:GetModel('NNTDETAIL')
-
-	For nLinha := 1 to oModelNNT:Length()
-		oModelNNT:GoLine(nLinha)
-		IF ! oModelNNT:isDeleted()
-			do case
-				//se a quantidade estiver zero
-			case oModelNNT:GetValue('NNT_QTDWMS') == 0
-				//exclui a linha
-				oModelNNT:DeleteLine()
-
-				//se a quantidade estiver divergente
-			case oModelNNT:GetValue('NNT_QTDWMS') != oModelNNT:GetValue('NNT_QUANT')
-				//ajusta a quantidade conforme separado pelo WMS
-				oModelNNT:loadValue('NNT_QUANT', oModelNNT:GetValue('NNT_QTDWMS'))
-			endcase
-		EndIF
-	Next nLinha
-return
-
 /*/{Protheus.doc} vModeloDetail
 Validação do Modelo
 @author Rafael Ricardo Vieceli
