@@ -507,6 +507,9 @@ Funcao chamada no PE MATA311
 user function RT004NF(cNumSol)
 	local aArea  := NNT->(getArea())
 	local lAchou := .F.
+	local _cArmCom := getNewPar("EC_ARMCOM", "90") 
+	
+	lOCAL _cFilEcom := getNewPar("EC_FILIAL", "010104") 
 
 	dbSelectArea("Z01")
 	Z01->(dbSetOrder(3)) // Z01_FILIAL+Z01_SOLTRA
@@ -517,6 +520,16 @@ user function RT004NF(cNumSol)
 	NNT->(msSeek(xFilial("NNT") + cNumSol, .F.))
 
 	while !NNT->(EoF()) .and. !lAchou .and. allTrim(NNT->NNT_FILIAL + NNT->NNT_COD) == allTrim(xFilial("NNT") + cNumSol)
+		
+		if ALLTRIM(NNT->NNT_LOCLD) == ALLTRIM(_cArmCom) .AND. ALLTRIM(NNT->NNT_FILIAL) == ALLTRIM(_cFilEcom)
+			DbSelectArea("SB1")
+			SB1->(DbSetOrder(1))
+			If SB1->(DbSeek(xFilial('SB1')+NNT->NNT_PROD)) .AND. ALLTRIM(SB1->B1_YB2B)   == 'S'
+				recLock("SB1", .F.)
+					SB1->B1_YESTB2B := "S"
+				SB1->(msUnlock())
+			ENDIF
+		ENDIF
 		if !empty(NNT->NNT_DOC) // N?mero da nota fiscal faturada
 			if Z01->(msSeek(NNT->NNT_FILDES + cNumSol, .F.)) // Caso solicitacao nao tenha sido gerado da central de compras
 				recLock("Z01", .F.)

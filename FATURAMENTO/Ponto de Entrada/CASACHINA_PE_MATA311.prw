@@ -77,6 +77,7 @@ user function MATA311()
 			//na efetivação
 			IF IsInCallStack('A311Efetiv')
 				// Chamada função por Paulo Camata - 23/04/2019
+				//Adicionada atualização do B1_YESTB2B para não precisar repetir o looping - Eduardo Vieira
 				u_RT004NF(oModel:GetValue('NNSMASTER', 'NNS_COD')) // atualizar NF da central de compras (Z01)
 
 				//na inclusao/alteração
