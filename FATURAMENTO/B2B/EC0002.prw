@@ -351,13 +351,17 @@ static function fPost(cUrlPost, cPath, cGetPar, cJson, aHeader, lJob)
             SB1->(msUnlock())
 
             cRetorno := "200"
+
+            conout("Produto "+SB1->B1_COD+ '-'+SB1->B1_DESC+' Inserido com sucesso no site')
+
         elseif oJsonRet["code"] == 401
             cRetorno := "401"
-
+            
+            conout(" ERRO ao inserir Produto "+cJson)
         else
             cLogErr := "Erro " + cValToChar(cValToChar(oJsonRet["code"])) + ". Produto: " + allTrim((cAliProd)->B1_COD) + ". Causa: " + oJsonRet:GetJsonText("causes") + CRLF
             // U_EC07LOG("PRODUTO", "E", cLogErr)
-
+            conout(cLogErr)
             if !lJob
                 msgInfo(cLogErr, "ERRO")
             endif
@@ -400,14 +404,18 @@ static function fPut(cUrlPut, cPath, cGetPar, cJson, aHeader, lJob)
                 SB1->B1_YPRVB2B := (cAliProd)->DA1_PRCVEN // Preco de venda
             SB1->(msUnlock())
             cRet := "200"
+            
+            conout("Produto "+SB1->B1_COD+ '-'+SB1->B1_DESC+' Atualizado com sucesso no site')
 
+    
         elseif oJsonRet["code"] == 401
             cRet := "401"
-
+      
+            conout(" ERRO ao atualizar Produto "+cJson)
         else
             cLogErr := "Erro " + cValToChar(cValToChar(oJsonRet["code"])) + ". Produto: " + allTrim((cAliProd)->B1_COD) + ". Causa: " + oJsonRet:GetJsonText("causes") + CRLF
             // U_EC07LOG("PRODUTO", "E", cLogErr)
-
+            conout(cLogErr)
             if !lJob
                 msgInfo(cLogErr, "ERRO")
             endif
