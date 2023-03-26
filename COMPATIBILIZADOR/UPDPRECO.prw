@@ -2574,10 +2574,10 @@ For nI := 1 To Len( aSX3 )
 
 		RecLock( "SX3", .T. )
 		For nJ := 1 To Len( aSX3[nI] )
-			If     nJ == nPosOrd  // Ordem
-				SX3->( FieldPut( FieldPos( aEstrut[nJ][1] ), cSeqAtu ) )
+			// If     nJ == nPosOrd  // Ordem
+			// 	SX3->( FieldPut( FieldPos( aEstrut[nJ][1] ), cSeqAtu ) )
 
-			ElseIf aEstrut[nJ][2] > 0
+			If aEstrut[nJ][2] > 0
 				SX3->( FieldPut( FieldPos( aEstrut[nJ][1] ), aSX3[nI][nJ][1] ) )
 
 			EndIf
