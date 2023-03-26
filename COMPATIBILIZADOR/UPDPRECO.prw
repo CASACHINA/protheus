@@ -784,8 +784,8 @@ aAdd( aSX3, { ;
 	{ 'ZA7'																	, .T. }, ; //X3_ARQUIVO
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA7_DTGERA'															, .T. }, ; //X3_CAMPO
-	{ 'C'																	, .T. }, ; //X3_TIPO
-	{ 1																		, .T. }, ; //X3_TAMANHO
+	{ 'D'																	, .T. }, ; //X3_TIPO
+	{ 8																		, .T. }, ; //X3_TAMANHO
 	{ 0																		, .T. }, ; //X3_DECIMAL
 	{ 'Data Geração'														, .T. }, ; //X3_TITULO
 	{ 'Data Geração'														, .T. }, ; //X3_TITSPA
@@ -833,8 +833,8 @@ aAdd( aSX3, { ;
 	{ 'ZA7'																	, .T. }, ; //X3_ARQUIVO
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA7_DTAPLI'															, .T. }, ; //X3_CAMPO
-	{ 'C'																	, .T. }, ; //X3_TIPO
-	{ 1																		, .T. }, ; //X3_TAMANHO
+	{ 'D'																	, .T. }, ; //X3_TIPO
+	{ 8																		, .T. }, ; //X3_TAMANHO
 	{ 0																		, .T. }, ; //X3_DECIMAL
 	{ 'Data Aplic.'															, .T. }, ; //X3_TITULO
 	{ 'Data Aplic.'															, .T. }, ; //X3_TITSPA
@@ -1338,12 +1338,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%IPI'																, .T. }, ; //X3_TITULO
-	{ '%IPI'																, .T. }, ; //X3_TITSPA
-	{ '%IPI'																, .T. }, ; //X3_TITENG
-	{ '%IPI'																, .T. }, ; //X3_DESCRIC
-	{ '%IPI'																, .T. }, ; //X3_DESCSPA
-	{ '%IPI'																, .T. }, ; //X3_DESCENG
+	{ '% IPI'																, .T. }, ; //X3_TITULO
+	{ '% IPI'																, .T. }, ; //X3_TITSPA
+	{ '% IPI'																, .T. }, ; //X3_TITENG
+	{ '% IPI'																, .T. }, ; //X3_DESCRIC
+	{ '% IPI'																, .T. }, ; //X3_DESCSPA
+	{ '% IPI'																, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1387,12 +1387,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%MVA'																, .T. }, ; //X3_TITULO
-	{ '%MVA'																, .T. }, ; //X3_TITSPA
-	{ '%MVA'																, .T. }, ; //X3_TITENG
-	{ '%MVA'																, .T. }, ; //X3_DESCRIC
-	{ '%MVA'																, .T. }, ; //X3_DESCSPA
-	{ '%MVA'																, .T. }, ; //X3_DESCENG
+	{ '% MVA'																, .T. }, ; //X3_TITULO
+	{ '% MVA'																, .T. }, ; //X3_TITSPA
+	{ '% MVA'																, .T. }, ; //X3_TITENG
+	{ '% MVA'																, .T. }, ; //X3_DESCRIC
+	{ '% MVA'																, .T. }, ; //X3_DESCSPA
+	{ '% MVA'																, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1436,12 +1436,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%ICMS Saída'															, .T. }, ; //X3_TITULO
-	{ '%ICMS Saída'															, .T. }, ; //X3_TITSPA
-	{ '%ICMS Saída'															, .T. }, ; //X3_TITENG
-	{ '%ICMS Saída'															, .T. }, ; //X3_DESCRIC
-	{ '%ICMS Saída'															, .T. }, ; //X3_DESCSPA
-	{ '%ICMS Saída'															, .T. }, ; //X3_DESCENG
+	{ '% ICMS Saída'															, .T. }, ; //X3_TITULO
+	{ '% ICMS Saída'															, .T. }, ; //X3_TITSPA
+	{ '% ICMS Saída'															, .T. }, ; //X3_TITENG
+	{ '% ICMS Saída'															, .T. }, ; //X3_DESCRIC
+	{ '% ICMS Saída'															, .T. }, ; //X3_DESCSPA
+	{ '% ICMS Saída'															, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1485,12 +1485,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%Frete'															, .T. }, ; //X3_TITULO
-	{ '%Frete'															, .T. }, ; //X3_TITSPA
-	{ '%Frete'															, .T. }, ; //X3_TITENG
-	{ '%Frete'															, .T. }, ; //X3_DESCRIC
-	{ '%Frete'															, .T. }, ; //X3_DESCSPA
-	{ '%Frete'															, .T. }, ; //X3_DESCENG
+	{ '% Frete'															, .T. }, ; //X3_TITULO
+	{ '% Frete'															, .T. }, ; //X3_TITSPA
+	{ '% Frete'															, .T. }, ; //X3_TITENG
+	{ '% Frete'															, .T. }, ; //X3_DESCRIC
+	{ '% Frete'															, .T. }, ; //X3_DESCSPA
+	{ '% Frete'															, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1534,12 +1534,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%ICMS Entr.'															, .T. }, ; //X3_TITULO
-	{ '%ICMS Entr.'															, .T. }, ; //X3_TITSPA
-	{ '%ICMS Entr.'															, .T. }, ; //X3_TITENG
-	{ '%ICMS Entr.'															, .T. }, ; //X3_DESCRIC
-	{ '%ICMS Entr.'															, .T. }, ; //X3_DESCSPA
-	{ '%ICMS Entr.'															, .T. }, ; //X3_DESCENG
+	{ '% ICMS Entr.'															, .T. }, ; //X3_TITULO
+	{ '% ICMS Entr.'															, .T. }, ; //X3_TITSPA
+	{ '% ICMS Entr.'															, .T. }, ; //X3_TITENG
+	{ '% ICMS Entr.'															, .T. }, ; //X3_DESCRIC
+	{ '% ICMS Entr.'															, .T. }, ; //X3_DESCSPA
+	{ '% ICMS Entr.'															, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1583,12 +1583,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 3																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_TITULO
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_TITSPA
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_TITENG
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_DESCRIC
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_DESCSPA
-	{ '%PIS/COF Ent'															, .T. }, ; //X3_DESCENG
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_TITULO
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_TITSPA
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_TITENG
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_DESCRIC
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_DESCSPA
+	{ '% PIS/COF Ent'															, .T. }, ; //X3_DESCENG
 	{ '@E 999.99'															, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -2318,13 +2318,13 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ '%MarkUp Brut'														, .T. }, ; //X3_TITULO
-	{ '%MarkUp Brut'														, .T. }, ; //X3_TITSPA
-	{ '%MarkUp Brut'														, .T. }, ; //X3_TITENG
-	{ '%MarkUp Brut'														, .T. }, ; //X3_DESCRIC
-	{ '%MarkUp Brut'														, .T. }, ; //X3_DESCSPA
-	{ '%MarkUp Brut'														, .T. }, ; //X3_DESCENG
-	{ '%@E 9,999,999.99'														, .T. }, ; //X3_PICTURE
+	{ '% MarkUp Brut'														, .T. }, ; //X3_TITULO
+	{ '% MarkUp Brut'														, .T. }, ; //X3_TITSPA
+	{ '% MarkUp Brut'														, .T. }, ; //X3_TITENG
+	{ '% MarkUp Brut'														, .T. }, ; //X3_DESCRIC
+	{ '% MarkUp Brut'														, .T. }, ; //X3_DESCSPA
+	{ '% MarkUp Brut'														, .T. }, ; //X3_DESCENG
+	{ '@E 9,999,999.99'														, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
