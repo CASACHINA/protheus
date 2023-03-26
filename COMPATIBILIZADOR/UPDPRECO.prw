@@ -798,7 +798,7 @@ aAdd( aSX3, { ;
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
-	{ '"N"'																	, .T. }, ; //X3_RELACAO
+	{ ''																	, .T. }, ; //X3_RELACAO
 	{ ''																	, .T. }, ; //X3_F3
 	{ 0																		, .T. }, ; //X3_NIVEL
 	{ Chr(134) + Chr(128)													, .T. }, ; //X3_RESERV
@@ -847,7 +847,7 @@ aAdd( aSX3, { ;
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
-	{ '"N"'																	, .T. }, ; //X3_RELACAO
+	{ ''																	, .T. }, ; //X3_RELACAO
 	{ ''																	, .T. }, ; //X3_F3
 	{ 0																		, .T. }, ; //X3_NIVEL
 	{ Chr(134) + Chr(128)													, .T. }, ; //X3_RESERV
@@ -896,7 +896,7 @@ aAdd( aSX3, { ;
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
 	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
-	{ '"N"'																	, .T. }, ; //X3_RELACAO
+	{ ''																	, .T. }, ; //X3_RELACAO
 	{ ''																	, .T. }, ; //X3_F3
 	{ 0																		, .T. }, ; //X3_NIVEL
 	{ Chr(134) + Chr(128)													, .T. }, ; //X3_RESERV
