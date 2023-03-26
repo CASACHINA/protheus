@@ -1,0 +1,55 @@
+#INCLUDE "TOTVS.CH"
+
+/*/{Protheus.doc} TPrecoVenda
+@author Wlysses Cerqueira (WlyTech)
+@since 01/03/2023 
+@Project 
+@version 1.0
+@description 
+@type Class
+/*/
+
+Class TPrecoVenda
+
+	Public Method New() Constructor
+
+    Public Method Processa() 
+
+EndClass
+
+Method New() Class TPrecoVenda
+
+Return()
+
+Method Processa() Class TPrecoVenda
+
+    DBSelectArea("ZA7")
+    DBSelectArea("ZA8")
+    DBSelectArea("ZA9")
+    DBSelectArea("DA0")
+
+    DBSelectArea("DA0")
+    DA0->(DBSetOrder(1)) // DA0_FILIAL, DA0_CODTAB, R_E_C_N_O_, D_E_L_E_T_
+    
+    If DA0->(xFilial("DA1") + "001")
+
+        
+
+    EndIf
+    
+Return()
+
+User Function PRECO_PROC()
+
+	Local aParam	    := {"01", "010104"}
+	Local oObjPrcVenda  := Nil
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObjPrcVenda  := TPrecoVenda():New()
+
+    oObjPrcVenda:Processa()
+
+	RPCClearEnv()
+
+Return()
