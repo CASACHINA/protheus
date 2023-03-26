@@ -1038,12 +1038,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Calculado'														, .T. }, ; //X3_TITULO
-	{ 'Preço Calculado'														, .T. }, ; //X3_TITSPA
-	{ 'Preço Calculado'														, .T. }, ; //X3_TITENG
-	{ 'Preço Calculado'														, .T. }, ; //X3_DESCRIC
-	{ 'Preço Calculado'														, .T. }, ; //X3_DESCSPA
-	{ 'Preço Calculado'														, .T. }, ; //X3_DESCENG
+	{ 'Preço Calc.'															, .T. }, ; //X3_TITULO
+	{ 'Preço Calc.'															, .T. }, ; //X3_TITSPA
+	{ 'Preço Calc.'															, .T. }, ; //X3_TITENG
+	{ 'Preço Calc.'															, .T. }, ; //X3_DESCRIC
+	{ 'Preço Calc.'															, .T. }, ; //X3_DESCSPA
+	{ 'Preço Calc.'															, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1087,12 +1087,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Digitado'														, .T. }, ; //X3_TITULO
-	{ 'Preço Digitado'														, .T. }, ; //X3_TITSPA
-	{ 'Preço Digitado'														, .T. }, ; //X3_TITENG
-	{ 'Preço Digitado'														, .T. }, ; //X3_DESCRIC
-	{ 'Preço Digitado'														, .T. }, ; //X3_DESCSPA
-	{ 'Preço Digitado'														, .T. }, ; //X3_DESCENG
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITULO
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITSPA
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITENG
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCRIC
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCSPA
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
