@@ -783,16 +783,16 @@ aAdd( aSX3, { ;
 aAdd( aSX3, { ;
 	{ 'ZA7'																	, .T. }, ; //X3_ARQUIVO
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
-	{ 'ZA7_DTINI'															, .T. }, ; //X3_CAMPO
+	{ 'ZA7_DTGERA'															, .T. }, ; //X3_CAMPO
 	{ 'C'																	, .T. }, ; //X3_TIPO
 	{ 1																		, .T. }, ; //X3_TAMANHO
 	{ 0																		, .T. }, ; //X3_DECIMAL
-	{ 'Dt.Inicial'															, .T. }, ; //X3_TITULO
-	{ 'Dt.Inicial'															, .T. }, ; //X3_TITSPA
-	{ 'Dt.Inicial'															, .T. }, ; //X3_TITENG
-	{ 'Dt.Inicial'															, .T. }, ; //X3_DESCRIC
-	{ 'Dt.Inicial'															, .T. }, ; //X3_DESCSPA
-	{ 'Dt.Inicial'															, .T. }, ; //X3_DESCENG
+	{ 'Data Geração'														, .T. }, ; //X3_TITULO
+	{ 'Data Geração'														, .T. }, ; //X3_TITSPA
+	{ 'Data Geração'														, .T. }, ; //X3_TITENG
+	{ 'Data Geração'														, .T. }, ; //X3_DESCRIC
+	{ 'Data Geração'														, .T. }, ; //X3_DESCSPA
+	{ 'Data Geração'														, .T. }, ; //X3_DESCENG
 	{ ''																	, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -836,12 +836,12 @@ aAdd( aSX3, { ;
 	{ 'C'																	, .T. }, ; //X3_TIPO
 	{ 1																		, .T. }, ; //X3_TAMANHO
 	{ 0																		, .T. }, ; //X3_DECIMAL
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_TITULO
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_TITSPA
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_TITENG
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_DESCRIC
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_DESCSPA
-	{ 'Dt.Aplicação'														, .T. }, ; //X3_DESCENG
+	{ 'Data Aplic.'															, .T. }, ; //X3_TITULO
+	{ 'Data Aplic.'															, .T. }, ; //X3_TITSPA
+	{ 'Data Aplic.'															, .T. }, ; //X3_TITENG
+	{ 'Data Aplic.'															, .T. }, ; //X3_DESCRIC
+	{ 'Data Aplic.'															, .T. }, ; //X3_DESCSPA
+	{ 'Data Aplic.'															, .T. }, ; //X3_DESCENG
 	{ ''																	, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -908,7 +908,7 @@ aAdd( aSX3, { ;
 	{ 'R'																	, .T. }, ; //X3_CONTEXT
 	{ ''																	, .T. }, ; //X3_OBRIGAT
 	{ ''																	, .T. }, ; //X3_VLDUSER
-	{ ''																	, .T. }, ; //X3_CBOX
+	{ 'G=Gerado;A=Aplicado;C=Cancelado'										, .T. }, ; //X3_CBOX
 	{ ''																	, .T. }, ; //X3_CBOXSPA
 	{ ''																	, .T. }, ; //X3_CBOXENG
 	{ ''																	, .T. }, ; //X3_PICTVAR
