@@ -33,7 +33,7 @@ Method Processa() Class TPrecoVenda
     
     If DA0->(xFilial("DA1") + "001")
 
-        
+		
 
     EndIf
     
