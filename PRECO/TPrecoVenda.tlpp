@@ -14,6 +14,7 @@ Class TPrecoVenda
 	Public Method New() Constructor
 
     Public Method Processa() 
+    Public Method Load()
 
 EndClass
 
@@ -38,6 +39,220 @@ Method Processa() Class TPrecoVenda
     EndIf
     
 Return()
+
+Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
+
+    Local cAlias_       := GetNextAlias()
+    Local cCodProdExp   := "%1=1%" // "% B1_COD = '113796' %"
+    Local cDespesaExp   := "%15.00%"
+    Local cMargemExp    := "%8.00%"
+    Local aColsLoad     := {}
+
+    Default cCodProd    := Nil
+    Default nDespesa    := Nil
+    Default nMargem     := Nil
+    Default lTodos      := .F.
+
+    If cCodProd <> Nil
+
+        cCodProdExp := "%B1_COD = " + ValToSql(cCodProd) + "%"
+
+    EndIf
+
+    If nDespesa <> Nil
+
+        cDespesaExp := "%" + cValToChar(nDespesa) + "%"
+
+    EndIf
+
+    If nMargem <> Nil
+
+        cMargemExp := "%" + cValToChar(nMargem) + "%"
+
+    EndIf
+
+	BeginSQL Alias cAlias_
+
+		%noparser%
+
+        SELECT *
+        FROM
+        (
+            SELECT *,
+                ROUND((100 * ZA9_CUSMED)
+                /
+                (
+                    100 - CASE 
+                    WHEN ZA9_MVA <= 0 THEN ZA9_ICMSAI + ZA9_PICOSA + ZA9_DESPSA + ZA9_MARGSA
+                    ELSE ZA9_PICOSA + ZA9_DESPSA + ZA9_MARGSA
+                    END
+                ), 2) AS ZA9_PRCCAL	
+            FROM
+            (
+                SELECT *,
+                    ROUND(ZA9_ULTCOM + ZA9_FRETE + ZA9_IPIVLR + ZA9_CRICMS + ZA9_CRPICO + ZA9_STVLR + ZA9_STSICM, 2) ZA9_CUSMED
+                FROM
+                (
+                    SELECT *,
+                            ROUND(CASE 
+                            WHEN ZA9_MVA > 0 THEN (ZA9_BASTRE * (ZA9_ICMSAI / 100)) - ZA9_BAOPPR
+                            ELSE 0
+                        END, 2) AS ZA9_STVLR
+                    FROM 
+                    (
+                        SELECT *,
+                            ROUND(CASE 
+                                WHEN ZA9_ICMSAI = 12 THEN ZA9_BASEST
+                                WHEN ZA9_ICMSAI = 18 THEN (ZA9_BASEST - (ZA9_BASEST * (33.33 / 100)))
+                                WHEN ZA9_ICMSAI = 25 THEN (ZA9_BASEST - (ZA9_BASEST * (52 / 100)))
+                                ELSE ZA9_CUSBRU + (ZA9_CUSBRU * (110.46 / 100))
+                            END, 2) AS ZA9_BASTRE,
+
+                            ROUND(CASE 
+                                WHEN ZA9_ICMENT = 18 THEN (ZA9_ULTCOM * 0.6667 * (ZA9_ICMENT / 100))
+                                WHEN ZA9_ICMENT = 25 THEN (ZA9_ULTCOM *   0.48 * (ZA9_ICMENT / 100))
+                                ELSE ZA9_ULTCOM * (ZA9_ICMENT / 100)
+                            END, 2) AS ZA9_BAOPPR
+                        FROM
+                        (
+                            SELECT *,
+                                ROUND((ZA9_CUSBRU * (ZA9_MVA / 100)) + ZA9_CUSBRU, 2)	ZA9_BASEST
+                            FROM
+                            (
+                                SELECT *,
+                                        CASE 
+                                        WHEN ZA9_MVA = 0 AND ZA9_ICMENT = 12 THEN ROUND((-ZA9_ULTCOM * (ZA9_ICMENT / 100)) - ZA9_CRICMS, 4)
+                                        ELSE 0
+                                    END												ZA9_STSICM,
+                                    ROUND(ZA9_ULTCOM + ZA9_IPIVLR + ZA9_FRETE, 2)	ZA9_CUSBRU
+                                FROM 
+                                (
+                                    SELECT *,
+                                        CASE 
+                                            WHEN ZA9_MVA = 0 AND ZA9_ICMENT = 18 THEN ((ZA9_ULTCOM * (66.67 / 100)) * (ZA9_ICMENT / 100))
+                                            WHEN ZA9_MVA = 0 AND ZA9_ICMENT = 25 THEN ((ZA9_ULTCOM * (48	/ 100)) * (ZA9_ICMENT / 100))
+                                            WHEN ZA9_MVA = 0 AND ZA9_ICMENT = 27 THEN ((ZA9_ULTCOM * (44.44 / 100)) * (ZA9_ICMENT / 100))
+                                            WHEN ZA9_MVA = 0 AND ZA9_ICMENT = 12 THEN ZA9_ULTCOM * (ZA9_ICMENT / 100)
+                                            ELSE 0
+                                        END * -1 AS ZA9_CRICMS,
+                                        ROUND((ZA9_ULTCOM + ZA9_IPIVLR) * (ZA9_PERFRE / 100), 2)		ZA9_FRETE,	// (Valor do Frete) 
+                                        ROUND(ZA9_ULTCOM * (1 - (ZA9_PICOEN / 100)) - ZA9_ULTCOM, 2)	ZA9_CRPICO	// (Credito PIS/Cofins)
+
+                                    FROM
+                                    (
+                                        SELECT TAB1.*, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, D1_DTDIGIT, D1_TES, D1_ITEM, F1_ESPECIE, F1_STATUS,
+
+                                        ROUND(D1_VUNIT, 2)								ZA9_ULTCOM,	// (Ult Compra)
+                                        D1_IPI											ZA9_IPI,	// (%IPI) 
+                                        CAST(110.46 AS FLOAT)							ZA9_MVA,	// (%MVA)
+                                        CAST(19.00 AS FLOAT)							ZA9_ICMSAI,	// (ICMS SAIDA) 
+                                        CAST(0.00 AS FLOAT)								ZA9_PERFRE,	// (%Frete) 
+                                        D1_PICM											ZA9_ICMENT,	// (%ICMS ENTR.)  
+                                        CAST(9.25 AS FLOAT)								ZA9_PICOEN,	// (%PIS/COFINS ENTRADA)
+                                        CAST(ROUND((D1_VUNIT * (1 + (D1_IPI / 100)) - D1_VUNIT),2) AS FLOAT) ZA9_IPIVLR,	// (Valor IPI)
+                                        CAST(9.25	AS FLOAT)							ZA9_PICOSA,	// (PIS/CONFINS/ SAIDA)
+                                        CAST(%Exp:cDespesaExp%		AS FLOAT)			ZA9_DESPSA,	// (DESPESAS)	
+                                        CAST(%Exp:cMargemExp%		AS FLOAT)			ZA9_MARGSA	// (MARGEM)
+
+                                        FROM 
+                                        (
+                                            SELECT B1_FILIAL, B1_COD, B1_MSBLQL, B1_TIPO, B1_POSIPI NCM, B1_PICM, B1_PICMENT, B1_PICMRET, B1_YB2B, B1_YID, B1_YALTB2B, B1_YESTB2B, DA1_PRCVEN, B1_YPRVB2B, B1_YCATECO
+                                            FROM SB1010 SB1 (NOLOCK)
+                                            LEFT JOIN DA1010 DA1 (NOLOCK) ON
+                                            (
+                                                DA1_FILIAL		= B1_FILIAL AND
+                                                DA1_CODTAB		= '003'		AND
+                                                DA1_CODPRO		= B1_COD	AND
+                                                DA1.D_E_L_E_T_	= ''
+                                            )
+                                            WHERE 1 = 1
+                                            AND B1_YB2B = 'S'
+                                            AND %Exp:cCodProdExp%
+                                        ) TAB1
+                                        INNER JOIN 
+                                        (
+                                            SELECT D1_FILIAL, D1_COD, MAX(D1_EMISSAO) D1_EMISSAO_MAX, MAX(R_E_C_N_O_) RECNO_MAX
+                                            //SELECT *
+                                            FROM SD1010 SD1 (NOLOCK)
+                                            WHERE 1 = 1
+                                            AND SD1.D_E_L_E_T_ = ''
+                                            GROUP BY D1_FILIAL, D1_COD	
+                                        ) TAB2 ON
+                                        (
+                                            TAB1.B1_FILIAL	= '0101'	AND
+                                            TAB2.D1_FILIAL	= '010104'	AND
+                                            TAB1.B1_COD		= TAB2.D1_COD
+                                        )
+                                        INNER JOIN SD1010 SD1 (NOLOCK) ON
+                                        (
+                                            SD1.R_E_C_N_O_	= TAB2.RECNO_MAX
+                                        )
+                                        INNER JOIN SF1010 SF1 (NOLOCK) ON
+                                        (
+                                            SD1.D1_FILIAL	= SF1.F1_FILIAL	 AND
+                                            SD1.D1_DOC		= SF1.F1_DOC	 AND
+                                            SD1.D1_SERIE	= SF1.F1_SERIE	 AND
+                                            SD1.D1_FORNECE	= SF1.F1_FORNECE AND
+                                            SD1.D1_LOJA		= SF1.F1_LOJA	 AND
+                                            // SD1.D1_FORNECE	NOT IN ('999001')AND
+                                            SF1.D_E_L_E_T_	= ''
+                                        )
+                                    ) TAB
+                                ) TAB
+                            ) TAB
+                        ) TAB
+                    ) TAB
+                ) TAB
+            ) TAB
+        ) TAB
+
+	EndSQL
+
+	While !(cAlias_)->(EOF())
+
+        aAdd(aColsLoad,;
+        {;
+            (cAlias_)->B1_COD,; 
+            (cAlias_)->ZA9_ULTCOM,; 
+            (cAlias_)->D1_FORNECE,; 
+            (cAlias_)->D1_LOJA,; 
+            (cAlias_)->D1_DOC,;
+            (cAlias_)->D1_SERIE,;
+            (cAlias_)->ZA9_PRCCAL,;
+            (cAlias_)->ZA9_DESPSA,; 
+            (cAlias_)->ZA9_MARGSA,;
+            (cAlias_)->ZA9_PICOSA,; 
+            (cAlias_)->ZA9_IPI,;
+            (cAlias_)->ZA9_MVA,;
+            (cAlias_)->ZA9_ICMSAI,; 
+            (cAlias_)->ZA9_PERFRE,; 
+            (cAlias_)->ZA9_ICMENT,; 
+            (cAlias_)->ZA9_PICOEN,; 
+            (cAlias_)->ZA9_FRETE ,;
+            (cAlias_)->ZA9_IPIVLR,; 
+            (cAlias_)->ZA9_CRICMS,; 
+            (cAlias_)->ZA9_CRPICO,; 
+            (cAlias_)->ZA9_STSICM,; 
+            (cAlias_)->ZA9_CUSBRU,; 
+            (cAlias_)->ZA9_BASEST,; 
+            (cAlias_)->ZA9_BASTRE,; 
+            (cAlias_)->ZA9_BAOPPR,; 
+            (cAlias_)->ZA9_STVLR ,;
+            (cAlias_)->ZA9_CUSMED,; 
+            0,; // (cAlias_)->ZA9_CUBSST,; 
+            0,; // (cAlias_)->ZA9_CUBCST,; 
+            0,; // (cAlias_)->ZA9_LUBRST,; 
+            0,; // (cAlias_)->ZA9_MRKBRU,; 
+            .F.;
+        })
+
+   		(cAlias_)->(dbSkip())
+
+	EndDo
+
+    (cAlias_)->(DBCloseArea())
+
+Return(aColsLoad)
 
 User Function PRECO_PROC()
 
