@@ -1083,65 +1083,16 @@ aAdd( aSX3, { ;
 aAdd( aSX3, { ;
 	{ 'ZA8'																	, .T. }, ; //X3_ARQUIVO
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
-	{ 'ZA8_PRCCAL'															, .T. }, ; //X3_CAMPO
+	{ 'ZA8_PRCVEN'															, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Calc.'															, .T. }, ; //X3_TITULO
-	{ 'Preço Calc.'															, .T. }, ; //X3_TITSPA
-	{ 'Preço Calc.'															, .T. }, ; //X3_TITENG
-	{ 'Preço Calc.'															, .T. }, ; //X3_DESCRIC
-	{ 'Preço Calc.'															, .T. }, ; //X3_DESCSPA
-	{ 'Preço Calc.'															, .T. }, ; //X3_DESCENG
-	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
-	{ 'Positivo()'															, .T. }, ; //X3_VALID
-	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
-	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
-	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
-	{ ''																	, .T. }, ; //X3_RELACAO
-	{ ''																	, .T. }, ; //X3_F3
-	{ 1																		, .T. }, ; //X3_NIVEL
-	{ Chr(134) + Chr(128)													, .T. }, ; //X3_RESERV
-	{ ''																	, .T. }, ; //X3_CHECK
-	{ ''																	, .T. }, ; //X3_TRIGGER
-	{ 'U'																	, .T. }, ; //X3_PROPRI
-	{ 'S'																	, .T. }, ; //X3_BROWSE
-	{ 'A'																	, .T. }, ; //X3_VISUAL
-	{ 'R'																	, .T. }, ; //X3_CONTEXT
-	{ ''																	, .T. }, ; //X3_OBRIGAT
-	{ 'Positivo()'															, .T. }, ; //X3_VLDUSER
-	{ ''																	, .T. }, ; //X3_CBOX
-	{ ''																	, .T. }, ; //X3_CBOXSPA
-	{ ''																	, .T. }, ; //X3_CBOXENG
-	{ ''																	, .T. }, ; //X3_PICTVAR
-	{ ''																	, .T. }, ; //X3_WHEN
-	{ ''																	, .T. }, ; //X3_INIBRW
-	{ ''																	, .T. }, ; //X3_GRPSXG
-	{ ''																	, .T. }, ; //X3_FOLDER
-	{ ''																	, .T. }, ; //X3_CONDSQL
-	{ ''																	, .T. }, ; //X3_CHKSQL
-	{ 'N'																	, .T. }, ; //X3_IDXSRV
-	{ 'N'																	, .T. }, ; //X3_ORTOGRA
-	{ ''																	, .T. }, ; //X3_TELA
-	{ '1'																	, .T. }, ; //X3_POSLGT
-	{ 'N'																	, .T. }, ; //X3_IDXFLD
-	{ ''																	, .T. }, ; //X3_AGRUP
-	{ '1'																	, .T. }, ; //X3_MODAL
-	{ 'S'																	, .T. }} ) //X3_PYME
-
-aAdd( aSX3, { ;
-	{ 'ZA8'																	, .T. }, ; //X3_ARQUIVO
-	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
-	{ 'ZA8_PRCDIG'															, .T. }, ; //X3_CAMPO
-	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 12																	, .T. }, ; //X3_TAMANHO
-	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Digit.'														, .T. }, ; //X3_TITULO
-	{ 'Preço Digit.'														, .T. }, ; //X3_TITSPA
-	{ 'Preço Digit.'														, .T. }, ; //X3_TITENG
-	{ 'Preço Digit.'														, .T. }, ; //X3_DESCRIC
-	{ 'Preço Digit.'														, .T. }, ; //X3_DESCSPA
-	{ 'Preço Digit.'														, .T. }, ; //X3_DESCENG
+	{ 'Preço Venda'															, .T. }, ; //X3_TITULO
+	{ 'Preço Venda'															, .T. }, ; //X3_TITSPA
+	{ 'Preço Venda'															, .T. }, ; //X3_TITENG
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCRIC
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCSPA
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1393,6 +1344,55 @@ aAdd( aSX3, { ;
 	{ 'Preço Calc.'															, .T. }, ; //X3_DESCRIC
 	{ 'Preço Calc.'															, .T. }, ; //X3_DESCSPA
 	{ 'Preço Calc.'															, .T. }, ; //X3_DESCENG
+	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
+	{ 'Positivo()'															, .T. }, ; //X3_VALID
+	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
+	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
+	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
+	{ ''																	, .T. }, ; //X3_RELACAO
+	{ ''																	, .T. }, ; //X3_F3
+	{ 1																		, .T. }, ; //X3_NIVEL
+	{ Chr(134) + Chr(128)													, .T. }, ; //X3_RESERV
+	{ ''																	, .T. }, ; //X3_CHECK
+	{ ''																	, .T. }, ; //X3_TRIGGER
+	{ 'U'																	, .T. }, ; //X3_PROPRI
+	{ 'S'																	, .T. }, ; //X3_BROWSE
+	{ 'A'																	, .T. }, ; //X3_VISUAL
+	{ 'R'																	, .T. }, ; //X3_CONTEXT
+	{ ''																	, .T. }, ; //X3_OBRIGAT
+	{ 'Positivo()'															, .T. }, ; //X3_VLDUSER
+	{ ''																	, .T. }, ; //X3_CBOX
+	{ ''																	, .T. }, ; //X3_CBOXSPA
+	{ ''																	, .T. }, ; //X3_CBOXENG
+	{ ''																	, .T. }, ; //X3_PICTVAR
+	{ ''																	, .T. }, ; //X3_WHEN
+	{ ''																	, .T. }, ; //X3_INIBRW
+	{ ''																	, .T. }, ; //X3_GRPSXG
+	{ ''																	, .T. }, ; //X3_FOLDER
+	{ ''																	, .T. }, ; //X3_CONDSQL
+	{ ''																	, .T. }, ; //X3_CHKSQL
+	{ 'N'																	, .T. }, ; //X3_IDXSRV
+	{ 'N'																	, .T. }, ; //X3_ORTOGRA
+	{ ''																	, .T. }, ; //X3_TELA
+	{ '1'																	, .T. }, ; //X3_POSLGT
+	{ 'N'																	, .T. }, ; //X3_IDXFLD
+	{ ''																	, .T. }, ; //X3_AGRUP
+	{ '1'																	, .T. }, ; //X3_MODAL
+	{ 'S'																	, .T. }} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	{ 'ZA9'																	, .T. }, ; //X3_ARQUIVO
+	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
+	{ 'ZA9_PRCDIG'															, .T. }, ; //X3_CAMPO
+	{ 'N'																	, .T. }, ; //X3_TIPO
+	{ 12																	, .T. }, ; //X3_TAMANHO
+	{ 2																		, .T. }, ; //X3_DECIMAL
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITULO
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITSPA
+	{ 'Preço Digit.'														, .T. }, ; //X3_TITENG
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCRIC
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCSPA
+	{ 'Preço Digit.'														, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;

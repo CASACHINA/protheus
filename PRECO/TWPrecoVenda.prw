@@ -247,6 +247,11 @@ Method GDFieldProperty() Class TWPrecoVenda
 	// ::oGridField:AddField("ZA9_FILIAL")
 	// ::oGridField:AddField("ZA9_CODTAB")
 	// ::oGridField:AddField("ZA9_VERSAO")
+
+	::oHeader:AddField("MARK")
+	::oHeader:FieldName("MARK"):cTitle := ""
+	::oHeader:FieldName("MARK"):cPict := "@BMP"
+
 	::oGridField:AddField("ZA9_PRODUT")
 	::oGridField:AddField("ZA9_ULTCOM")
 	::oGridField:AddField("ZA9_FORNEC")
@@ -255,6 +260,8 @@ Method GDFieldProperty() Class TWPrecoVenda
 	::oGridField:AddField("ZA9_SERIE")
 
 	::oGridField:AddField("ZA9_PRCCAL")
+	::oGridField:AddField("ZA9_PRCDIG")
+
 	::oGridField:AddField("ZA9_DESPSA")
 	::oGridField:AddField("ZA9_MARGSA")
 

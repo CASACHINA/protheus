@@ -47,6 +47,7 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
     Local cDespesaExp   := "%15.00%"
     Local cMargemExp    := "%8.00%"
     Local aColsLoad     := {}
+    Local cLegenda      := ""
 
     Default cCodProd    := Nil
     Default nDespesa    := Nil
@@ -210,8 +211,15 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
 
 	While !(cAlias_)->(EOF())
 
+        If (cAlias_)->ZA9_PRCCAL <> (cAlias_)->DA1_PRCVEN
+
+            cLegenda := "BR_"
+
+        EndIf
+
         aAdd(aColsLoad,;
         {;
+            cLegenda,;
             (cAlias_)->B1_COD,; 
             (cAlias_)->ZA9_ULTCOM,; 
             (cAlias_)->D1_FORNECE,; 
@@ -219,6 +227,7 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
             (cAlias_)->D1_DOC,;
             (cAlias_)->D1_SERIE,;
             (cAlias_)->ZA9_PRCCAL,;
+            0,;
             (cAlias_)->ZA9_DESPSA,; 
             (cAlias_)->ZA9_MARGSA,;
             (cAlias_)->ZA9_PICOSA,; 
