@@ -145,7 +145,7 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
 
                                         ROUND(D1_VUNIT, 2)								ZA9_ULTCOM,	// (Ult Compra)
                                         D1_IPI											ZA9_IPI,	// (%IPI) 
-                                        CAST(110.46 AS FLOAT)							ZA9_MVA,	// (%MVA)
+                                        D1_MARGEM           							ZA9_MVA,	// (%MVA)
                                         CAST(19.00 AS FLOAT)							ZA9_ICMSAI,	// (ICMS SAIDA) 
                                         CAST(0.00 AS FLOAT)								ZA9_PERFRE,	// (%Frete) 
                                         D1_PICM											ZA9_ICMENT,	// (%ICMS ENTR.)  
