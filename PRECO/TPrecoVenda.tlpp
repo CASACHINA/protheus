@@ -11,6 +11,26 @@
 
 Class TPrecoVenda
 
+    Public Data cTabela
+
+    Public Data cProdutoDe
+    Public Data cProdutoAte
+
+    Public Data cTipoDe
+    Public Data cTipoAte
+
+    Public Data nFiltroValor
+
+    Public Data cFornece
+    Public Data cLoja
+    Public Data cDocumento
+    Public Data cSerie
+
+    Public Data nMargem
+    Public Data nDespesa
+
+    Public Data lB2B
+
 	Public Method New() Constructor
 
     Public Method Processa() 
@@ -20,6 +40,26 @@ EndClass
 
 Method New() Class TPrecoVenda
 
+    ::cTabela		:= Nil
+
+	::cProdutoDe	:= PADR("", TAMSX3("B1_COD")[1], " ")
+    ::cProdutoAte   := PADR("", TAMSX3("B1_COD")[1], "Z")
+
+	::cTipoDe	    := PADR("", TAMSX3("B1_TIPO")[1], " ")
+    ::cTipoAte      := PADR("", TAMSX3("B1_TIPO")[1], "Z")
+
+    ::nFiltroValor  := 1
+    
+	::cFornece		:= Nil
+	::cLoja			:= Nil
+	::cDocumento	:= Nil
+	::cSerie		:= Nil
+
+    ::nMargem       := Nil
+    ::nDespesa      := Nil
+
+    ::lB2B          := .T.
+    
 Return()
 
 Method Processa() Class TPrecoVenda
@@ -40,35 +80,56 @@ Method Processa() Class TPrecoVenda
     
 Return()
 
-Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
+Method Load() Class TPrecoVenda
 
     Local cAlias_       := GetNextAlias()
-    Local cCodProdExp   := "%1=1%" // "% B1_COD = '113796' %"
+
     Local cDespesaExp   := "%15.00%"
     Local cMargemExp    := "%8.00%"
+    
+    Local cFilterProd   := "%1=1%"
+    Local cFilterTipo   := "%1=1%"
+    Local cFilterB2B    := "%1=1%"
+    Local cFilterPreco  := "%1=1%"
+
     Local aColsLoad     := {}
     Local cLegenda      := ""
 
-    Default cCodProd    := Nil
-    Default nDespesa    := Nil
-    Default nMargem     := Nil
-    Default lTodos      := .F.
+    cFilterProd := "%B1_COD BETWEEN " + ValToSql(::cProdutoDe) + " AND " + ValToSql(::cProdutoAte) + "%"
 
-    If cCodProd <> Nil
+    cFilterTipo := "%B1_TIPO BETWEEN " + ValToSql(::cTipoDe) + " AND " + ValToSql(::cTipoAte) + "%"
 
-        cCodProdExp := "%B1_COD = " + ValToSql(cCodProd) + "%"
+    If ::nFiltroValor == 2
+
+        cFilterPreco := " %ZA9_PRCCAL > DA1_PRCVEN% "
+
+    ElseIf ::nFiltroValor == 3
+
+        cFilterPreco := " %ZA9_PRCCAL < DA1_PRCVEN% "
+
+    ElseIf ::nFiltroValor == 4
+
+        cFilterPreco := " %ZA9_PRCCAL = DA1_PRCVEN% "
 
     EndIf
 
-    If nDespesa <> Nil
+    If ::nDespesa <> Nil
 
-        cDespesaExp := "%" + cValToChar(nDespesa) + "%"
+        cDespesaExp := "%" + cValToChar(::nDespesa) + "%"
 
     EndIf
 
-    If nMargem <> Nil
+    If ::nMargem <> Nil
 
-        cMargemExp := "%" + cValToChar(nMargem) + "%"
+        cMargemExp := "%" + cValToChar(::nMargem) + "%"
+
+    EndIf
+
+    // cFilterNF := "%D1_DOC = " + ValToSql(::cDocumento) + " AND D1_SERIE = " + ValToSql(::cSerie) + " AND D1_FORNECE = " + ValToSql(::cFornece) + " AND D1_LOJA = " + ValToSql(::cLoja) + "%"
+
+    If ::lB2B
+
+        cFilterB2B := "%B1_YB2B = 'S'%"
 
     EndIf
 
@@ -141,7 +202,7 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
 
                                     FROM
                                     (
-                                        SELECT TAB1.*, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, D1_DTDIGIT, D1_TES, D1_ITEM, F1_ESPECIE, F1_STATUS,
+                                        SELECT TAB1.*, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, D1_DTDIGIT, D1_TES, D1_ITEM, F1_ESPECIE, F1_STATUS, 0 D1_XVLRFRE,
 
                                         ROUND(D1_VUNIT, 2)								ZA9_ULTCOM,	// (Ult Compra)
                                         D1_IPI											ZA9_IPI,	// (%IPI) 
@@ -162,13 +223,14 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
                                             LEFT JOIN DA1010 DA1 (NOLOCK) ON
                                             (
                                                 DA1_FILIAL		= B1_FILIAL AND
-                                                DA1_CODTAB		= '003'		AND
-                                                DA1_CODPRO		= B1_COD	AND
+                                                DA1_CODTAB		= %Exp:Self:cTabela% AND
+                                                DA1_CODPRO		= B1_COD AND
                                                 DA1.D_E_L_E_T_	= ''
                                             )
                                             WHERE 1 = 1
-                                            AND B1_YB2B = 'S'
-                                            AND %Exp:cCodProdExp%
+                                            AND %Exp:cFilterB2B%
+                                            AND %Exp:cFilterProd%
+                                            AND %Exp:cFilterTipo%
                                         ) TAB1
                                         INNER JOIN 
                                         (
@@ -176,12 +238,13 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
                                             //SELECT *
                                             FROM SD1010 SD1 (NOLOCK)
                                             WHERE 1 = 1
-                                            AND SD1.D_E_L_E_T_ = ''
+                                            AND D1_FILIAL   = %Exp:xFilial("SD1")%
+                                            AND D_E_L_E_T_  = ''
                                             GROUP BY D1_FILIAL, D1_COD	
                                         ) TAB2 ON
                                         (
-                                            TAB1.B1_FILIAL	= '0101'	AND
-                                            TAB2.D1_FILIAL	= '010104'	AND
+                                            TAB1.B1_FILIAL	= %Exp:xFilial("SB1")%	AND
+                                            TAB2.D1_FILIAL	= %Exp:xFilial("SD1")%	AND
                                             TAB1.B1_COD		= TAB2.D1_COD
                                         )
                                         INNER JOIN SD1010 SD1 (NOLOCK) ON
@@ -206,6 +269,8 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
                 ) TAB
             ) TAB
         ) TAB
+        WHERE 1 = 1
+        AND %Exp:cFilterPreco%
 
 	EndSQL
 
@@ -213,7 +278,11 @@ Method Load(cCodProd, nDespesa, nMargem, lTodos) Class TPrecoVenda
 
         If (cAlias_)->ZA9_PRCCAL <> (cAlias_)->DA1_PRCVEN
 
-            cLegenda := "BR_"
+            cLegenda := "BR_VERMELHO"
+
+        ElseIf (cAlias_)->ZA9_PRCCAL == (cAlias_)->DA1_PRCVEN
+
+            cLegenda := "BR_VERDE"
 
         EndIf
 

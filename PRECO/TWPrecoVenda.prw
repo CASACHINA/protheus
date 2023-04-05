@@ -2,6 +2,7 @@
 #INCLUDE "TOPCONN.CH"
 
 /*/{Protheus.doc} TWPrecoVenda
+Rotina de Calculo do Preco de Venda.
 @author Wlysses Cerqueira (WlyTech)
 @since 01/03/2023
 @project Automação Financeira
@@ -16,47 +17,47 @@ Static _oObjPrc := Nil
 
 Class TWPrecoVenda From LongClassName
 
-Data cCaminho
-Data cName
-Data aParam
-Data aParRet
-Data bConfirm
-Data lConfirm
+	Data cCaminho
+	Data cName
+	Data aParam
+	Data aParRet
+	Data bConfirm
+	Data lConfirm
 
-Data oWindow // Janela principal - FWDialogModal
-Data oContainer	// Divisor de janelas - FWFormContainer
-Data cHeaderBox // Identificador do cabecalho da janela
-Data cItemBox // Identificador dos itens da janela
+	Data oWindow // Janela principal - FWDialogModal
+	Data oContainer	// Divisor de janelas - FWFormContainer
+	Data cHeaderBox // Identificador do cabecalho da janela
+	Data cItemBox // Identificador dos itens da janela
 
-Data oPanel
+	Data oPanel
 
-Data aCols
-Data aHeader
-Data aEdit
+	Data aCols
+	Data aHeader
+	Data aEdit
 
-Data oGrid
-Data oGridField
+	Data oGrid
+	Data oGridField
 
-Data oPrecoVenda
+	Data oPrecoVenda
 
-Method New() ConStructor
-Method Processa()
-Method LoadInterface()
-Method LoadWindow()
-Method LoadContainer()
-Method LoadBrowser(lReLoad)
-Method ShowDocEntrada()
-Method Activate()
+	Method New() ConStructor
+	Method Processa()
+	Method LoadInterface()
+	Method LoadWindow()
+	Method LoadContainer()
+	Method LoadBrowser(lReLoad)
+	Method ShowDocEntrada()
+	Method Activate()
 
-Method GDFieldData(lReLoad)
-Method GDEdiTableField()
-Method GDFieldProperty()
-Method Valid()
-Method Confirm()
-Method Pergunte()
-Method GdSeek()
-Method Load()
-Method OrdenarGrid(nCol, oGrid)
+	Method GDFieldData(lReLoad)
+	Method GDEdiTableField()
+	Method GDFieldProperty()
+	Method Valid()
+	Method Confirm()
+	Method Pergunte()
+	Method GdSeek()
+	Method Load()
+	Method OrdenarGrid(nCol, oGrid)
 
 EndClass
 
@@ -87,23 +88,31 @@ Return()
 
 Method Pergunte() Class TWPrecoVenda
 
-	Local lRet := .F.
-	Local nTam := 1
+	Local lRet		:= .F.
+	Local aParRet	:= {}
+	Local bConfirm	:= {|| .T.}
+	Local aParam	:= {}
 
-	::bConfirm := {|| .T. }
+	aAdd(aParam, {1, "Produto de"		, ::oPrecoVenda:cProdutoDe	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
+	aAdd(aParam, {1, "Produto ate"		, ::oPrecoVenda:cProdutoAte	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
 
-	::aParam := {}
+	aAdd(aParam, {1, "Tipo de"			, ::oPrecoVenda:cTipoDe		, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
+	aAdd(aParam, {1, "Tipo ate"			, ::oPrecoVenda:cTipoAte	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 
-	::aParRet := {}
+	aAdd(aParam, {3,"Filtro preço"  	, ::oPrecoVenda:nFiltroValor, {"Todos", "Preço a maior", "Preço a menor", "Preço não alterado"},80,"",.F.})
 
-	aAdd(::aParam, {6, "Arquivo a importar" , ::cCaminho, "@!", ".T.", ".T.", 75, .T., "Arquivo * |*",,GETF_LOCALHARD+GETF_NETWORKDRIVE})
-
-	If ParamBox(::aParam, "Operações", ::aParRet, ::bConfirm,,,,,,::cName, .T., .T.)
+	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,"TWPrecoVenda", .F., .T.)
 
 		lRet := .T.
 
-		::cCaminho := ::aParRet[nTam++]
+		::oPrecoVenda:cProdutoDe	:= aParRet[1]
+		::oPrecoVenda:cProdutoAte	:= aParRet[2]
 
+		::oPrecoVenda:cTipoDe		:= aParRet[3]
+		::oPrecoVenda:cTipoAte		:= aParRet[4]
+
+		::oPrecoVenda:nFiltroValor	:= aParRet[5]
+		
 	EndIf
 
 Return(lRet)
@@ -137,7 +146,7 @@ Method LoadWindow() Class TWPrecoVenda
 
 	::oWindow:AddCloseButton()
 
-	::oWindow:AddButton("Carregar", {|| ::Load() },,, .T., .F., .T.)
+	::oWindow:AddButton("Carregar", {|| ::Load(.T.) },,, .T., .F., .T.)
 
 	::oWindow:AddButton("Pesquisar", {|| ::GdSeek() },,, .T., .F., .T.)
 
@@ -171,7 +180,7 @@ Method LoadBrowser(lReLoad) Class TWPrecoVenda
 
 	::oPanel := ::oContainer:GetPanel(::cItemBox)
 
-	::aCols := ::oPrecoVenda:Load()
+	::Load(.F.)
 
 	::aEdit := ::GDEdiTableField()
 
@@ -206,19 +215,25 @@ Method Load(lReLoad) Class TWPrecoVenda
 
 	Default lReLoad := .T.
 
-	// ::Pergunte()
+	If ::Pergunte()
 
-	Processa({|| ::GDFieldData(lReLoad) }, "Aguarde...", "Carregando Arquivo...", .F.)
+		Processa({|| ::GDFieldData(lReLoad) }, "Aguarde...", "Carregando ...", .F.)
+
+	EndIf
 
 Return()
 
 Method GDFieldData(lReLoad) Class TWPrecoVenda
 
-	::LoadBrowser(lReLoad)
+	::aCols := ::oPrecoVenda:Load()
 
-	::oGrid:oBrowse:Refresh()
+	If lReLoad
 
-	::oGrid:Refresh()		
+		::oGrid:oBrowse:Refresh()
+
+		::oGrid:Refresh()
+
+	EndIf
 
 Return()
 
@@ -248,9 +263,9 @@ Method GDFieldProperty() Class TWPrecoVenda
 	// ::oGridField:AddField("ZA9_CODTAB")
 	// ::oGridField:AddField("ZA9_VERSAO")
 
-	::oHeader:AddField("MARK")
-	::oHeader:FieldName("MARK"):cTitle := ""
-	::oHeader:FieldName("MARK"):cPict := "@BMP"
+	::oGridField:AddField("MARK")
+	::oGridField:FieldName("MARK"):cTitle := ""
+	::oGridField:FieldName("MARK"):cPict := "@BMP"
 
 	::oGridField:AddField("ZA9_PRODUT")
 	::oGridField:AddField("ZA9_ULTCOM")
@@ -288,7 +303,7 @@ Method GDFieldProperty() Class TWPrecoVenda
 	::oGridField:AddField("ZA9_LUBRST")
 	::oGridField:AddField("ZA9_MRKBRU")
 
-	//::oGridField:AddField("Space")	
+	//::oGridField:AddField("Space")
 
 	aRet := ::oGridField:GetHeader()
 
@@ -362,49 +377,7 @@ Return(lRet)
 
 Method Processa() Class TWPrecoVenda
 
-	Local aAreaSE1	:= SE1->(GetArea())
-	Local aAreaSE2	:= SE2->(GetArea())
-	Local nW		:= 0
-	Local aItem		:= {}
-	Local aRet		:= {}
-	Local lRet		:= .T.
-
-	Local nPosLote 	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "CT2_LOTE"})
-	Local nPosSBLote:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "CT2_SBLOTE"})
-	Local nPosDoc	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "CT2_DOC"})
-
-	Local cLote_		:= ""
-	Local cSubLote_	:= ""
-	Local cDoc_  	:= ""
-
-	BEGIN TRANSACTION
-
-		For nW := 1 To Len(::oGrid:aCols)
-
-			If !GDdeleted(nW, ::oGrid:aHeader, ::oGrid:aCols)
-
-
-
-			EndIf
-
-		Next nW
-
-	END TRANSACTION
-
-	If lRet
-
-		MsgInfo("Importação do arquivo " + AllTrim(::cCaminho) + " concluída com sucesso!", "Importação planilha")
-
-		::oGrid:SetArray({}, .F.)
-
-		::oGrid:oBrowse:Refresh()
-
-		::oGrid:Refresh()
-
-	EndIf
-
-	RestArea(aAreaSE1)
-	RestArea(aAreaSE2)
+	
 
 Return()
 
@@ -454,19 +427,43 @@ Method ShowDocEntrada() Class TWPrecoVenda
 
 Return()
 
+User Function PRECOTEL()
+
+	Local oObj := TWPrecoVenda():New()
+
+	oObj:oPrecoVenda:cTabela := DA0->DA0_CODTAB
+
+	If oObj:oPrecoVenda:cTabela == "003"
+
+		oObj:oPrecoVenda:lB2B := .T.
+
+	EndIf
+
+	oObj:Activate()
+
+Return()
+
 User Function PRECOCAT()
 
 	Local nPos			:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_PRODUT"})
 	Local nPosDesp		:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_DESPSA"})
 	Local nPosMargem	:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_MARGSA"})
-	Local cProduto		:= ""
 	Local cField 		:= ReadVar()
 
 	If nPos > 0
 
-		cProduto := _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPos]
+		_oObjPrc:oPrecoVenda:cProdutoDe		:= _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPos]
+		_oObjPrc:oPrecoVenda:cProdutoAte	:= _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPos]
 
-		_oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt] := _oObjPrc:oPrecoVenda:Load(cProduto, If(cField == "M->ZA9_DESPSA", M->ZA9_DESPSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosDesp]), If(cField == "M->ZA9_MARGSA", M->ZA9_MARGSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosMargem]))[1]
+		// _oObjPrc:cFornece	:= ""
+		// _oObjPrc:cLoja		:= ""
+		// _oObjPrc:cDocumento	:= ""
+		// _oObjPrc:cSerie		:= ""
+
+		_oObjPrc:oPrecoVenda:nMargem	:= If(cField == "M->ZA9_MARGSA", M->ZA9_MARGSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosMargem])
+		_oObjPrc:oPrecoVenda:nDespesa	:= If(cField == "M->ZA9_DESPSA", M->ZA9_DESPSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosDesp])
+
+		_oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt] := _oObjPrc:oPrecoVenda:Load()[1]
 
 		_oObjPrc:oGrid:oBrowse:Refresh()
 
@@ -478,16 +475,56 @@ Return(.T.)
 
 User Function PRECOCAL()
 
-	Local oObj 		:= TWPrecoVenda():New()
+	Local oObj 		:= Nil
 	Local aParam	:= {"01", "010104"}
 
 	Private cCadastro := TIT_WND
-	
+
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	oObj := TWPrecoVenda():New()
 
 	@_oObjPrc := oObj
 
+	oObj:oPrecoVenda:cTabela	:= "003"
+	oObj:oPrecoVenda:cProdutoDe	:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
+	oObj:oPrecoVenda:cProdutoAte:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
+
+	// oObj:Load(.F.)
+
 	oObj:Activate()
+
+	RPCClearEnv()
+
+Return()
+
+User Function PRECOFRE()
+
+	Local aChave	:= Array(5)
+	Local aM116aCol	:= Array(5)
+	Local aParam	:= {"01", "010104"}
+
+	Private ACOLS := {{"", "", NIL}}
+	Private PARAMIXB := {}
+	Private cCadastro := TIT_WND
+
+	// NF produtos
+	aChave[1] := "666666666"
+	aChave[2] := "666"
+	aChave[3] := "000001"
+	aChave[4] := "01"
+
+	aM116aCol[1] := aChave[1]
+	aM116aCol[2] := aChave[2]
+	aM116aCol[3] := aChave[3]
+	aM116aCol[4] := aChave[4]
+	aM116aCol[5] := aCols[1]
+
+	PARAMIXB := {"cAliasSD1",1,aM116aCol}
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	U_M116ACOL()
 
 	RPCClearEnv()
 
