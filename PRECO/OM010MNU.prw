@@ -9,6 +9,10 @@ PE para incluir opcao no menu
 /*/
 User Function OM010MNU()
 
-    aAdd(aRotina, {"","U_PRECOTEL", 0, 3, 32, NIL})
+    Local aMenu := {}
+
+    aAdd(aMenu, {"Manutencao", "U_PRECOTEL", 0, 3, 32, NIL})
+
+    aAdd(aRotina, {"Proc. Preço Casa China", aMenu, 0, 2, 0, NIL})
 
 Return()

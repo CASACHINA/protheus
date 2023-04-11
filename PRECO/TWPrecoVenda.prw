@@ -47,13 +47,18 @@ Class TWPrecoVenda From LongClassName
 	Method LoadContainer()
 	Method LoadBrowser(lReLoad)
 	Method ShowDocEntrada()
+	Method Excel()
+	Method Legend()
+	Method GetVersao()
+	Method GetProxItemDA1(cTabela)
 	Method Activate()
 
-	Method GDFieldData(lReLoad)
-	Method GDEdiTableField()
-	Method GDFieldProperty()
+	Method GetFieldData(lReLoad)
+	Method GetEdiTableField()
+	Method GetFieldProperty()
 	Method Valid()
 	Method Confirm()
+	Method AplicarPreco()
 	Method Pergunte()
 	Method GdSeek()
 	Method Load()
@@ -99,7 +104,7 @@ Method Pergunte() Class TWPrecoVenda
 	aAdd(aParam, {1, "Tipo de"			, ::oPrecoVenda:cTipoDe		, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 	aAdd(aParam, {1, "Tipo ate"			, ::oPrecoVenda:cTipoAte	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 
-	aAdd(aParam, {3,"Filtro preço"  	, ::oPrecoVenda:nFiltroValor, {"Todos", "Preço a maior", "Preço a menor", "Preço não alterado"},80,"",.F.})
+	aAdd(aParam, {3,"Filtro preço"  	, ::oPrecoVenda:nFiltroValor, {"Todos", "Preço a maior", "Preço a menor", "Preço sem alteração"},80,"",.F.})
 
 	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,"TWPrecoVenda", .F., .T.)
 
@@ -130,27 +135,41 @@ Return()
 Method LoadWindow() Class TWPrecoVenda
 
 	// Local aCoors := MsAdvSize()
-	Local aCoors := {0, 0, 2000, 300}
+	Local aCoors := {}
+	
+	If FWIsInCallStack("U_PRECOCAL")
 
+		aCoors := {0, 0, 2000, 300}
+
+	Else
+
+		aCoors := MsAdvSize()
+
+	EndIf
+	
 	::oWindow := FWDialogModal():New()
 
 	::oWindow:SetBackground(.T.)
-	::oWindow:SetTitle(TIT_WND)
+	::oWindow:SetTitle(TIT_WND + " [" + DA0->DA0_CODTAB + "] - " + AllTrim(DA0->DA0_DESCRI))
 	::oWindow:SetEscClose(.T.)
-	::oWindow:SetSize(aCoors[4], aCoors[3] / 2)
+	::oWindow:SetSize(aCoors[4], aCoors[3])
 	::oWindow:EnableFormBar(.T.)
 	::oWindow:CreateDialog()
 	::oWindow:CreateFormBar()
 
-	::oWindow:AddOKButton({|| ::Confirm() })
+	::oWindow:AddOKButton({|| ::Confirm() }, "Aplicar")
 
 	::oWindow:AddCloseButton()
 
-	::oWindow:AddButton("Carregar", {|| ::Load(.T.) },,, .T., .F., .T.)
+	::oWindow:AddButton("Legenda"			, {|| ::Legend() }			,,, .T., .F., .T.)
 
-	::oWindow:AddButton("Pesquisar", {|| ::GdSeek() },,, .T., .F., .T.)
+	::oWindow:AddButton("Exportar Excel"	, {|| ::Excel() }			,,, .T., .F., .T.)
 
-	::oWindow:AddButton("Doc.Entrada", {|| ::ShowDocEntrada() },,, .T., .F., .T.)
+	::oWindow:AddButton("Carregar"			, {|| ::Load(.T.) }			,,, .T., .F., .T.)
+
+	::oWindow:AddButton("Pesquisar"			, {|| ::GdSeek() }			,,, .T., .F., .T.)
+
+	::oWindow:AddButton("Doc.Entrada"		, {|| ::ShowDocEntrada() }	,,, .T., .F., .T.)
 
 Return()
 
@@ -182,9 +201,9 @@ Method LoadBrowser(lReLoad) Class TWPrecoVenda
 
 	::Load(.F.)
 
-	::aEdit := ::GDEdiTableField()
+	::aEdit := ::GetEdiTableField()
 
-	::aHeader := ::GDFieldProperty()
+	::aHeader := ::GetFieldProperty()
 
 	::oGrid := MsNewGetDados():New(0, 0, 0, 0, GD_UPDATE, cVldDef, cVldDef, "", @::aEdit,,, cVldDef,, cVldDef, ::oPanel, @::aHeader, @::aCols)
 
@@ -217,17 +236,19 @@ Method Load(lReLoad) Class TWPrecoVenda
 
 	If ::Pergunte()
 
-		Processa({|| ::GDFieldData(lReLoad) }, "Aguarde...", "Carregando ...", .F.)
+		Processa({|| ::GetFieldData(lReLoad) }, "Aguarde...", "Carregando ...", .F.)
 
 	EndIf
 
 Return()
 
-Method GDFieldData(lReLoad) Class TWPrecoVenda
+Method GetFieldData(lReLoad) Class TWPrecoVenda
 
 	::aCols := ::oPrecoVenda:Load()
 
 	If lReLoad
+
+		::oGrid:SetArray(::aCols, .F.)
 
 		::oGrid:oBrowse:Refresh()
 
@@ -245,15 +266,15 @@ Method Activate() Class TWPrecoVenda
 
 Return()
 
-Method GDEdiTableField() Class TWPrecoVenda
+Method GetEdiTableField() Class TWPrecoVenda
 
 	Local aRet := {}
 
-	aRet := {"ZA9_MARGSA", "ZA9_DESPSA"}
+	aRet := {"ZA9_MARGSA", "ZA9_DESPSA", "ZA9_FRETE", "ZA9_PRCDIG"}
 
 Return(aRet)
 
-Method GDFieldProperty() Class TWPrecoVenda
+Method GetFieldProperty() Class TWPrecoVenda
 
 	Local aRet := {}
 
@@ -269,10 +290,12 @@ Method GDFieldProperty() Class TWPrecoVenda
 
 	::oGridField:AddField("ZA9_PRODUT")
 	::oGridField:AddField("ZA9_ULTCOM")
+
 	::oGridField:AddField("ZA9_FORNEC")
 	::oGridField:AddField("ZA9_LOJFOR")
 	::oGridField:AddField("ZA9_DOC")
 	::oGridField:AddField("ZA9_SERIE")
+	::oGridField:AddField("DA1_PRCVEN")
 
 	::oGridField:AddField("ZA9_PRCCAL")
 	::oGridField:AddField("ZA9_PRCDIG")
@@ -284,7 +307,7 @@ Method GDFieldProperty() Class TWPrecoVenda
 	::oGridField:AddField("ZA9_IPI")
 	::oGridField:AddField("ZA9_MVA")
 	::oGridField:AddField("ZA9_ICMSAI")
-	::oGridField:AddField("ZA9_PERFRE")
+	// ::oGridField:AddField("ZA9_PERFRE")
 	::oGridField:AddField("ZA9_ICMENT")
 	::oGridField:AddField("ZA9_PICOEN")
 	::oGridField:AddField("ZA9_FRETE")
@@ -313,8 +336,6 @@ Method Valid() Class TWPrecoVenda
 
 	Local lRet		:= .T.
 	Local nW		:= 0
-	Local nX		:= 0
-	Local aCampObr	:= {"CT2_LOTE", "CT2_SBLOTE", "CT2_DOC"}
 
 	DBSelectArea("SX3")
 	SX3->(DBSetOrder(2)) // X3_CAMPO, R_E_C_N_O_, D_E_L_E_T_
@@ -329,43 +350,7 @@ Method Valid() Class TWPrecoVenda
 
 		If !GDdeleted(nW, ::oGrid:aHeader, ::oGrid:aCols)
 
-			For nX := 1 To Len(aCampObr)
 
-				SX3->(DBSeek(aCampObr[nX]))
-
-				nPos := aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == aCampObr[nX]})
-
-				If nPos > 0
-
-					If Empty(::oGrid:aCols[nW][nPos])
-
-						MsgStop("Linha: " + AllTrim(cValToChar(nW)) + CRLF + CRLF + "Campo '" + AllTrim(::oGrid:aHeader[nPosDoc][1]) + "' não preenchido!", "Geração de Lançamento")
-
-						::oGrid:GoTo(nW)
-
-						::oGrid:oBrowse:SetFocus()
-
-						lRet := .F.
-
-						Exit
-
-					EndIf
-
-				Else
-
-					MsgStop("Campo '" + AllTrim(SX3->X3_TITULO) + "-" + AllTrim(SX3->X3_CAMPO) + "' não encontrado" + " !", "Geração de Lançamento")
-
-					::oGrid:GoTo(nW)
-
-					::oGrid:oBrowse:SetFocus()
-
-					lRet := .F.
-
-					Exit
-
-				EndIf
-
-			Next nX
 
 		EndIf
 
@@ -376,8 +361,108 @@ Method Valid() Class TWPrecoVenda
 Return(lRet)
 
 Method Processa() Class TWPrecoVenda
-
 	
+	Local nW 		:= 0
+	Local nX 		:= 0
+	Local cField 	:= ""
+	Local cVersao	:= ""
+	Local lAchouZA8	:= .F.
+	Local lNoIgual	:= .F.
+
+	Begin Transaction
+
+		cVersao := ::GetVersao()
+
+		For nW := 1 To Len(::oGrid:aCols)
+
+			RecLock("ZA9", .T.)
+			ZA9->ZA9_FILIAL := xFilial("ZA9")
+			ZA9->ZA9_CODTAB	:= ::oPrecoVenda:cTabela	
+			ZA9->ZA9_VERSAO	:= cVersao
+				
+			For nX := 1 To Len(::oGrid:aHeader)
+
+				cField := ::oGrid:aHeader[nX][2]
+
+				If cField == "MARK"
+
+					lNoIgual := ::oGrid:aCols[nW][nX] == "BR_VERDE"
+
+				EndIf
+
+				If FieldPos(cField) > 0 .And. SubStr(cField, 1, 3) == "ZA9"
+					
+					FieldPut( FieldPos(cField), ::oGrid:aCols[nW][nX])
+
+				EndIf
+
+			Next nX
+
+			ZA9->(MSUnlock())
+
+			ZA8->(DBSetorder(1)) // ZA8_FILIAL, ZA8_CODTAB, ZA8_PRODUT, R_E_C_N_O_, D_E_L_E_T_
+
+			lAchouZA8 := ZA8->(DBSeek(xFilial("ZA8") + ZA9->ZA9_CODTAB + ZA9->ZA9_PRODUT))
+
+			If !lNoIgual
+
+				RecLock("ZA8", !lAchouZA8)
+				ZA8->ZA8_FILIAL	:= xFilial("ZA8")
+				ZA8->ZA8_CODTAB	:= ZA9->ZA9_CODTAB
+				ZA8->ZA8_PRODUT	:= ZA9->ZA9_PRODUT
+				ZA8->ZA8_PRCCAL	:= ZA9->ZA9_PRCCAL
+				ZA8->ZA8_PRCDIG	:= ZA9->ZA9_PRCDIG
+				ZA8->ZA8_PRCVEN	:= If(ZA9->ZA9_PRCDIG > 0, ZA9->ZA9_PRCDIG, ZA9->ZA9_PRCCAL)
+				ZA8->(MSUnlock())
+
+			EndIf
+
+		Next nW
+
+	End Transaction
+
+	Begin Transaction
+
+		::AplicarPreco(::oPrecoVenda:cTabela)
+
+	End Transaction
+
+Return()
+
+Method AplicarPreco(cTabela) Class TWPrecoVenda
+
+	Local lAchouDA1 := .F.
+
+	DBSelectArea("DA1")
+	DA1->(DBSetOrder(1)) // DA1_FILIAL, DA1_CODTAB, DA1_CODPRO, DA1_INDLOT, DA1_ITEM, R_E_C_N_O_, D_E_L_E_T_
+	DA1->(DBGoTop())
+
+	DBSelectArea("ZA8")
+	ZA8->(DBSetOrder(1)) // ZA8_FILIAL, ZA8_CODTAB, ZA8_PRODUT, R_E_C_N_O_, D_E_L_E_T_
+	ZA8->(DBGoTop())
+
+	If ZA8->(DBSeek(xFilial("ZA8") + cTabela))
+
+		While ZA8->(!EOF()) .And. ZA8->(ZA8_FILIAL + ZA8_CODTAB) == xFilial("ZA8") + cTabela
+
+			lAchouDA1 := !DA1->(DBSeek(xFilial("DA1") + cTabela + ZA8->ZA8_PRODUT))
+
+			RecLock("DA1", lAchouDA1)
+			DA1->DA1_FILIAL	:= xFilial("DA1")
+			DA1->DA1_PRCVEN := ZA8->ZA8_PRCVEN
+			DA1->DA1_ITEM	:= If(lAchouDA1, ::GetProxItemDA1(cTabela), DA1->DA1_ITEM)
+			DA1->DA1_CODTAB	:= cTabela
+			DA1->DA1_CODPRO	:= ZA8->ZA8_PRODUT
+			DA1->DA1_ATIVO	:= "1"
+			DA1->DA1_TPOPER	:= "4"
+			DA1->DA1_MOEDA	:= 1
+			DA1->(MSUnlock())
+
+			ZA8->(DBSkip())
+
+		EndDo
+
+	EndIf
 
 Return()
 
@@ -385,9 +470,11 @@ Method Confirm() Class TWPrecoVenda
 
 	If ::Valid()
 
-		If MsgYesNo("Confirma importação?")
+		If MsgYesNo("Confirma?")
 
-			U_BIAMsgRun("Importando...", "Aguarde!", {|| ::Processa() })
+			FwMsgRun(, {|| ::Processa() }, "Aguarde...", "Atualizando novos preços...")
+
+			::oWindow:oOwner:End()
 
 		EndIf
 
@@ -400,8 +487,15 @@ Method ShowDocEntrada() Class TWPrecoVenda
 	Local aAreaSF1	:= SF1->(GetArea())
 	Local aRotBkp	:= aClone(aRotina)
 
-	aRotina := {}  //StaticCall(MATA103, MenuDef)
+	Local nPosDoc	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_DOC"})
+	Local nPosSerie	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_SERIE"})
+	Local nPosForn	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_FORNEC"})
+	Local nPosLoja	:= aScan(::oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_LOJFOR"})
 
+	aRotina := {}  //StaticCall(MATA103, MenuDef)
+	INCLUI := .F.
+	ALTERA := .F.
+	
 	aAdd(aRotina,{"", "AxPesqui"   , 0 , 1, 0, .F.}) 		//"Pesquisar"
 	aAdd(aRotina,{"", "A103NFiscal", 0 , 2, 0, nil}) 		//"Visualizar"
 	aAdd(aRotina,{"", "A103NFiscal", 0 , 3, 0, nil}) 		//"Incluir"
@@ -411,13 +505,17 @@ Method ShowDocEntrada() Class TWPrecoVenda
 	DBSelectArea("SF1")
 	SF1->(DbSetOrder(1))  //F1_FILIAL, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_TIPO, R_E_C_N_O_, D_E_L_E_T_
 
-	If SF1->(DbSeek(xFilial("SF1") + ZA9->(ZA9_DOC + ZA9_SERIE + ZA9_FORNEC + ZA9_LOJFOR)))
+	If Len(::oGrid:aCols) > 0
 
-		A103NFiscal("SF1", SF1->(Recno()), 2, .F.)
+		If SF1->(DbSeek(xFilial("SF1") + ::oGrid:aCols[::oGrid:nAt][nPosDoc] + ::oGrid:aCols[::oGrid:nAt][nPosSerie] + ::oGrid:aCols[::oGrid:nAt][nPosForn] + ::oGrid:aCols[::oGrid:nAt][nPosLoja]))
 
-	Else
+			A103NFiscal("SF1", SF1->(Recno()), 2, .F.)
 
-		Alert("Nota não encontrada!")
+		Else
+
+			Alert("Nota não encontrada!")
+
+		EndIf
 
 	EndIf
 
@@ -427,19 +525,111 @@ Method ShowDocEntrada() Class TWPrecoVenda
 
 Return()
 
-User Function PRECOTEL()
+Method Excel() Class TWPrecoVenda
 
-	Local oObj := TWPrecoVenda():New()
+	DlgToExcel({{"GETDADOS", "Grid de Preços", ::GetFieldProperty(), ::aCols}})
 
-	oObj:oPrecoVenda:cTabela := DA0->DA0_CODTAB
+Return()
 
-	If oObj:oPrecoVenda:cTabela == "003"
+Method Legend() Class TWPrecoVenda
 
-		oObj:oPrecoVenda:lB2B := .T.
+	Local aLegend := {}
+	
+	aAdd(aLegend, {"BR_VERDE"	, "Preço sem alteração"})
+	aAdd(aLegend, {"BR_VERMELHO", "Preço com alteração"})
+	
+	BrwLegenda(TIT_WND, "Legenda", aLegend)
+
+Return()
+
+Method GetVersao() Class TWPrecoVenda
+
+	Local cVersao	:= "001"
+	Local cAlias_	:= GetNextAlias()
+
+	BeginSQL Alias cAlias_
+
+		%noparser%
+
+		SELECT MAX(ZA7_VERSAO) ZA7_VERSAO_MAX
+		FROM ZA7010 
+		WHERE 1 = 1
+		AND ZA7_FILIAL 	= %Exp:xFilial("ZA7")%
+		AND ZA7_CODTAB	= %Exp:Self:oPrecoVenda:cTabela%
+		AND D_E_L_E_T_	= ''
+
+	EndSQL
+
+	If !(cAlias_)->(EOF())
+
+		cVersao := Soma1((cAlias_)->ZA7_VERSAO_MAX)
 
 	EndIf
 
-	oObj:Activate()
+	RecLock("ZA7", .T.)
+	ZA7->ZA7_FILIAL	:= xFilial("ZA7")
+	ZA7->ZA7_CODTAB	:= ::oPrecoVenda:cTabela
+	ZA7->ZA7_VERSAO	:= cVersao
+	ZA7->ZA7_DTGERA	:= Date()
+	ZA7->ZA7_DTAPLI	:= Date()
+	ZA7->ZA7_STATUS	:= "2"
+	ZA7->(MSUnlock())
+	
+Return(cVersao)
+
+Method GetProxItemDA1(cTabela) Class TWPrecoVenda
+
+	Local cProximo	:= "0001"
+	Local cAlias_	:= GetNextAlias()
+
+	BeginSQL Alias cAlias_
+
+		%noparser%
+
+		SELECT MAX(DA1_ITEM) DA1_ITEM_MAX
+		FROM DA1010 
+		WHERE 1 = 1
+		AND DA1_FILIAL 	= %Exp:xFilial("DA1")%
+		AND DA1_CODTAB	= %Exp:cTabela%
+		AND D_E_L_E_T_	= ''
+
+	EndSQL
+
+	If !(cAlias_)->(EOF())
+
+		cProximo := Soma1((cAlias_)->DA1_ITEM_MAX)
+
+	EndIf
+	
+Return(cProximo)
+
+User Function PRECOTEL()
+
+	Local oObj := Nil
+	
+	If DA0->DA0_ATIVO == "1"
+
+		Private cCadastro := TIT_WND
+		
+		oObj := TWPrecoVenda():New()
+
+		_oObjPrc := @oObj
+
+		oObj:oPrecoVenda:cTabela := DA0->DA0_CODTAB
+
+		If oObj:oPrecoVenda:cTabela == "003"
+
+			oObj:oPrecoVenda:lB2B := .T.
+
+		EndIf
+
+		oObj:Activate()
+
+	Else
+
+		Help(NIL, NIL, "HELP", NIL, "A tabela de preço " + DA0->DA0_CODTAB + " está bloqueada!" , 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+	EndIf
 
 Return()
 
@@ -448,6 +638,7 @@ User Function PRECOCAT()
 	Local nPos			:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_PRODUT"})
 	Local nPosDesp		:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_DESPSA"})
 	Local nPosMargem	:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_MARGSA"})
+	Local nPosFrete		:= aScan(_oObjPrc:oGrid:aHeader, {|x| AllTrim(x[2]) == "ZA9_FRETE"})
 	Local cField 		:= ReadVar()
 
 	If nPos > 0
@@ -460,8 +651,9 @@ User Function PRECOCAT()
 		// _oObjPrc:cDocumento	:= ""
 		// _oObjPrc:cSerie		:= ""
 
-		_oObjPrc:oPrecoVenda:nMargem	:= If(cField == "M->ZA9_MARGSA", M->ZA9_MARGSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosMargem])
-		_oObjPrc:oPrecoVenda:nDespesa	:= If(cField == "M->ZA9_DESPSA", M->ZA9_DESPSA, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosDesp])
+		_oObjPrc:oPrecoVenda:nMargem	:= If(cField == "M->ZA9_MARGSA", M->ZA9_MARGSA	, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosMargem])
+		_oObjPrc:oPrecoVenda:nDespesa	:= If(cField == "M->ZA9_DESPSA", M->ZA9_DESPSA	, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosDesp])
+		_oObjPrc:oPrecoVenda:nFrete		:= If(cField == "M->ZA9_FRETE", M->ZA9_FRETE	, _oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt][nPosFrete])
 
 		_oObjPrc:oGrid:aCols[_oObjPrc:oGrid:nAt] := _oObjPrc:oPrecoVenda:Load()[1]
 
@@ -476,17 +668,22 @@ Return(.T.)
 User Function PRECOCAL()
 
 	Local oObj 		:= Nil
+	Local cTabela	:= "003"
 	Local aParam	:= {"01", "010104"}
 
 	Private cCadastro := TIT_WND
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
+	DBSelectArea("DA0")
+
+	DA0->(DBSeek(xFilial("DA0") + cTabela))
+
 	oObj := TWPrecoVenda():New()
 
-	@_oObjPrc := oObj
+	_oObjPrc := @oObj
 
-	oObj:oPrecoVenda:cTabela	:= "003"
+	oObj:oPrecoVenda:cTabela	:= cTabela
 	oObj:oPrecoVenda:cProdutoDe	:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
 	oObj:oPrecoVenda:cProdutoAte:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
 

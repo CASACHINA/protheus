@@ -1483,7 +1483,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_IPI'																, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '% IPI'																, .T. }, ; //X3_TITULO
 	{ '% IPI'																, .T. }, ; //X3_TITSPA
@@ -1532,7 +1532,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_MVA'																, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '% MVA'																, .T. }, ; //X3_TITULO
 	{ '% MVA'																, .T. }, ; //X3_TITSPA
@@ -1581,7 +1581,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_ICMSAI'															, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '% ICMS Saída'															, .T. }, ; //X3_TITULO
 	{ '% ICMS Saída'															, .T. }, ; //X3_TITSPA
@@ -1630,7 +1630,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_PERFRE'															, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '% Frete'															, .T. }, ; //X3_TITULO
 	{ '% Frete'															, .T. }, ; //X3_TITSPA
@@ -1679,7 +1679,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_ICMENT'															, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '% ICMS Entr.'															, .T. }, ; //X3_TITULO
 	{ '% ICMS Entr.'															, .T. }, ; //X3_TITSPA
@@ -1728,7 +1728,7 @@ aAdd( aSX3, { ;
 	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
 	{ 'ZA9_PICOEN'															, .T. }, ; //X3_CAMPO
 	{ 'N'																	, .T. }, ; //X3_TIPO
-	{ 4																		, .T. }, ; //X3_TAMANHO
+	{ 12																		, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
 	{ '%PIS/COF Ent'															, .T. }, ; //X3_TITULO
 	{ '%PIS/COF Ent'															, .T. }, ; //X3_TITSPA
@@ -1798,10 +1798,10 @@ aAdd( aSX3, { ;
 	{ ''																	, .T. }, ; //X3_TRIGGER
 	{ 'U'																	, .T. }, ; //X3_PROPRI
 	{ 'S'																	, .T. }, ; //X3_BROWSE
-	{ 'V'																	, .T. }, ; //X3_VISUAL
+	{ 'A'																	, .T. }, ; //X3_VISUAL
 	{ 'R'																	, .T. }, ; //X3_CONTEXT
 	{ ''																	, .T. }, ; //X3_OBRIGAT
-	{ ''																	, .T. }, ; //X3_VLDUSER
+	{ 'U_PRECOCAT()'														, .T. }, ; //X3_VLDUSER
 	{ ''																	, .T. }, ; //X3_CBOX
 	{ ''																	, .T. }, ; //X3_CBOXSPA
 	{ ''																	, .T. }, ; //X3_CBOXENG
@@ -3118,10 +3118,10 @@ aAdd( aSIX, { ;
 aAdd( aSIX, { ;
 	'ZA8'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	'ZA8_FILIAL+ZA8_CODTAB'													, ; //CHAVE
-	'Tabela Preço'															, ; //DESCRICAO
-	'Tabela Preço'															, ; //DESCSPA
-	'Tabela Preço'															, ; //DESCENG
+	'ZA8_FILIAL+ZA8_CODTAB+ZA8_PRODUT'										, ; //CHAVE
+	'Tabela Preço+Produto'													, ; //DESCRICAO
+	'Tabela Preço+Produto'													, ; //DESCSPA
+	'Tabela Preço+Produto'													, ; //DESCENG
 	'U'																		, ; //PROPRI
 	''																		, ; //F3
 	''																		, ; //NICKNAME
