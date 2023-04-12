@@ -86,14 +86,18 @@ Method Load() Class TPrecoVenda
 
     Local cAlias_       := GetNextAlias()
 
-    Local cDespesaExp   := "%15.00%"
-    Local cMargemExp    := "%8.00%"
+    Local cDespesaExp   := "%" + AllTrim(cValToChar(GetNewPar("CC_DESPESA", 15))) + "%"
+    Local cMargemExp    := "%" + AllTrim(cValToChar(GetNewPar("CC_MARGEM", 8))) + "%"
     Local cFreteExp     := "%0.00%"
     
     Local cFilterProd   := "%1=1%"
     Local cFilterTipo   := "%1=1%"
     Local cFilterB2B    := "%1=1%"
     Local cFilterPreco  := "%1=1%"
+
+    Local cFilterFornec := "%1=1%
+    Local cFilterLoja   := "%1=1%
+    Local cFilterDoc    := "%1=1%
 
     Local aColsLoad     := {}
     Local cLegenda      := ""
@@ -131,6 +135,24 @@ Method Load() Class TPrecoVenda
     If ::nFrete <> Nil
 
         cFreteExp := "%" + cValToChar(::nFrete) + "%"
+
+    EndIf
+
+    If ::cFornece <> Nil
+
+        cFilterFornec := "%D1_FORNECE = " + ValToSql(AllTrim(::cFornece)) + "%"
+
+    EndIf
+
+    If ::cLoja <> Nil
+
+        cFilterLoja := "%D1_LOJA = " + ValToSql(AllTrim(::cLoja)) + "%"
+
+    EndIf
+
+    If ::cDocumento <> Nil
+
+        cFilterDoc := "%D1_DOC = " + ValToSql(AllTrim(::cDocumento)) + "%"
 
     EndIf
 
@@ -283,6 +305,10 @@ Method Load() Class TPrecoVenda
                                                 SF1.D_E_L_E_T_	= ''
                                             )
                                         ) TAB
+                                        WHERE 1 = 1
+                                        AND %Exp:cFilterFornec%
+                                        AND %Exp:cFilterLoja%
+                                        AND %Exp:cFilterDoc%
                                     ) TAB
                                 ) TAB
                             ) TAB

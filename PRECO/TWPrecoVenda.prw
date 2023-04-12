@@ -51,6 +51,8 @@ Class TWPrecoVenda From LongClassName
 	Method Legend()
 	Method GetVersao()
 	Method GetProxItemDA1(cTabela)
+	Method PergunteParam()
+	Method AtuParam()
 	Method Activate()
 
 	Method GetFieldData(lReLoad)
@@ -104,6 +106,11 @@ Method Pergunte() Class TWPrecoVenda
 	aAdd(aParam, {1, "Tipo de"			, ::oPrecoVenda:cTipoDe		, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 	aAdd(aParam, {1, "Tipo ate"			, ::oPrecoVenda:cTipoAte	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 
+	aAdd(aParam, {1, "Fornecedor"		, PADR("", TAMSX3("A2_COD")[1], " ")	, X3Picture("A2_COD"), ".T.", "SA2",".T.", 100,.F.})
+	aAdd(aParam, {1, "Loja"				, PADR("", TAMSX3("A2_LOJA")[1], " ")	, X3Picture("A2_LOJA"), ".T.", "",".T.", 100,.F.})
+
+	aAdd(aParam, {1, "Documento"		, PADR("", TAMSX3("D1_DOC")[1], " ")	, X3Picture("D1_DOC"), ".T.", "",".T.", 100,.F.})
+
 	aAdd(aParam, {3,"Filtro preço"  	, ::oPrecoVenda:nFiltroValor, {"Todos", "Preço a maior", "Preço a menor", "Preço sem alteração"},80,"",.F.})
 
 	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,"TWPrecoVenda", .F., .T.)
@@ -116,7 +123,11 @@ Method Pergunte() Class TWPrecoVenda
 		::oPrecoVenda:cTipoDe		:= aParRet[3]
 		::oPrecoVenda:cTipoAte		:= aParRet[4]
 
-		::oPrecoVenda:nFiltroValor	:= aParRet[5]
+		::oPrecoVenda:cFornece		:= If(Empty(aParRet[5]), Nil, aParRet[5])
+		::oPrecoVenda:cLoja			:= If(Empty(aParRet[6]), Nil, aParRet[6])
+		::oPrecoVenda:cDocumento	:= If(Empty(aParRet[7]), Nil, aParRet[7])
+
+		::oPrecoVenda:nFiltroValor	:= aParRet[8]
 		
 	EndIf
 
@@ -139,7 +150,7 @@ Method LoadWindow() Class TWPrecoVenda
 	
 	If FWIsInCallStack("U_PRECOCAL")
 
-		aCoors := {0, 0, 2000, 300}
+		aCoors := {0, 0, 1000, 300}
 
 	Else
 
@@ -160,6 +171,8 @@ Method LoadWindow() Class TWPrecoVenda
 	::oWindow:AddOKButton({|| ::Confirm() }, "Aplicar")
 
 	::oWindow:AddCloseButton()
+
+	::oWindow:AddButton("Parâmetros"		, {|| ::PergunteParam() }	,,, .T., .F., .T.)
 
 	::oWindow:AddButton("Legenda"			, {|| ::Legend() }			,,, .T., .F., .T.)
 
@@ -664,6 +677,104 @@ User Function PRECOCAT()
 	EndIf
 
 Return(.T.)
+
+Method PergunteParam() Class TWPrecoVenda
+
+	Local aParRet	:= {}
+	Local bConfirm	:= {|| .T.}
+	Local aParam	:= {}
+	Local nMargem	:= 0
+	Local nDespesa	:= 0
+
+	If FWSX6Util():ExistsParam( "CC_MARGEM" )
+
+		nMargem := GetMv("CC_MARGEM")
+
+	Else
+
+		nMargem := 8
+	
+	EndIf
+
+	If FWSX6Util():ExistsParam( "CC_DESPESA" )
+
+		nDespesa := GetMv("CC_DESPESA")
+
+	Else
+
+		nDespesa := 15
+	
+	EndIf
+
+	aAdd(aParam, {9, "Informe os percentuais de Despesa e Margem", 200,, .T.})
+
+	aAdd(aParam, {1, "%Margem"	, If(Empty(nMargem) .Or. nMargem < 0, 0, nMargem), X3Picture("ZA9_MARGSA"), ".T.",,".T.", 100,.F.})
+	aAdd(aParam, {1, "%Despesa", If(Empty(nDespesa) .Or. nDespesa < 0, 0, nDespesa), X3Picture("ZA9_DESPSA"), ".T.",,".T.", 100,.F.})
+
+	If ParamBox(aParam, "%Despesa e Margem", aParRet, bConfirm,,,,,,"TWPrecoVenda2", .F., .T.)
+
+		If nMargem < 0 .Or. nMargem <> aParRet[2]
+		
+			::AtuParam("CC_MARGEM", aParRet[2])
+
+			nMargem := aParRet[2]
+
+		EndIf
+
+		If nDespesa < 0 .Or. nDespesa <> aParRet[3]
+
+			::AtuParam("CC_DESPESA", aParRet[3])
+			
+			nDespesa := aParRet[3]
+		
+		EndIf
+
+	EndIf
+
+Return()
+
+Method AtuParam(cPar, cConteudo) Class TWPrecoVenda
+
+	Local lAcao := .F.
+	Local lExclu := .F.
+	Local lCompart := .F.
+
+	DBSelectArea("SX6")
+	SX6->(DBSetOrder(1)) // X6_FIL, X6_VAR, R_E_C_N_O_, D_E_L_E_T_
+
+	lCompart := SX6->(DBSeek("      " + cPar))
+
+	lExclu := SX6->(DBSeek(cFilAnt+ cPar))
+
+	If lCompart .Or. lExclu
+
+		lAcao := .F.
+
+		If lCompart
+
+			SX6->(DBSeek("      " + cPar))
+
+		Else
+
+			SX6->(DBSeek(cFilAnt+ cPar))
+
+		EndIf
+
+	Else
+
+		lAcao := .T.
+
+	EndIf
+
+	RecLock("SX6", lAcao)
+	SX6->X6_FIL 	:= If(lExclu, cFilAnt, "")
+	SX6->X6_TIPO 	:= "N"
+	SX6->X6_VAR 	:= cPar
+	SX6->X6_CONTEUD := AllTrim(cValToChar(cConteudo))
+	SX6->X6_PROPRI	:= "U"
+	SX6->(MSUnlock())
+
+Return()
 
 User Function PRECOCAL()
 
