@@ -795,9 +795,9 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"unidade":				SB1->B1_UM,;
 		"agrupaSeparacao":		.F.,;
 		"separacaoMinimo":		"P",;
-		"controlaLote":			.T.,;
+		"controlaLote":			.F.,;
 		"controlaValidade":		.F.,;
-		"controlaSerial":		.T.,;
+		"controlaSerial":		.F.,;
 		"semPickingFixo":		.F.,;
 		"perigoso":				.F.,;
 		"refrigerado":			.F.,;

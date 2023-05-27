@@ -95,39 +95,50 @@ Return()
 
 Method Pergunte() Class TWPrecoVenda
 
+    Local cLoad     := "TWPrecoVenda" + cEmpAnt
+    Local cFileName := RetCodUsr() + "_" + "TWPrecoVenda"
 	Local lRet		:= .F.
 	Local aParRet	:= {}
 	Local bConfirm	:= {|| .T.}
 	Local aParam	:= {}
 
-	aAdd(aParam, {1, "Produto de"		, ::oPrecoVenda:cProdutoDe	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
-	aAdd(aParam, {1, "Produto ate"		, ::oPrecoVenda:cProdutoAte	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
+    // MV_PAR01 := PADR("", TAMSX3("B1_COD")[1], " ")
+    // MV_PAR02 := PADR("", TAMSX3("B1_COD")[1], "Z")
+    // MV_PAR03 := PADR("", TAMSX3("B1_TIPO")[1], " ")
+    // MV_PAR04 := PADR("", TAMSX3("B1_TIPO")[1], "Z")
+    // MV_PAR05 := PADR("", TAMSX3("A2_COD")[1], " ")
+    // MV_PAR06 := PADR("", TAMSX3("A2_LOJA")[1], " ")
+    // MV_PAR07 := PADR("", TAMSX3("D1_DOC")[1], " ")
+    // MV_PAR08 := CTOD("")
+    // MV_PAR09 := 1   
 
-	aAdd(aParam, {1, "Tipo de"			, ::oPrecoVenda:cTipoDe		, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
-	aAdd(aParam, {1, "Tipo ate"			, ::oPrecoVenda:cTipoAte	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
-
+	aAdd(aParam, {1, "Produto de"		, PADR("", TAMSX3("B1_COD")[1], " ")	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
+	aAdd(aParam, {1, "Produto ate"		, PADR("", TAMSX3("B1_COD")[1], "Z")	, X3Picture("B1_COD"), ".T.", "SB1",".T.", 100,.F.})
+	aAdd(aParam, {1, "Tipo de"			, PADR("", TAMSX3("B1_TIPO")[1], " ")	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
+	aAdd(aParam, {1, "Tipo ate"			, PADR("", TAMSX3("B1_TIPO")[1], "Z")	, X3Picture("B1_TIPO"), ".T.", "02",".T.", 100,.F.})
 	aAdd(aParam, {1, "Fornecedor"		, PADR("", TAMSX3("A2_COD")[1], " ")	, X3Picture("A2_COD"), ".T.", "SA2",".T.", 100,.F.})
 	aAdd(aParam, {1, "Loja"				, PADR("", TAMSX3("A2_LOJA")[1], " ")	, X3Picture("A2_LOJA"), ".T.", "",".T.", 100,.F.})
-
 	aAdd(aParam, {1, "Documento"		, PADR("", TAMSX3("D1_DOC")[1], " ")	, X3Picture("D1_DOC"), ".T.", "",".T.", 100,.F.})
+	aAdd(aParam, {1, "Data Digitacao"	, CTOD("")                              ,  "", ".T.", "", ".T.", 80,  .F.})
+	aAdd(aParam, {3, "Filtro preço"  	, 1                                     , {"Todos", "Preço a maior", "Preço a menor", "Preço sem alteração"},80,"",.F.})
 
-	aAdd(aParam, {3,"Filtro preço"  	, ::oPrecoVenda:nFiltroValor, {"Todos", "Preço a maior", "Preço a menor", "Preço sem alteração"},80,"",.F.})
-
-	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,"TWPrecoVenda", .F., .T.)
+	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,cLoad, .F., .T.)
 
 		lRet := .T.
 
-		::oPrecoVenda:cProdutoDe	:= aParRet[1]
-		::oPrecoVenda:cProdutoAte	:= aParRet[2]
+		::oPrecoVenda:cProdutoDe	:= ParamLoad(cFileName, ,1 , MV_PAR01)
+		::oPrecoVenda:cProdutoAte	:= ParamLoad(cFileName, ,2 , MV_PAR02)
 
-		::oPrecoVenda:cTipoDe		:= aParRet[3]
-		::oPrecoVenda:cTipoAte		:= aParRet[4]
+		::oPrecoVenda:cTipoDe		:= ParamLoad(cFileName, ,3 , MV_PAR03)
+		::oPrecoVenda:cTipoAte		:= ParamLoad(cFileName, ,4 , MV_PAR04)
 
-		::oPrecoVenda:cFornece		:= If(Empty(aParRet[5]), Nil, aParRet[5])
-		::oPrecoVenda:cLoja			:= If(Empty(aParRet[6]), Nil, aParRet[6])
-		::oPrecoVenda:cDocumento	:= If(Empty(aParRet[7]), Nil, aParRet[7])
+		::oPrecoVenda:cFornece		:= If(Empty(ParamLoad(cFileName, ,5 , MV_PAR05)), Nil, ParamLoad(cFileName, ,5 , MV_PAR05))
+		::oPrecoVenda:cLoja			:= If(Empty(ParamLoad(cFileName, ,6 , MV_PAR06)), Nil, ParamLoad(cFileName, ,6 , MV_PAR06))
+		::oPrecoVenda:cDocumento	:= If(Empty(ParamLoad(cFileName, ,7 , MV_PAR07)), Nil, ParamLoad(cFileName, ,7 , MV_PAR07))
 
-		::oPrecoVenda:nFiltroValor	:= aParRet[8]
+		::oPrecoVenda:dDtDigit		:= If(Empty(ParamLoad(cFileName, ,8 , MV_PAR08)), Nil, ParamLoad(cFileName, ,8 , MV_PAR08))
+
+		::oPrecoVenda:nFiltroValor	:= ParamLoad(cFileName, ,9 , MV_PAR09)
 		
 	EndIf
 
@@ -323,7 +334,10 @@ Method GetFieldProperty() Class TWPrecoVenda
 	// ::oGridField:AddField("ZA9_PERFRE")
 	::oGridField:AddField("ZA9_ICMENT")
 	::oGridField:AddField("ZA9_PICOEN")
+
 	::oGridField:AddField("ZA9_FRETE")
+    ::oGridField:AddField("ZA9_FRETOT")
+
 	::oGridField:AddField("ZA9_IPIVLR")
 	::oGridField:AddField("ZA9_CRICMS")
 	::oGridField:AddField("ZA9_CRPICO")
@@ -795,8 +809,8 @@ User Function PRECOCAL()
 	_oObjPrc := @oObj
 
 	oObj:oPrecoVenda:cTabela	:= cTabela
-	oObj:oPrecoVenda:cProdutoDe	:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
-	oObj:oPrecoVenda:cProdutoAte:= PADR("TESTE999", TAMSX3("B1_COD")[1], " ")
+	oObj:oPrecoVenda:cProdutoDe	:= PADR("037034", TAMSX3("B1_COD")[1], " ")
+	oObj:oPrecoVenda:cProdutoAte:= PADR("037034", TAMSX3("B1_COD")[1], " ")
 
 	// oObj:Load(.F.)
 

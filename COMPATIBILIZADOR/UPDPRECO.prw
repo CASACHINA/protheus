@@ -34,7 +34,7 @@ Local   aButton   := {}
 Local   aMarcadas := {}
 Local   cTitulo   := "ATUALIZAÇÃO DE DICIONÁRIOS E TABELAS DO SISTEMA (SX2/SX3/SIX)"
 Local   cDesc1    := "Projeto: Cálculo do Preço de Venda " 
-Local   cDesc2    := "Autor: Casa China - Data: 02/03/2022" 
+Local   cDesc2    := "Autor: Casa China - Data: 26/05/2022" 
 Local   cDesc3    := ""
 Local   cDesc4    := "Descrição: Criacao tabelas de controle do processo "
 Local   cDesc5    := "de cálculo do Preço de Venda."
@@ -1087,12 +1087,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Venda'															, .T. }, ; //X3_TITULO
-	{ 'Preço Venda'															, .T. }, ; //X3_TITSPA
-	{ 'Preço Venda'															, .T. }, ; //X3_TITENG
-	{ 'Preço Venda'															, .T. }, ; //X3_DESCRIC
-	{ 'Preço Venda'															, .T. }, ; //X3_DESCSPA
-	{ 'Preço Venda'															, .T. }, ; //X3_DESCENG
+	{ 'Preço Tab.'															, .T. }, ; //X3_TITULO
+	{ 'Preço Tab.'															, .T. }, ; //X3_TITSPA
+	{ 'Preço Tab.'															, .T. }, ; //X3_TITENG
+	{ 'Preço Tab.'															, .T. }, ; //X3_DESCRIC
+	{ 'Preço Tab.'															, .T. }, ; //X3_DESCSPA
+	{ 'Preço Tab.'															, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -1779,12 +1779,61 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Valor Frete'															, .T. }, ; //X3_TITULO
-	{ 'Valor Frete'															, .T. }, ; //X3_TITSPA
-	{ 'Valor Frete'															, .T. }, ; //X3_TITENG
-	{ 'Valor Frete'															, .T. }, ; //X3_DESCRIC
-	{ 'Valor Frete'															, .T. }, ; //X3_DESCSPA
-	{ 'Valor Frete'															, .T. }, ; //X3_DESCENG
+	{ 'Frete Unit.' 														, .T. }, ; //X3_TITULO
+	{ 'Frete Unit.' 														, .T. }, ; //X3_TITSPA
+	{ 'Frete Unit.' 														, .T. }, ; //X3_TITENG
+	{ 'Frete Unit.' 														, .T. }, ; //X3_DESCRIC
+	{ 'Frete Unit.' 														, .T. }, ; //X3_DESCSPA
+	{ 'Frete Unit.' 														, .T. }, ; //X3_DESCENG
+	{ '@E 9,999,999.99'														, .T. }, ; //X3_PICTURE
+	{ ''																	, .T. }, ; //X3_VALID
+	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
+	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
+	Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(160)					, .T. }, ; //X3_USADO
+	{ ''																	, .T. }, ; //X3_RELACAO
+	{ ''																	, .T. }, ; //X3_F3
+	{ 0																		, .T. }, ; //X3_NIVEL
+	{ Chr(254) + Chr(192)													, .T. }, ; //X3_RESERV
+	{ ''																	, .T. }, ; //X3_CHECK
+	{ ''																	, .T. }, ; //X3_TRIGGER
+	{ 'U'																	, .T. }, ; //X3_PROPRI
+	{ 'S'																	, .T. }, ; //X3_BROWSE
+	{ 'A'																	, .T. }, ; //X3_VISUAL
+	{ 'R'																	, .T. }, ; //X3_CONTEXT
+	{ ''																	, .T. }, ; //X3_OBRIGAT
+	{ 'U_PRECOCAT()'														, .T. }, ; //X3_VLDUSER
+	{ ''																	, .T. }, ; //X3_CBOX
+	{ ''																	, .T. }, ; //X3_CBOXSPA
+	{ ''																	, .T. }, ; //X3_CBOXENG
+	{ ''																	, .T. }, ; //X3_PICTVAR
+	{ ''																	, .T. }, ; //X3_WHEN
+	{ ''																	, .T. }, ; //X3_INIBRW
+	{ ''																	, .T. }, ; //X3_GRPSXG
+	{ ''																	, .T. }, ; //X3_FOLDER
+	{ ''																	, .T. }, ; //X3_CONDSQL
+	{ ''																	, .T. }, ; //X3_CHKSQL
+	{ ''																	, .T. }, ; //X3_IDXSRV
+	{ 'N'																	, .T. }, ; //X3_ORTOGRA
+	{ ''																	, .T. }, ; //X3_TELA
+	{ ''																	, .T. }, ; //X3_POSLGT
+	{ 'N'																	, .T. }, ; //X3_IDXFLD
+	{ ''																	, .T. }, ; //X3_AGRUP
+	{ ''																	, .T. }, ; //X3_MODAL
+	{ ''																	, .T. }} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	{ 'ZA9'																	, .T. }, ; //X3_ARQUIVO
+	{ RetAsc( Str( (nSeqAtu++) ), 2, .T. )									, .T. }, ; //X3_ORDEM
+	{ 'ZA9_FRETOT'															, .T. }, ; //X3_CAMPO
+	{ 'N'																	, .T. }, ; //X3_TIPO
+	{ 12																	, .T. }, ; //X3_TAMANHO
+	{ 2																		, .T. }, ; //X3_DECIMAL
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_TITULO
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_TITSPA
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_TITENG
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_DESCRIC
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_DESCSPA
+	{ 'Tot.Fret.CTe'														, .T. }, ; //X3_DESCENG
 	{ '@E 9,999,999.99'														, .T. }, ; //X3_PICTURE
 	{ ''																	, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
@@ -2853,7 +2902,7 @@ aAdd( aSX3, { ;
 //
 // Campos Tabela SD1
 //
-
+/*
 aAdd( aSX3, { ;
 	{ 'SD1'																	, .T. }, ; //X3_ARQUIVO
 	{ "G9"																	, .T. }, ; //X3_ORDEM
@@ -2902,7 +2951,7 @@ aAdd( aSX3, { ;
 	{ ''																	, .T. }, ; //X3_AGRUP
 	{ '1'																	, .T. }, ; //X3_MODAL
 	{ 'S'																	, .T. }} ) //X3_PYME
-
+*/
 //
 // Atualizando dicionário
 //

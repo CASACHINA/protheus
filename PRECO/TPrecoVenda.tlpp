@@ -25,6 +25,7 @@ Class TPrecoVenda
     Public Data cLoja
     Public Data cDocumento
     Public Data cSerie
+    Public Data dDtDigit
 
     Public Data nMargem
     Public Data nDespesa
@@ -55,6 +56,7 @@ Method New() Class TPrecoVenda
 	::cLoja			:= Nil
 	::cDocumento	:= Nil
 	::cSerie		:= Nil
+    ::dDtDigit      := Nil
 
     ::nMargem       := Nil
     ::nDespesa      := Nil
@@ -91,6 +93,7 @@ Method Load() Class TPrecoVenda
     Local cFreteExp     := "%0.00%"
     
     Local cFilterProd   := "%1=1%"
+    Local cFilterDigi   := "%1=1%"
     Local cFilterTipo   := "%1=1%"
     Local cFilterB2B    := "%1=1%"
     Local cFilterPreco  := "%1=1%"
@@ -147,6 +150,12 @@ Method Load() Class TPrecoVenda
     If ::cLoja <> Nil
 
         cFilterLoja := "%D1_LOJA = " + ValToSql(AllTrim(::cLoja)) + "%"
+
+    EndIf
+
+    If ::dDtDigit <> Nil
+
+        cFilterDigi := "%F1_DTDIGIT = " + ValToSql(::dDtDigit) + "%"
 
     EndIf
 
@@ -209,7 +218,7 @@ Method Load() Class TPrecoVenda
                                     WHEN ZA9_ICMSAI = 12 THEN ZA9_BASEST
                                     WHEN ZA9_ICMSAI = 18 THEN (ZA9_BASEST - (ZA9_BASEST * (33.33 / 100)))
                                     WHEN ZA9_ICMSAI = 25 THEN (ZA9_BASEST - (ZA9_BASEST * (52 / 100)))
-                                    ELSE ZA9_CUSBRU + (ZA9_CUSBRU * (110.46 / 100))
+                                    ELSE ZA9_CUSBRU + (ZA9_CUSBRU * (ZA9_MVA / 100))
                                 END, 2) AS ZA9_BASTRE,
 
                                 ROUND(CASE 
@@ -244,20 +253,21 @@ Method Load() Class TPrecoVenda
 
                                         FROM
                                         (
-                                            SELECT TAB1.*, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, D1_DTDIGIT, D1_TES, D1_ITEM, F1_ESPECIE, F1_STATUS, 0 D1_XVLRFRE,
+                                            SELECT TAB1.*, SD1.D1_QUANT, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, SD1.D1_DTDIGIT, SD1.D1_TES, SD1.D1_ITEM, SF1.F1_ESPECIE, SF1.F1_STATUS, SF1.F1_DTDIGIT, SF1.F1_EST,
 
-                                            %Exp:Self:cTabela%                              ZA9_CODTAB,
-                                            ROUND(D1_VUNIT, 2)								ZA9_ULTCOM,	// (Ult Compra)
-                                            D1_IPI											ZA9_IPI,	// (%IPI) 
-                                            D1_MARGEM           							ZA9_MVA,	// (%MVA)
-                                            CAST(19.00 AS FLOAT)							ZA9_ICMSAI,	// (ICMS SAIDA) 
-                                            CAST(%Exp:cFreteExp% AS FLOAT)								ZA9_FRETE,	// (Valor do Frete)
-                                            D1_PICM											ZA9_ICMENT,	// (%ICMS ENTR.)  
-                                            CAST(9.25 AS FLOAT)								ZA9_PICOEN,	// (%PIS/COFINS ENTRADA)
-                                            CAST(ROUND((D1_VUNIT * (1 + (D1_IPI / 100)) - D1_VUNIT),2) AS FLOAT) ZA9_IPIVLR,	// (Valor IPI)
-                                            CAST(9.25	AS FLOAT)							ZA9_PICOSA,	// (PIS/CONFINS/ SAIDA)
-                                            CAST(%Exp:cDespesaExp%		AS FLOAT)			ZA9_DESPSA,	// (DESPESAS)	
-                                            CAST(%Exp:cMargemExp%		AS FLOAT)			ZA9_MARGSA	// (MARGEM)
+                                            %Exp:Self:cTabela%                                                      ZA9_CODTAB,
+                                            ROUND(SD1.D1_VUNIT, 2)	    					                        ZA9_ULTCOM,	// (Ult Compra)
+                                            SD1.D1_IPI										                        ZA9_IPI,	// (%IPI) 
+                                            SD1.D1_MARGEM           						                        ZA9_MVA,	// (%MVA)
+                                            CASE WHEN SF1.F1_EST = 'PR' THEN CAST(12.00 AS FLOAT) ELSE CAST(19.00 AS FLOAT) END           ZA9_ICMSAI,	// (ICMS SAIDA) 
+                                            ISNULL(SD1F.D1_TOTAL / SD1.D1_QUANT, 0)					            ZA9_FRETE,	// (Valor do Frete Unitario)
+                                            ISNULL(SF1F.F1_VALBRUT, 0)       							            ZA9_FRETOT,	// (Total Nota de frete)
+                                            SD1.D1_PICM										                        ZA9_ICMENT,	// (%ICMS ENTR.)  
+                                            CAST(9.25 AS FLOAT)								                        ZA9_PICOEN,	// (%PIS/COFINS ENTRADA)
+                                            CAST(ROUND((SD1.D1_VUNIT * (1 + (SD1.D1_IPI / 100)) - SD1.D1_VUNIT),2) AS FLOAT)    ZA9_IPIVLR,	// (Valor IPI)
+                                            CAST(9.25	AS FLOAT)							                        ZA9_PICOSA,	// (PIS/CONFINS/ SAIDA)
+                                            CAST(%Exp:cDespesaExp%		AS FLOAT)			                        ZA9_DESPSA,	// (DESPESAS)	
+                                            CAST(%Exp:cMargemExp%		AS FLOAT)			                        ZA9_MARGSA	// (MARGEM)
 
                                             FROM 
                                             (
@@ -282,6 +292,7 @@ Method Load() Class TPrecoVenda
                                                 FROM SD1010 SD1 (NOLOCK)
                                                 WHERE 1 = 1
                                                 AND D1_FILIAL   = %Exp:xFilial("SD1")%
+                                                AND D1_TIPO     = 'N'
                                                 AND D_E_L_E_T_  = ''
                                                 GROUP BY D1_FILIAL, D1_COD	
                                             ) TAB2 ON
@@ -301,14 +312,43 @@ Method Load() Class TPrecoVenda
                                                 SD1.D1_SERIE	= SF1.F1_SERIE	 AND
                                                 SD1.D1_FORNECE	= SF1.F1_FORNECE AND
                                                 SD1.D1_LOJA		= SF1.F1_LOJA	 AND
-                                                // SD1.D1_FORNECE	NOT IN ('999001')AND
                                                 SF1.D_E_L_E_T_	= ''
+                                            )
+                                            LEFT JOIN SF8010 SF8F (NOLOCK) ON
+                                            (
+                                                SF8F.F8_FILIAL  = SF1.F1_FILIAL	 AND  
+                                                SF8F.F8_NFORIG  = SF1.F1_DOC	 AND  
+                                                SF8F.F8_SERORIG = SF1.F1_SERIE	 AND  
+                                                SF8F.F8_FORNECE = SF1.F1_FORNECE AND  
+                                                SF8F.F8_LOJA    = SF1.F1_LOJA	 AND  
+                                                SF8F.D_E_L_E_T_	= ''                                                
+                                            )
+                                            LEFT JOIN SF1010 SF1F (NOLOCK) ON
+                                            (
+                                                SF1F.F1_FILIAL	= SF8F.F8_FILIAL  AND
+                                                SF1F.F1_DOC		= SF8F.F8_NFDIFRE AND
+                                                SF1F.F1_SERIE	= SF8F.F8_SEDIFRE AND
+                                                SF1F.F1_FORNECE	= SF8F.F8_TRANSP  AND
+                                                SF1F.F1_LOJA	= SF8F.F8_LOJTRAN AND
+                                                SF1F.D_E_L_E_T_	= ''
+                                            )
+                                            LEFT JOIN SD1010 SD1F (NOLOCK) ON
+                                            (
+                                                SD1F.D1_FILIAL	= SF8F.F8_FILIAL  AND
+                                                SD1F.D1_DOC		= SF8F.F8_NFDIFRE AND
+                                                SD1F.D1_SERIE	= SF8F.F8_SEDIFRE AND
+                                                SD1F.D1_FORNECE	= SF8F.F8_TRANSP  AND
+                                                SD1F.D1_LOJA	= SF8F.F8_LOJTRAN AND
+                                                // SD1F.D1_ITEM	= SD1.D1_ITEM     AND
+                                                SD1F.D1_COD     = SD1.D1_COD      AND
+                                                SD1F.D_E_L_E_T_	= ''
                                             )
                                         ) TAB
                                         WHERE 1 = 1
                                         AND %Exp:cFilterFornec%
                                         AND %Exp:cFilterLoja%
                                         AND %Exp:cFilterDoc%
+                                        AND %Exp:cFilterDigi%
                                     ) TAB
                                 ) TAB
                             ) TAB
@@ -317,10 +357,12 @@ Method Load() Class TPrecoVenda
                 ) TAB
             ) TAB
         ) TAB
-        WHERE 1 = 1
+        WHERE 1 = 1          
         AND %Exp:cFilterPreco%
 
 	EndSQL
+
+    MemoWrite("c:\Temp\Calc_Preco_CC" + "_" + DTOS(Date()) + "_" + Replace(Time(), ":", "-") + ".sql", GetLastQuery()[2])
 
 	While !(cAlias_)->(EOF())
 
@@ -355,6 +397,7 @@ Method Load() Class TPrecoVenda
             (cAlias_)->ZA9_ICMENT,; 
             (cAlias_)->ZA9_PICOEN,; 
             (cAlias_)->ZA9_FRETE ,;
+            (cAlias_)->ZA9_FRETOT,;
             (cAlias_)->ZA9_IPIVLR,; 
             (cAlias_)->ZA9_CRICMS,; 
             (cAlias_)->ZA9_CRPICO,; 
