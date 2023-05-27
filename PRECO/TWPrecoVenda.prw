@@ -122,7 +122,7 @@ Method Pergunte() Class TWPrecoVenda
 	aAdd(aParam, {1, "Data Digitacao"	, CTOD("")                              ,  "", ".T.", "", ".T.", 80,  .F.})
 	aAdd(aParam, {3, "Filtro preço"  	, 1                                     , {"Todos", "Preço a maior", "Preço a menor", "Preço sem alteração"},80,"",.F.})
 
-	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,cLoad, .F., .T.)
+	If ParamBox(aParam, "Filtro", aParRet, bConfirm,,,,,,cLoad, .T., .T.)
 
 		lRet := .T.
 
