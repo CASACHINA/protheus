@@ -319,7 +319,9 @@ Method GetFieldProperty() Class TWPrecoVenda
 	::oGridField:AddField("ZA9_LOJFOR")
 	::oGridField:AddField("ZA9_DOC")
 	::oGridField:AddField("ZA9_SERIE")
+    
 	::oGridField:AddField("DA1_PRCVEN")
+    ::oGridField:FieldName("DA1_PRCVEN"):cTitle := "Preço.Tab."
 
 	::oGridField:AddField("ZA9_PRCCAL")
 	::oGridField:AddField("ZA9_PRCDIG")

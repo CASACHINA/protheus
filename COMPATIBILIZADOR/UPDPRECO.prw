@@ -1087,12 +1087,12 @@ aAdd( aSX3, { ;
 	{ 'N'																	, .T. }, ; //X3_TIPO
 	{ 12																	, .T. }, ; //X3_TAMANHO
 	{ 2																		, .T. }, ; //X3_DECIMAL
-	{ 'Preço Tab.'															, .T. }, ; //X3_TITULO
-	{ 'Preço Tab.'															, .T. }, ; //X3_TITSPA
-	{ 'Preço Tab.'															, .T. }, ; //X3_TITENG
-	{ 'Preço Tab.'															, .T. }, ; //X3_DESCRIC
-	{ 'Preço Tab.'															, .T. }, ; //X3_DESCSPA
-	{ 'Preço Tab.'															, .T. }, ; //X3_DESCENG
+	{ 'Preço Venda'															, .T. }, ; //X3_TITULO
+	{ 'Preço Venda'															, .T. }, ; //X3_TITSPA
+	{ 'Preço Venda'															, .T. }, ; //X3_TITENG
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCRIC
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCSPA
+	{ 'Preço Venda'															, .T. }, ; //X3_DESCENG
 	{ '@E 999,999,999.99'													, .T. }, ; //X3_PICTURE
 	{ 'Positivo()'															, .T. }, ; //X3_VALID
 	{ Chr(128) + Chr(128) + Chr(128) + Chr(128) + Chr(128) + ;
