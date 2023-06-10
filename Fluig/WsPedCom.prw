@@ -12,7 +12,7 @@
 #Include "Colors.ch"
 
 /*---------------------------------------------------------------------------+
-!                       FICHA TECNICA DO PROGRAMA  - 06/02/2023            !
+!                       FICHA TECNICA DO PROGRAMA                            !
 +------------------+---------------------------------------------------------+
 !Tipo              ! Web Service	                               			 !
 !Módulo            ! Protheus x Fluig			       	                     !
@@ -170,6 +170,8 @@ WSMETHOD SolicitacaoAlmoxarifado WSRECEIVE oNFCab WSSEND cStatus WSSERVICE Fluig
 	Local bBloco 		:= {|| .T.}
 	Local aCamposSCP	:= {}
 	Local aCamposSD3	:= {}
+	//Local aItemSCP	:= {}
+	//Local aItemSD3	:= {}
 	Local aRelProj 		:= {}
 
 	PRIVATE lMsErroAutoaRecSCP 		:= {} := .F.
@@ -223,16 +225,6 @@ WSMETHOD SolicitacaoAlmoxarifado WSRECEIVE oNFCab WSSEND cStatus WSSERVICE Fluig
 			While !SCP->(Eof()) .And. SCP->CP_FILIAL+SCP->CP_NUM = xFilial("SCP")+_cNum
 				aAdd(aRecSCP, SCP->(Recno()))
 
-				aCamposSCP := { {"CP_NUM" ,SCP->CP_NUM ,Nil },;
-								{"CP_ITEM" ,SCP->CP_ITEM ,Nil },;
-								{"CP_QUANT" ,SCP->CP_QUANT ,Nil }}
-
-				aCamposSD3 := { {"D3_TM" ,"501" ,Nil },; // Tipo do Mov.
-								{"D3_COD" ,SCP->CP_PRODUTO,Nil },;
-								{"D3_LOCAL" ,SCP->CP_LOCAL ,Nil },;
-								{"D3_DOC" ,"" ,Nil },; // No.do Docto.
-								{"D3_EMISSAO" ,DDATABASE ,Nil }}
-
 				SCP->(DbSkip())
 			EndDo
 
@@ -242,12 +234,32 @@ WSMETHOD SolicitacaoAlmoxarifado WSRECEIVE oNFCab WSSEND cStatus WSSERVICE Fluig
 			lMSHelpAuto := .F.
 			lMsErroAuto := .F.
 
-			// Baixar Pré-Requisições - MATA185
-			MSExecAuto({|v,x,y,z,w| mata185(v,x,y,z,w)},aCamposSCP,aCamposSD3,1,,aRelProj)   // 1 = BAIXA (ROT.AUT)
+			SCP->(DbGoTop())
+			SCP->(DbSetOrder(1))
+			SCP->(DbSeek(xFilial("SCP")+_cNum))
+
+			While !SCP->(Eof()) .And. SCP->CP_FILIAL+SCP->CP_NUM = xFilial("SCP")+_cNum
+				
+				aCamposSCP	:= {{"CP_NUM" ,SCP->CP_NUM ,Nil },;
+								{"CP_ITEM" ,SCP->CP_ITEM ,Nil },;
+								{"CP_QUANT" ,SCP->CP_QUANT ,Nil }}
+				
+				aCamposSD3 := { {"D3_TM" ,"501" ,Nil },; // Tipo do Mov.
+								{"D3_COD" ,SCP->CP_PRODUTO,Nil },;
+								{"D3_LOCAL" ,SCP->CP_LOCAL ,Nil },;
+								{"D3_DOC" ,"" ,Nil },; // No.do Docto.
+								{"D3_EMISSAO" ,DDATABASE ,Nil }}
+				
+				// Baixar Pré-Requisições - MATA185
+				MSExecAuto({|v,x,y,z,w| mata185(v,x,y,z,w)},aCamposSCP,aCamposSD3,1,,aRelProj)   // 1 = BAIXA (ROT.AUT)
+
+				SCP->(DbSkip())
+			EndDo
 
 			If lMsErroAuto
 				lError := .T.
 			EndIf
+
 		ENDIF
 
 	END TRANSACTION
@@ -1848,8 +1860,6 @@ WSMETHOD GravarProduto WSRECEIVE oProdutoProtheus WSSEND aCadClientes WSSERVICE 
 				if !empty(oProdutoProtheus:UnidadeMedida) .or. trim(oProdutoProtheus:UnidadeMedida) != ''
 					oModelSB1:SetValue("SB1MASTER","B1_UM"			,oProdutoProtheus:UnidadeMedida)
 				endif
-
-				ConOut("Estou na linha 1852: [oProdutoProtheus:CyberlogWMS] -> " + If(Type("oProdutoProtheus:CyberlogWMS") == "C", oProdutoProtheus:CyberlogWMS, "Veio Tipo: " + Type("oProdutoProtheus:CyberlogWMS")))
 
 				if !empty(oProdutoProtheus:CyberlogWMS) .or. trim(oProdutoProtheus:CyberlogWMS) != ''
 					oModelSB1:SetValue("SB1MASTER","B1_CYBERW"		,oProdutoProtheus:CyberlogWMS)
