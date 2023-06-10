@@ -255,19 +255,19 @@ Method Load() Class TPrecoVenda
                                         (
                                             SELECT TAB1.*, SD1.D1_QUANT, SD1.D1_FORNECE, SD1.D1_LOJA, SD1.D1_DOC, SD1.D1_SERIE, SD1.D1_EMISSAO, SD1.D1_DTDIGIT, SD1.D1_TES, SD1.D1_ITEM, SF1.F1_ESPECIE, SF1.F1_STATUS, SF1.F1_DTDIGIT, SF1.F1_EST,
 
-                                            %Exp:Self:cTabela%                                                      ZA9_CODTAB,
-                                            ROUND(SD1.D1_VUNIT, 2)	    					                        ZA9_ULTCOM,	// (Ult Compra)
-                                            SD1.D1_IPI										                        ZA9_IPI,	// (%IPI) 
-                                            SD1.D1_MARGEM           						                        ZA9_MVA,	// (%MVA)
-                                            CASE WHEN SF1.F1_EST = 'PR' THEN CAST(12.00 AS FLOAT) ELSE CAST(19.00 AS FLOAT) END           ZA9_ICMSAI,	// (ICMS SAIDA) 
-                                            ISNULL(SD1F.D1_TOTAL / SD1.D1_QUANT, 0)					            ZA9_FRETE,	// (Valor do Frete Unitario)
-                                            ISNULL(SF1F.F1_VALBRUT, 0)       							            ZA9_FRETOT,	// (Total Nota de frete)
-                                            SD1.D1_PICM										                        ZA9_ICMENT,	// (%ICMS ENTR.)  
-                                            CAST(9.25 AS FLOAT)								                        ZA9_PICOEN,	// (%PIS/COFINS ENTRADA)
-                                            CAST(ROUND((SD1.D1_VUNIT * (1 + (SD1.D1_IPI / 100)) - SD1.D1_VUNIT),2) AS FLOAT)    ZA9_IPIVLR,	// (Valor IPI)
-                                            CAST(9.25	AS FLOAT)							                        ZA9_PICOSA,	// (PIS/CONFINS/ SAIDA)
-                                            CAST(%Exp:cDespesaExp%		AS FLOAT)			                        ZA9_DESPSA,	// (DESPESAS)	
-                                            CAST(%Exp:cMargemExp%		AS FLOAT)			                        ZA9_MARGSA	// (MARGEM)
+                                            %Exp:Self:cTabela%                                                                                                  ZA9_CODTAB,
+                                            ROUND(SD1.D1_VUNIT, 2)	    					                                                                    ZA9_ULTCOM,	// (Ult Compra)
+                                            SD1.D1_IPI										                                                                    ZA9_IPI,	// (%IPI) 
+                                            SD1.D1_MARGEM           						                                                                    ZA9_MVA,	// (%MVA)
+                                            CAST(19.00 AS FLOAT)                                                                                                ZA9_ICMSAI,	// (ICMS SAIDA) 
+                                            CASE WHEN SF1.F1_EST = 'PR' AND SD1.D1_PICM <> 0 THEN CAST(12.00 AS FLOAT) ELSE CAST(SD1.D1_PICM AS FLOAT) END      ZA9_ICMENT,	// (%ICMS ENTR.)  
+                                            ISNULL(SD1F.D1_TOTAL / SD1.D1_QUANT, 0)					                                                            ZA9_FRETE,	// (Valor do Frete Unitario)
+                                            ISNULL(SF1F.F1_VALBRUT, 0)       							                                                        ZA9_FRETOT,	// (Total Nota de frete)
+                                            CAST(9.25 AS FLOAT)								                                                                    ZA9_PICOEN,	// (%PIS/COFINS ENTRADA)
+                                            CAST(ROUND((SD1.D1_VUNIT * (1 + (SD1.D1_IPI / 100)) - SD1.D1_VUNIT),2) AS FLOAT)                                    ZA9_IPIVLR,	// (Valor IPI)
+                                            CAST(9.25	AS FLOAT)							                                                                    ZA9_PICOSA,	// (PIS/CONFINS/ SAIDA)
+                                            CAST(%Exp:cDespesaExp%		AS FLOAT)			                                                                    ZA9_DESPSA,	// (DESPESAS)	
+                                            CAST(%Exp:cMargemExp%		AS FLOAT)			                                                                    ZA9_MARGSA	// (MARGEM)
 
                                             FROM 
                                             (
