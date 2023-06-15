@@ -747,7 +747,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 		"informarlote":		.F.,;
 		"itensRecebimento":	Nil,;
 		"listaXDocking":	Nil;
-		}
+	}
 
 	jJson['itensRecebimento'] := aItens
 
@@ -762,7 +762,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 			"chaveIdPedido":	"",;
 			"docaDestino":		"0",;
 			"itensXDocking": 	aItens;
-			}
+		}
 
 		aAdd(alistaXDocking, jJsonXDocking)
 
@@ -798,6 +798,10 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"controlaLote":			.F.,;
 		"controlaValidade":		.F.,;
 		"controlaSerial":		.F.,;
+        "profundidadeDun":      SB5->B5_COMPR,;
+        "alturaDun":            SB5->B5_ALTURA,;
+        "larguraDun":           SB5->B5_LARG,;
+        "pesoDun":              SB1->B1_PESO,;
 		"semPickingFixo":		.F.,;
 		"perigoso":				.F.,;
 		"refrigerado":			.F.,;
