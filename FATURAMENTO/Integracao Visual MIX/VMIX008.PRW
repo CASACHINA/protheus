@@ -122,7 +122,7 @@ Static Function ReportDef()
 
 		oMessage 	:= TMailMessage():New()
 
-		cTo 		:= 'egvieira01@gmail.com'//GetNewPar("ZZ_EMABXVL", "diego@grupocasachina.com.br")
+		cTo 		:= GetNewPar("ZZ_EMABXVL", "diego@grupocasachina.com.br")
 		cCc 		:= ""
 		cBcc 		:= ""
 		cSubject 	:= "Relatório de baixas"
