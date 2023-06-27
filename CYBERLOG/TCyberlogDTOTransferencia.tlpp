@@ -1,0 +1,35 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} TCyberlogDTOTransferencia
+@author Wlysses Cerqueira (WlyTech)
+@since 04/11/2022
+@version 1.0
+@description Classe responsavel 
+@type Class
+/*/
+
+Class TCyberlogDTOTransferencia
+
+	Public Data Campos
+
+	Public Method New() Constructor
+
+EndClass
+
+Method New() Class TCyberlogDTOTransferencia
+
+	Local aTransferencia := {}
+	
+	// TODO: type Date
+
+	aAdd(aTransferencia, {;
+		"filial":				{ "type": "C", "allowEmpty": .F. },;
+		"codProduto":			{ "type": "C", "allowEmpty": .F. },;
+		"armazem":				{ "type": "C", "allowEmpty": .F. },;
+		"quantidade":			{ "type": "N", "allowEmpty": .F. };
+	})
+
+	::Campos := { "transferencia":	aTransferencia }
+	
+Return(Self)

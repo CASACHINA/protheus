@@ -1,0 +1,3611 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE 'FWMVCDEF.CH'
+
+#INCLUDE 'tlpp-core.th'
+#INCLUDE 'tlpp-object.th'
+#INCLUDE 'tlpp-rest.th'
+
+/*/{Protheus.doc} TCyberlogIntegracao
+@author Wlysses
+@since 11/06/2022
+@version 1.0
+@description Integracao ERP com CyberLog.
+@type Class
+/*/
+
+Class TCyberlogIntegracao
+
+	Public Data cDeposito
+
+	Public Data oEmpCad
+	Public Data oEmpAuth
+	Public Data oRestCyber
+
+	Public Data oResult
+
+	Public Data lManual
+	Public Data mensagem
+
+	Public Method New() Constructor
+
+	Public Method Send(cPath, cBody)
+
+	Static Method AddMenu(aMenu)
+	Public Method AddLegenda()
+	Public Method AddAcores()
+
+	Public Method SendProduct()
+	Public Method SendProvider()
+	Public Method SendCustomer()
+	Public Method SendDocEntrada()
+	Public Method SendTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method SendPedido(lInclui_, lCopia_, lAltera_, lExclui_)
+
+	Public Method SendTransferenciaArmazemPedido()
+	Public Method SendTransferenciaArmazemDocEntrada()
+
+	Public Method LoadJsonPedido(cAcao)
+	Public Method LoadJsonTransferencia()
+	Public Method LoadJsonProduct()
+	Public Method LoadJsonProvider()
+	Public Method LoadJsonCustomer()
+	Public Method LoadJsonDocEntrada()
+	Public Method LoadJsonTransferenciaArmazemPedido(cAcao)
+	Public Method LoadJsonTransferenciaArmazemDocEntrada(cAcao)
+
+	Public Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_)
+
+	Public Method ValidClienteWMS(cCodCli, cLojaCli)
+	Public Method ValidFornecedorWMS(cCodFor, cLojaFor)
+	Public Method ValidProdutoWMS(cProduto)
+
+	Public Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_)
+	Public Method ValidEnvioPedidoM460MARK(aParam)
+
+	Public Method FormatDate(dData, nOption)
+
+	Public Method Log(oLog)
+	Public Method LogConsole(cMsg)
+
+	Public Method GenericRun(nAcao)
+	Public Method GetFilial(cDeposito)
+
+	Public Method Grafico()
+	Public Method LoadDataGraficoDocEntrada()
+	Public Method LoadDataGraficoPedido()
+	Public Method LoadDataGraficoTransferencia()
+
+	Public Method ValidToken()
+
+	@Post("/protheus/cyberlog/v1/recebimento-conferencia")
+	Public Method RecebimentoConferencia()
+	Public Method SetRecebimentoConferencia()
+	Public Method SetRecebimentoConferenciaStatus(cStatus)
+
+	@Post("/protheus/cyberlog/v1/pedido-conferencia")
+	Public Method PedidoConferencia()
+	Public Method SetPedidoConferencia(jBody, nRetorno, lRotinaTransf)
+
+	Public Method SetPedidoConferenciaStatus(cStatus)
+	Public Method SetTransferenciaConferenciaStatus(cStatus)
+
+	Public Method SetMovimentoAlmoxarifadoConferenciaStatus(cStatus)
+	Public Method SetMovimentoAlmoxarifadoConferenciaStatusPedido(cStatus)
+	Public Method SetMovimentoAlmoxarifadoConferenciaStatusRecebimento(cStatus)
+
+	@Post("/protheus/cyberlog/v1/transferencia-inclusao")
+	Public Method TransferenciaCrossdocking()
+	Public Method AddTransferencia(jBody, nRetorno)
+
+	Public Method SetNumDocSaida()
+	Public Method LiberaSemConferencia()
+
+	Public Method AjusteCodProduto(cProduto, nDigitos)
+
+	Public Method MovimentaEstoque()
+
+EndClass
+
+Method New() Class TCyberlogIntegracao
+
+	::oEmpCad := TEmpUtil():New()
+
+	::oEmpAuth := TCyberlogApiAuth():New()
+
+	::oResult := { "status": .T., "message": "" }
+
+	::cDeposito := ::oEmpAuth:cDeposito
+
+	::lManual := FWIsInCallStack("U_CYBER002")
+
+	::mensagem := ""
+
+Return(Self)
+
+Method Send(cPath, cBody) Class TCyberlogIntegracao
+
+	Local aHeader	:= {}
+	Local oJsonRet	:= JsonObject():New()
+
+	If ::oEmpAuth:GetAuthToken()
+
+		aAdd(aHeader, "Content-Type: application/x-www-form-urlencoded")
+
+		aAdd(aHeader, "chave: " + ::oEmpAuth:cChave)
+
+		aAdd(aHeader, "token: " + ::oEmpAuth:oResult["accesToken"])
+
+		::oRestCyber := FWRest():New(::oEmpAuth:cPathUrl)
+
+		::oRestCyber:SetPath(cPath)
+
+		::oRestCyber:SetPostParams(cBody)
+
+		If ::oRestCyber:Post(aHeader)
+
+			oJsonRet:FromJson(DecodeUTF8(::oRestCyber:cResult, "cp1252"))
+
+			If oJsonRet["CyberWeb"] == "1 - Inserido" .Or. oJsonRet["CyberWeb"] == "2 - Alterado" .Or. oJsonRet["CyberWeb"] == "3 - Excluído"
+
+				::oResult["status"] := .T.
+
+			Else
+
+				::oResult["status"] := .F.
+
+			EndIf
+
+			::oResult["message"] := DecodeUTF8(::oRestCyber:cResult, "cp1252")
+
+		Else
+
+			::oResult["status"] := .F.
+
+			::oResult["message"] := ::oRestCyber:GetLastError()
+
+		EndIf
+
+	Else
+
+		::oRestCyber := ::oEmpAuth:oRest
+
+		::oResult["status"] := .F.
+
+		::oResult["message"] := ::oEmpAuth:oRest:GetLastError()
+
+	EndIf
+
+	// FreeObj(::oRest)
+
+Return(::oResult["status"])
+
+Method SendProduct(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local oLog		:= TCyberlogHistoryStruct():New()
+	Local cAcao		:= ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lProdutoAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			lInclui_ 	:= If(::lManual, .T., lInclui_)
+			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
+
+			oJson := ::LoadJsonProduct(cAcao)
+
+			cBody := "produto=" + EncodeUtf8(oJson:ToJson())
+
+			lRet := ::Send("/cadastro/integrarProduto", cBody)
+
+			oLog:cChave		:= SB1->B1_COD
+			oLog:cDeposito	:= ::cDeposito
+			oLog:cTabela	:= "SB1"
+			oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", "R"))
+			oLog:cRotina	:= "MATA010"
+			oLog:cJsonEnv	:= cBody
+			oLog:cTipo		:= "E"
+			oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+			oLog:cJsonRet	:= ::oRestCyber:cResult
+			oLog:cStatus	:= If(lRet, "S", "E")
+			oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+			::Log(oLog)
+
+		EndIf
+
+	EndIf
+
+Return()
+
+Method SendProvider(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local oLog		:= TCyberlogHistoryStruct():New()
+	Local cAcao		:= ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lFornecAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			lInclui_ 	:= If(::lManual, .T., lInclui_)
+			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
+
+			oJson := ::LoadJsonProvider(cAcao)
+
+			cBody := "fornecedor=" + EncodeUtf8(oJson:ToJson())
+
+			lRet := ::Send("/cadastro/integrarFornecedor", cBody)
+
+			oLog:cChave		:= SA2->(A2_COD + A2_LOJA)
+			oLog:cDeposito	:= ::cDeposito
+			oLog:cTabela	:= "SA2"
+			oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", "R"))
+			oLog:cRotina	:= "MATA020"
+			oLog:cJsonEnv	:= cBody
+			oLog:cTipo		:= "E"
+			oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+			oLog:cJsonRet	:= ::oRestCyber:cResult
+			oLog:cStatus	:= If(lRet, "S", "E")
+			oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+			::Log(oLog)
+
+		EndIf
+
+	EndIf
+
+Return()
+
+Method SendCustomer(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local oLog		:= TCyberlogHistoryStruct():New()
+	Local cAcao		:= ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lClienteAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			lInclui_ 	:= If(::lManual, .T., lInclui_)
+			cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", "UPDATE"))
+
+			oJson := ::LoadJsonCustomer(cAcao)
+
+			cBody := "cliente=" + EncodeUtf8(oJson:ToJson())
+
+			lRet := ::Send("/cadastro/integrarCliente", cBody)
+
+			oLog:cChave		:= SA1->(A1_COD + A1_LOJA)
+			oLog:cDeposito	:= ::cDeposito
+			oLog:cTabela	:= "SA1"
+			oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", "R"))
+			oLog:cRotina	:= If(FWIsInCallStack("CRMA980BRA"), "CRMA980", If(FWIsInCallStack("MATA030"), "MATA030", FunName()))
+			oLog:cJsonEnv	:= cBody
+			oLog:cTipo		:= "E"
+			oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+			oLog:cJsonRet	:= ::oRestCyber:cResult
+			oLog:cStatus	:= If(lRet, "S", "E")
+			oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+			::Log(oLog)
+
+		EndIf
+
+	EndIf
+
+Return()
+
+Method SendDocEntrada(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaSC7	:= SC7->(GetArea())
+	Local aAreaSD1	:= SD1->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSF1	:= SF1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lPreNotaAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			If ::lManual
+
+				lRet := ::ValidEnvioPreNota(.F., lInclui_, lCopia_, lAltera_, lExclui_)
+
+			EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonDocEntrada(cAcao)
+
+				cBody := "recebimento=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarRecebimento", cBody)
+
+				oLog:cChave		:= SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "SF1"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "MATA103"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetRecebimentoConferenciaStatus(If(lRet, "A", "E"))
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		::SetRecebimentoConferenciaStatus("S")
+
+	EndIf
+
+	RestArea(aAreaSC7)
+	RestArea(aAreaSD1)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSF1)
+
+Return()
+
+Method SendPedido(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaSC5	:= SC5->(GetArea())
+	Local aAreaSC6	:= SC6->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSA1	:= SA1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lPVAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			If ::lManual
+
+				lRet := ::ValidEnvioPedido(.F., lInclui_, lCopia_, lAltera_, lExclui_)
+
+			EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonPedido(cAcao)
+
+				cBody := "pedido=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarPedido", cBody)
+
+				oLog:cChave		:= SC5->(C5_FILIAL + C5_NUM)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "SC5"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "MATA410"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetPedidoConferenciaStatus(If(lRet, "A", "E"))
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		::SetPedidoConferenciaStatus("S")
+
+	EndIf
+
+	RestArea(aAreaSC5)
+	RestArea(aAreaSC6)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSA1)
+
+Return()
+
+Method SendTransferencia(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaNNS	:= NNS->(GetArea())
+	Local aAreaNNT	:= NNT->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSA1	:= SA1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( ::oEmpAuth:lTransfAuto .And. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ ) )
+
+			DBSelectArea("NNT")
+			NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+
+			NNT->(DBSeek(xFilial("NNT") + NNS->NNS_COD))
+
+			::oEmpCad:SeekEmpFil(NNT->NNT_FILDES)
+
+			If ::lManual
+
+				lRet := ::ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_)
+
+			EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonTransferencia(cAcao)
+
+				cBody := "pedido=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarPedido", cBody)
+
+				oLog:cChave		:= NNS->(NNS_FILIAL + NNS_COD)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "NNS"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "MATA311"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetTransferenciaConferenciaStatus(If(lRet, "E", "X"))
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		::SetTransferenciaConferenciaStatus("S")
+
+	EndIf
+
+	RestArea(aAreaNNS)
+	RestArea(aAreaNNT)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSA1)
+
+Return()
+
+Method LoadJsonPedido(cAcao) Class TCyberlogIntegracao
+
+	Local jJson 		:= NIL
+	Local jJsonItem		:= NIL
+	Local aItens		:= {}
+	Local cChaveSC5 	:= SC5->(C5_FILIAL + C5_NUM)
+
+	DbSelectArea("SA1")
+	SA1->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA1->(DBSeek(xFilial("SA1") + SC5->(C5_CLIENTE + C5_LOJACLI)))
+
+	If SC5->C5_B2B == "S"
+
+		::cDeposito := If(Empty(self:oEmpAuth:cDepositoB2B), self:oEmpAuth:cDeposito, self:oEmpAuth:cDepositoB2B)
+
+	Else
+
+		::cDeposito := self:oEmpAuth:cDeposito
+
+	EndIf
+
+	jJson := {;
+		"operacao":				cAcao,;
+		"erpId":				SC5->(C5_FILIAL + C5_NUM),;
+		"empresa":				self:cDeposito,;
+		"data":					self:FormatDate(SC5->C5_EMISSAO),;
+		"noPedido":				0,;
+		"clienteErpId":			SA1->(A1_COD + A1_LOJA),;
+		"nomeCliente":			SA1->A1_NOME,;
+		"noCliente":			0,;
+		"faturado":				.F.,;
+		"notaFiscal":			Nil,;
+		"serie":				Nil,;
+		"clienteRetira":		.F.,;
+		"observacao":			AllTrim(SC5->C5_MENNOTA),;
+		"prioridade":			50,;
+		"avaria":				.F.,;
+		"dataEntrega":			self:FormatDate(SC5->C5_EMISSAO),;
+		"docasConsolidacao":	"0",;
+		"loteInformado":		.F.,;
+		"documento":			SC5->(C5_FILIAL + C5_NUM),;
+		"noRota":				"1",;
+		"descRota":				"Rota 1",;
+		"equipe":				"Equipe Cyberlog",;
+		"tipoPedido":			"Normal",;
+		"volumes":				SC5->C5_VOLUME1,;
+		"representante":		"",;
+		"vinculo":				Nil,;
+		"embalado":				.T.;
+		}
+
+	DBSelectArea("SC6")
+	SC6->(DBSetOrder(1)) // C6_FILIAL, C6_NUM, C6_ITEM, C6_PRODUTO, R_E_C_N_O_, D_E_L_E_T_
+	SC6->(DBGoTop())
+
+	If SC6->(DBSeek(cChaveSC5))
+
+		While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_NUM) == cChaveSC5
+
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": SC6->C6_ITEM, "codigoReduzido": self:AjusteCodProduto(SC6->C6_PRODUTO), "erpId": SC6->C6_ITEM, "quantidade": SC6->C6_QTDVEN, "qtdFaturado": SC6->C6_QTDVEN, "qtdAvaria": 0, "noLayout": 0 }
+
+			aAdd(aItens, jJsonItem)
+
+			SC6->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson['itensPedido'] := aItens
+
+Return(jJson)
+
+Method LoadJsonTransferencia(cAcao) Class TCyberlogIntegracao
+
+	Local jJson 		:= NIL
+	Local jJsonItem		:= NIL
+	Local aItens		:= {}
+	Local cChaveNNS 	:= NNS->(NNS_FILIAL + NNS_COD)
+	Local nItem			:= 1
+	Local cItem			:= ""
+
+	DbSelectArea("SA1")
+	SA1->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA1->(DBSeek(xFilial("SA1") + ::oEmpCad:cCodCliente + ::oEmpCad:cLojCliente))
+
+	jJson := {;
+		"operacao":				cAcao,;
+		"erpId":				NNS->(NNS_FILIAL + NNS_COD),;
+		"empresa":				self:cDeposito,;
+		"data":					self:FormatDate(NNS->NNS_DATA),;
+		"noPedido":				0,;
+		"clienteErpId":			self:oEmpCad:cCodCliente + self:oEmpCad:cLojCliente,;
+		"nomeCliente":			SA1->A1_NOME,;
+		"noCliente":			0,;
+		"faturado":				.F.,;
+		"notaFiscal":			Nil,;
+		"serie":				Nil,;
+		"clienteRetira":		.F.,;
+		"observacao":			AllTrim(NNS->NNS_JUSTIF),;
+		"prioridade":			50,;
+		"avaria":				.F.,;
+		"dataEntrega":			self:FormatDate(NNS->NNS_DATA),;
+		"docasConsolidacao":	"0",;
+		"loteInformado":		.F.,;
+		"documento":			NNS->(NNS_FILIAL + NNS_COD),;
+		"noRota":				"1",;
+		"descRota":				"Rota 1",;
+		"equipe":				"Equipe Cyberlog",;
+		"tipoPedido":			"Normal",;
+		"volumes":				1,;
+		"representante":		"",;
+		"vinculo":				Nil,;
+		"embalado":				.T.;
+		}
+
+	DBSelectArea("NNT")
+	NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+	NNT->(DBGoTop())
+
+	If NNT->(DBSeek(cChaveNNS))
+
+		While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == cChaveNNS
+
+			cItem := StrZero(nItem++, 3)
+
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": cItem, "codigoReduzido": self:AjusteCodProduto(NNT->NNT_PROD), "erpId": cItem, "quantidade": NNT->NNT_QUANT, "qtdFaturado": NNT->NNT_QUANT, "qtdAvaria": 0, "noLayout": 0 }
+
+			aAdd(aItens, jJsonItem)
+
+			NNT->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson['itensPedido'] := aItens
+
+Return(jJson)
+
+Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
+
+	Local cCliXDocking		:= ""
+	Local cPedidoCompra		:= ""
+	Local jJson 			:= NIL
+	Local jJsonItem			:= NIL
+	Local aItens			:= {}
+	Local cChaveSD1 		:= SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)
+	Local jJsonXDocking		:= Nil
+	Local alistaXDocking	:= {}
+
+	DBSelectArea("SD1")
+	SD1->(DBSetOrder(1)) // D1_FILIAL, D1_DOC, D1_SERIE, D1_FORNECE, D1_LOJA, D1_COD, D1_ITEM, R_E_C_N_O_, D_E_L_E_T_
+	SD1->(DBGoTop())
+
+	DBSelectArea("SC7")
+	SC7->(DBSetOrder(1)) // C7_FILIAL, C7_NUM, C7_ITEM, C7_SEQUEN, R_E_C_N_O_, D_E_L_E_T_
+
+	If SD1->(DBSeek(cChaveSD1))
+
+		While SD1->(!EOF()) .And. SD1->(D1_FILIAL + D1_DOC + D1_SERIE + D1_FORNECE + D1_LOJA) == cChaveSD1
+
+			If SC7->(DBSeek(xFilial("SC7") + SD1->D1_PEDIDO))
+
+				// cCliXDocking := SC7->C7_YCLIENT // TICKET 3915 - Em stand by
+
+				::cDeposito := If(SC7->C7_B2B == "S", If(Empty(self:oEmpAuth:cDepositoB2B), self:oEmpAuth:cDeposito, self:oEmpAuth:cDepositoB2B), self:oEmpAuth:cDeposito)
+
+			Else
+
+				::cDeposito := self:oEmpAuth:cDeposito
+
+			EndIf
+
+			cPedidoCompra := SD1->D1_PEDIDO
+
+			jJsonItem := { "sequenciaERP": SD1->D1_ITEM, "codigoReduzido": self:AjusteCodProduto(SD1->D1_COD), "erpId": SD1->D1_ITEM, "quantidade": SD1->D1_QUANT, "noLayout": 1 }
+
+			aAdd(aItens, jJsonItem)
+
+			SD1->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson := {;
+		"operacao": 		cAcao,;
+		"erpId":			SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA),;
+		"empresa":			self:cDeposito,;
+		"data":				self:FormatDate(SF1->F1_EMISSAO),;
+		"documento":		SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA),;
+		"codFornecedor":	SF1->(F1_FORNECE + F1_LOJA),;
+		"avaria":			.F.,;
+		"confCega":			.T.,;
+		"tipo":				"N",;
+		"doca":				0,;
+		"prioridade":		0,;
+		"devolucao":		.F.,;
+		"informarlote":		.F.,;
+		"itensRecebimento":	Nil,;
+		"listaXDocking":	Nil;
+		}
+
+	jJson['itensRecebimento'] := aItens
+
+	If !Empty(cCliXDocking)
+
+		jJsonXDocking := {;
+			"tipoDestino":		"C",;
+			"destino":			cCliXDocking,;
+			"data":				self:FormatDate(SF1->F1_EMISSAO),;
+			"ordemCompraErpId":	cPedidoCompra,;
+			"pedidoVendaErpId":	"",;
+			"chaveIdPedido":	"",;
+			"docaDestino":		"0",;
+			"itensXDocking": 	aItens;
+			}
+
+		aAdd(alistaXDocking, jJsonXDocking)
+
+		jJson['listaXDocking'] := alistaXDocking
+
+	EndIf
+
+Return(jJson)
+
+Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
+
+	Local jJson := NIL
+
+	jJson := {;
+		"operacao":				cAcao,;
+		"erpId":				self:AjusteCodProduto(SB1->B1_COD),;
+		"empresa":				self:cDeposito,;
+		"codigoReduzido":		self:AjusteCodProduto(SB1->B1_COD),;
+		"codigoBarras":			SB1->B1_CODBAR,;
+		"codigoEstruturado":	"",;
+		"nome":					AllTrim(SB1->B1_DESC),;
+		"unome":				AllTrim(SB1->B1_DESC),;
+		"nomeLocal1":			"",;
+		"nomeLocal2":			"",;
+		"item":					.T.,;
+		"pesoUnitario":			SB1->B1_PESO,;
+		"altura":				0,;
+		"largura":				0,;
+		"profundidade":			0,;
+		"unidade":				SB1->B1_UM,;
+		"agrupaSeparacao":		.F.,;
+		"separacaoMinimo":		"P",;
+		"controlaLote":			.T.,;
+		"controlaValidade":		.F.,;
+		"controlaSerial":		.T.,;
+		"semPickingFixo":		.F.,;
+		"perigoso":				.F.,;
+		"refrigerado":			.F.,;
+		"cofre":				.F.,;
+		"marca":				"",;
+		"percentualSeguranca":	0,;
+		"leadTime":				0,;
+		"valorVenda":			0,;
+		"minimoVenda":			0,;
+		"controlaQuarentena":	.F.,;
+		"pesado":				.F.,;
+		"produzido":			.F.,;
+		"produzidoconf":		.F.,;
+		"agrupaEmbalagem":		.F.,;
+		"cuidadosEspecias":		0,;
+		"observacao":			"",;
+		"categoria":			SB1->B1_GRUPO,;
+		"fornecedor":			0,;
+		"npLargura":			0,;
+		"npAltura":				0,;
+		"shelfLife":			0,;
+		"empilhamento":			0,;
+		"codigoDisplay":		self:AjusteCodProduto(SB1->B1_COD),;
+		"unidadeDisplay":		SB1->B1_SEGUM,;
+		"fatorDisplay":			SB1->B1_CONV,;
+		"converterMedida":		SB1->B1_CONV;
+		}
+
+Return(jJson)
+
+Method LoadJsonProvider(cAcao) Class TCyberlogIntegracao
+
+	Local jJson := NIL
+
+	jJson := {;
+		"operacao":		cAcao,;
+		"erpId":		SA2->(A2_COD + A2_LOJA),;
+		"nome":			AllTrim(SA2->A2_NOME),;
+		"telefone":		SA2->A2_TEL,;
+		"cidade":		SA2->A2_MUN,;
+		"uf":			SA2->A2_EST,;
+		"endereco":		AllTrim(SA2->A2_END),;
+		"bairro":		SA2->A2_BAIRRO,;
+		"cep":			SA2->A2_CEP,;
+		"cnpj":			SA2->A2_CGC;
+		}
+
+Return(jJson)
+
+Method LoadJsonCustomer(cAcao) Class TCyberlogIntegracao
+
+	Local jJson := NIL
+
+	jJson := {;
+		"operacao":		cAcao,;
+		"erpId":		SA1->(A1_COD + A1_LOJA),;
+		"nome":			AllTrim(SA1->A1_NOME),;
+		"telefone":		SA1->A1_TEL,;
+		"nomeCidade":	AllTrim(SA1->A1_MUN),;
+		"uf":			SA1->A1_EST,;
+		"endereco":		AllTrim(SA1->A1_END),;
+		"noEndereco":	0,;
+		"nomeBairro":	AllTrim(SA1->A1_BAIRRO),;
+		"cep":			SA1->A1_CEP,;
+		"cnpj":			SA1->A1_CGC,;
+		"email":		AllTrim(SA1->A1_EMAIL),;
+		"leadTime":		1,;
+		"shelfLife":	1,;
+		"latitude":		0,;
+		"longitude":	0,;
+		"crossDocking":	.F.;
+		}
+
+Return(jJson)
+
+Method SendTransferenciaArmazemPedido(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaZA5	:= ZA5->(GetArea())
+	Local aAreaNNT	:= NNT->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSA1	:= SA1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ )
+
+			::oEmpCad:SeekEmpFil(cFilAnt)
+
+			// If ::lManual
+
+			lRet := ::ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_)
+
+			// EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonTransferenciaArmazemPedido(cAcao)
+
+				cBody := "pedido=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarPedido", cBody)
+
+				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "ZA5"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "CYBER004"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetMovimentoAlmoxarifadoConferenciaStatusPedido(If(lRet, "A", "X"))
+
+				::SetMovimentoAlmoxarifadoConferenciaStatus(If(lRet, "S", "X")) // N=Não enviado;R=Aguard.Receb.;S=Aguard.Separação;P=Aguard.ERP;X=Erro;T=Transferido
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		::SetMovimentoAlmoxarifadoConferenciaStatusPedido("S")
+
+		::SetMovimentoAlmoxarifadoConferenciaStatus("S")
+
+	EndIf
+
+	RestArea(aAreaZA5)
+	RestArea(aAreaNNT)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSA1)
+
+Return(lRet)
+
+Method LoadJsonTransferenciaArmazemPedido(cAcao) Class TCyberlogIntegracao
+
+	Local jJson 		:= NIL
+	Local jJsonItem		:= NIL
+	Local aItens		:= {}
+	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+
+	DbSelectArea("SA1")
+	SA1->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA1->(DBSeek(xFilial("SA1") + ::oEmpCad:cCodCliente + ::oEmpCad:cLojCliente))
+
+	jJson := {;
+		"operacao":				cAcao,;
+		"erpId":				"ZA5" + ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"empresa":				self:cDeposito,;
+		"data":					self:FormatDate(ZA5->ZA5_DATA),;
+		"noPedido":				0,;
+		"clienteErpId":			self:oEmpCad:cCodCliente + self:oEmpCad:cLojCliente,;
+		"nomeCliente":			SA1->A1_NOME,;
+		"noCliente":			0,;
+		"faturado":				.F.,;
+		"notaFiscal":			Nil,;
+		"serie":				Nil,;
+		"clienteRetira":		.F.,;
+		"observacao":			"",;
+		"prioridade":			50,;
+		"avaria":				.F.,;
+		"dataEntrega":			self:FormatDate(ZA5->ZA5_DATA),;
+		"docasConsolidacao":	"0",;
+		"loteInformado":		.F.,;
+		"documento":			ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"noRota":				"1",;
+		"descRota":				"Rota 1",;
+		"equipe":				"Equipe Cyberlog",;
+		"tipoPedido":			"Normal",;
+		"volumes":				1,;
+		"representante":		"",;
+		"vinculo":				Nil,;
+		"embalado":				.T.;
+		}
+
+	DBSelectArea("ZA6")
+	ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
+	ZA6->(DBGoTop())
+
+	If ZA6->(DBSeek(cChaveZA5))
+
+		While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
+
+			jJsonItem := { "operacao": cAcao, "sequenciaERP": ZA6->ZA6_ITEM, "codigoReduzido": self:AjusteCodProduto(ZA6->ZA6_PRODUT), "erpId": ZA6->ZA6_ITEM, "quantidade": ZA6->ZA6_QUANT, "qtdFaturado": ZA6->ZA6_QUANT, "qtdAvaria": 0, "noLayout": 0 }
+
+			aAdd(aItens, jJsonItem)
+
+			ZA6->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson['itensPedido'] := aItens
+
+Return(jJson)
+
+Method SendTransferenciaArmazemDocEntrada(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local cBody 	:= ""
+	Local oJson 	:= Nil
+	Local cAcao		:= ""
+	Local oLog		:= TCyberlogHistoryStruct():New()
+
+	Local aAreaZA5	:= ZA5->(GetArea())
+	Local aAreaNNT	:= NNT->(GetArea())
+	Local aAreaSB1	:= SB1->(GetArea())
+	Local aAreaSA1	:= SA1->(GetArea())
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If ( ::lManual ) .Or. ( lInclui_ .Or. lCopia_ .Or. lAltera_ .Or. lExclui_ )
+
+			::oEmpCad:SeekEmpFil(cFilAnt)
+
+			// If ::lManual
+
+			lRet := ::ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_)
+
+			// EndIf
+
+			If lRet
+
+				lInclui_ 	:= If(::lManual, .T., lInclui_)
+				cAcao		:= If(lInclui_ .Or. lCopia_, "INSERT", If(lAltera_, "UPDATE", If(lExclui_, "DELETE", "")))
+
+				oJson := ::LoadJsonTransferenciaArmazemDocEntrada(cAcao)
+
+				cBody := "recebimento=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarRecebimento", cBody)
+
+				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "ZA5"
+				oLog:cOperacao	:= If(lInclui_ .Or. lCopia_, "I", If(lAltera_, "A", If(lExclui_, "E", "R")))
+				oLog:cRotina	:= "CYBER004"
+				oLog:cJsonEnv	:= cBody
+				oLog:cTipo		:= "E"
+				oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+				::Log(oLog)
+
+				::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento(If(lRet, "A", "X"))
+
+				// ::SetMovimentoAlmoxarifadoConferenciaStatus(If(lRet, "E", "X"))
+
+			EndIf
+
+		Else
+
+			lRet := .F.
+
+		EndIf
+
+	Else
+
+		::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("S")
+
+		::SetMovimentoAlmoxarifadoConferenciaStatus("S")
+
+	EndIf
+
+	RestArea(aAreaZA5)
+	RestArea(aAreaNNT)
+	RestArea(aAreaSB1)
+	RestArea(aAreaSA1)
+
+Return(lRet)
+
+Method LoadJsonTransferenciaArmazemDocEntrada(cAcao) Class TCyberlogIntegracao
+
+	Local jJson 		:= NIL
+	Local jJsonItem		:= NIL
+	Local aItens		:= {}
+	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+
+	DbSelectArea("SA1")
+	SA2->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	SA2->(DBSeek(xFilial("SA1") + ::oEmpCad:cCodFornecedor + ::oEmpCad:cLojFornecedor))
+
+	jJson := {;
+		"operacao": 		cAcao,;
+		"erpId":			"ZA5" + ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"empresa":			self:cDeposito,;
+		"data":				self:FormatDate(ZA5->ZA5_DATA),;
+		"documento":		ZA5->(ZA5_FILIAL + ZA5_PROCES),;
+		"codFornecedor":	self:oEmpCad:cCodFornecedor + self:oEmpCad:cLojFornecedor,;
+		"avaria":			.F.,;
+		"confCega":			.F.,;
+		"tipo":				"N",;
+		"doca":				0,;
+		"prioridade":		0,;
+		"devolucao":		.F.,;
+		"informarlote":		.F.,;
+		"itensRecebimento":	Nil;
+		}
+
+	DBSelectArea("ZA6")
+	ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
+	ZA6->(DBGoTop())
+
+	If ZA6->(DBSeek(cChaveZA5))
+
+		While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
+
+			jJsonItem := { "sequenciaERP": ZA6->ZA6_ITEM, "codigoReduzido": self:AjusteCodProduto(ZA6->ZA6_PRODUT), "erpId": ZA6->ZA6_ITEM, "quantidade": ZA6->ZA6_QTDSEP, "noLayout": 1 }
+
+			aAdd(aItens, jJsonItem)
+
+			ZA6->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	jJson['itensRecebimento'] := aItens
+
+Return(jJson)
+
+Method RecebimentoConferencia(cBody) Class TCyberlogIntegracao
+
+	Local nRetorno		:= 400
+	Local retConversion	:= Nil
+	Local oPrepEnv  	:= TPrepEnv():New()
+	Local jBody  		:= JsonObject():New()
+	Local oDto			:= TDto():New()
+	Local jBodyDTO		:= TCyberlogDTORecebimentoConferencia():New()
+	Local cDeposito		:= ""
+
+	Default cBody		:= oRest:GetBodyRequest()
+
+	::LogConsole("Starting... " + cBody)
+
+	retConversion := jBody:FromJson(DecodeUTF8(cBody, "cp1252"))
+
+	If ValType(retConversion) <> "C"
+
+		If oDto:DTO(jBody, jBodyDTO:campos)
+
+			oPrepEnv:PrepEnv("01", "010104", "FAT")
+
+			cDeposito := ::GetFilial(jBody['deposito'])
+
+			::cDeposito := jBody['deposito']
+
+			If oPrepEnv:PrepEnv(SubStr(cDeposito, 1, 2), cDeposito, "FAT")
+
+				If ::ValidToken()
+
+					If ::SetRecebimentoConferencia(jBody, @nRetorno)
+
+						oRest:setStatusCode(200)
+
+						::oResult['message'] 	:= ::mensagem
+						::oResult['status'] 	:= .T.
+
+					Else
+
+						oRest:setStatusCode(nRetorno)
+
+						::oResult['message'] 	:= self:mensagem
+						::oResult['status'] 	:= .F.
+
+					EndIf
+
+				Else
+
+					oRest:setStatusCode(403)
+
+					::oResult['message'] 	:= "Token invalido."
+					::oResult['status'] 	:= .F.
+
+				EndIf
+
+			Else
+
+				oRest:setStatusCode(500)
+
+				::oResult['message'] 	:= oPrepEnv:cMsg
+				::oResult['status'] 	:= .F.
+
+			EndIf
+
+		Else
+
+			oRest:setStatusCode(400)
+
+			::oResult['message'] 	:= oDto:Mensagem
+			::oResult['status'] 	:= .F.
+
+		EndIf
+
+	Else
+
+		oRest:setStatusCode(500)
+
+		::oResult['message'] 	:= retConversion
+		::oResult['status'] 	:= .F.
+
+	EndIf
+
+	::LogConsole("Finishing..." + ::oResult:toJSON())
+
+Return(oRest:setResponse(EncodeUTF8( ::oResult:toJSON() )))
+
+Method SetRecebimentoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+	Local lRotinaTrfArmazem := .F.
+	Local lRotinaPreNota := .F.
+	Local oLog := TCyberlogHistoryStruct():New()
+
+	DBSelectArea("SF1")
+	SF1->(DBSetOrder(1)) // F1_FILIAL, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_TIPO, R_E_C_N_O_, D_E_L_E_T_
+
+	lRotinaPreNota := SF1->(DBSeek(Rtrim(jBody['erpId'])))
+
+	DBSelectArea("ZA5")
+	ZA5->(DBSetOrder(1)) // ZA5_FILIAL, ZA5_PROCES, R_E_C_N_O_, D_E_L_E_T_
+	ZA5->(DBGoTop())
+
+	lRotinaTrfArmazem := ZA5->(DBSeek(Rtrim(jBody['erpId'])))
+
+	If lRotinaPreNota .Or. lRotinaTrfArmazem
+
+		If lRotinaPreNota
+
+			oLog:cTabela := "SF1"
+
+			If jBody['status'] == "Conferido"
+
+				::mensagem := "Sucess"
+
+				::SetRecebimentoConferenciaStatus("C")
+
+			Else
+
+				lRet := .F.
+
+				nRetorno := 400
+
+				::mensagem := "Apenas o status [C=Conferido] é permitido a conferencia."
+
+			EndIf
+
+		EndIf
+
+		If lRotinaTrfArmazem
+
+			oLog:cTabela := "ZA5"
+
+			If jBody['status'] == "Conferido" .And. ZA5->ZA5_STAPED <> "C"
+
+				::mensagem := "Sucess"
+
+				::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+
+				If ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "C"
+
+					::SetMovimentoAlmoxarifadoConferenciaStatus("P")
+
+				ElseIf ZA5->ZA5_STAREC == "A" .And. ZA5->ZA5_STAPED == "C"
+
+					::SetMovimentoAlmoxarifadoConferenciaStatus("R")
+
+				ElseIf ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "A"
+
+					::SetMovimentoAlmoxarifadoConferenciaStatus("S")
+
+				EndIf
+
+			Else
+
+				lRet := .F.
+
+				nRetorno := 400
+
+				::mensagem := "Apenas o status [C=Conferido] é permitido a conferencia."
+
+			EndIf
+
+		EndIf
+
+	EndIf
+
+	oLog:cChave		:= jBody['erpId']
+	oLog:cDeposito	:= ::cDeposito
+	oLog:cOperacao	:= "I"
+	oLog:cRotina	:= "REST"
+	oLog:cTipo		:= "R"
+	oLog:cJsonEnv	:= jBody:ToJson()
+	oLog:cUrl		:= oRest:getFullURLRequest()
+	// oLog:cJsonRet	:= oRest:cResult
+	oLog:cStatus	:= If(lRet, "S", "E")
+	oLog:cErro		:= If(lRet, "", ::mensagem)
+
+	::Log(oLog)
+
+Return(lRet)
+
+Method SetRecebimentoConferenciaStatus(cStatus) Class TCyberlogIntegracao
+
+	RecLock("SF1", .F.)
+	SF1->F1_XCONFCB := cStatus // A=Aguar.Conferencia;C=Conferido;S=Sem Int.com WMS;E=Erro ao Enviar WMS;T=Estornado no WMS
+	SF1->(MsUnlock())
+
+Return()
+
+Method PedidoConferencia(cBody) Class TCyberlogIntegracao
+
+	Local nRetorno		:= 400
+	Local retConversion	:= Nil
+	Local oPrepEnv  	:= TPrepEnv():New()
+	Local jBody  		:= JsonObject():New()
+	Local oDto			:= TDto():New()
+	Local jBodyDTO		:= TCyberlogDTOPedidoConferencia():New()
+	Local cDeposito		:= ""
+
+	Default cBody		:= oRest:GetBodyRequest()
+
+	::LogConsole("Starting... " + cBody)
+
+	retConversion := jBody:FromJson(DecodeUTF8(cBody, "cp1252"))
+
+	If ValType(retConversion) <> "C"
+
+		If oDto:DTO(jBody, jBodyDTO:campos)
+
+			oPrepEnv:PrepEnv("01", "010104", "FAT")
+
+			cDeposito := ::GetFilial(jBody['deposito'])
+
+			::cDeposito := jBody['deposito']
+
+			If oPrepEnv:PrepEnv(SubStr(cDeposito, 1, 2), cDeposito, "FAT")
+
+				If ::ValidToken()
+
+					If ::SetPedidoConferencia(jBody, @nRetorno)
+
+						oRest:setStatusCode(200)
+
+						::oResult['message'] 	:= ::mensagem
+						::oResult['status'] 	:= .T.
+
+					Else
+
+						oRest:setStatusCode(nRetorno)
+
+						::oResult['message'] 	:= self:mensagem
+						::oResult['status'] 	:= .F.
+
+					EndIf
+
+				Else
+
+					oRest:setStatusCode(403)
+
+					::oResult['message'] 	:= "Token invalido."
+					::oResult['status'] 	:= .F.
+
+				EndIf
+
+			Else
+
+				oRest:setStatusCode(500)
+
+				::oResult['message'] 	:= oPrepEnv:cMsg
+				::oResult['status'] 	:= .F.
+
+			EndIf
+
+		Else
+
+			oRest:setStatusCode(400)
+
+			::oResult['message'] 	:= oDto:Mensagem
+			::oResult['status'] 	:= .F.
+
+		EndIf
+
+	Else
+
+		oRest:setStatusCode(500)
+
+		::oResult['message'] 	:= retConversion
+		::oResult['status'] 	:= .F.
+
+	EndIf
+
+	::LogConsole("Finishing..." + ::oResult:toJSON())
+
+Return(oRest:setResponse(EncodeUTF8( ::oResult:toJSON() )))
+
+Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
+
+	Local lRet 				:= .T.
+	Local oLog 				:= TCyberlogHistoryStruct():New()
+	Local lRotinaTransf		:= .F.
+	Local lRotinaPedido		:= .F.
+	Local lRotinaTrfArmazem := .F.
+	Local cChave			:= ""
+	Local aRecno			:= {}
+	Local nW				:= 0
+	Local cMensagem			:= ""
+	Local oObjInteg			:= TCyberlogIntegracao():New()
+
+	If SubStr(jBody['erpId'], 1, 3) == "NNS"
+
+		lRotinaTransf := .T.
+
+	ElseIf SubStr(jBody['erpId'], 1, 3) == "SC5"
+
+		lRotinaPedido := .T.
+
+	ElseIf SubStr(jBody['erpId'], 1, 3) == "ZA5"
+
+		lRotinaTrfArmazem := .T.
+
+	EndIf
+
+	cChave := jBody['erpId']
+
+	If lRotinaTrfArmazem
+
+		DBSelectArea("ZA5")
+		ZA5->(DBSetOrder(1)) // ZA5_FILIAL, ZA5_PROCES, R_E_C_N_O_, D_E_L_E_T_
+		ZA5->(DBGoTop())
+
+		cChave := Replace(Rtrim(jBody['erpId']), "ZA5", "")
+
+		lRotinaTrfArmazem := ZA5->(DBSeek(cChave))
+
+	Else
+
+		DBSelectArea("NNS")
+		NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
+		NNS->(DBGoTop())
+
+		lRotinaTransf := NNS->(DBSeek(Rtrim(jBody['erpId'])))
+
+		DBSelectArea("SC5")
+		SC5->(DBSetOrder(1)) // C5_FILIAL, C5_NUM, R_E_C_N_O_, D_E_L_E_T_
+		SC5->(DBGoTop())
+
+		lRotinaPedido := SC5->(DBSeek(Rtrim(jBody['erpId'])))
+
+	EndIf
+
+	If lRotinaTransf .Or. lRotinaPedido .Or. lRotinaTrfArmazem
+
+		If lRotinaTransf
+
+			oLog:cTabela := "NNS"
+
+			If NNS->NNS_CYBERS == "E" .Or. NNS->NNS_CYBERS == "R" // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+
+				If NNS->NNS_CYBERS == "E"
+
+					DBSelectArea("NNT")
+					NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+					NNT->(DBGoTop())
+
+					For nW := 1 To Len(jBody["itensPedido"])
+
+						If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD + NNS_FILIAL) + self:AjusteCodProduto(jBody["itensPedido"][nW]['codigoReduzido'], 6)))
+
+							RecLock("NNT", .F.)
+							NNT->NNT_QTDWMS	:= jBody["itensPedido"][nW]['qtdSeparada']
+							NNT->NNT_QUANT	:= jBody["itensPedido"][nW]['qtdSeparada']
+							NNT->(MsUnlock())
+
+							If jBody["itensPedido"][nW]['qtdSeparada'] > 0
+
+								aAdd(aRecno, NNT->(Recno()))
+
+							EndIf
+
+						EndIf
+
+					Next nW
+
+					NNT->(DBGoTop())
+
+					If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+						While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == NNS->(NNS_FILIAL + NNS_COD)
+
+							If aScan(aRecno, {|x| x == NNT->(Recno()) }) == 0
+
+								RecLock("NNT", .F.)
+								NNT->(DBDelete())
+								NNT->(MsUnlock())
+
+								cMensagem += "O produto [" + NNT->NNT_PROD + "] de quantidade [" + TransForm(NNT->NNT_QTDORI, "999.999.999.99") + "] não foi separado, portanto foi excluido da transferencia." + CRLF
+
+							Else
+
+								cMensagem += "O produto [" + NNT->NNT_PROD + "] de quantidade [" + TransForm(NNT->NNT_QTDORI, "999.999.999.99") + "] " + If(NNT->NNT_QTDORI == NNT->NNT_QUANT, " foi separado.", " foi separado parcial [" + TransForm(NNT->NNT_QUANT, "999.999.999.99") + "]") + CRLF
+
+							EndIf
+
+							NNT->(DBSkip())
+
+						EndDo
+
+					EndIf
+
+					::SetTransferenciaConferenciaStatus(If(jBody['status'] == "Conferido", "R", "T"))
+
+					::mensagem := "Sucess"
+
+				Else
+
+					lRet := .T.
+
+					nRetorno := 200
+
+					::mensagem := "Transferencia já esta com status conferido."
+
+				EndIf
+
+			Else
+
+				lRet := .F.
+
+				nRetorno := 400
+
+				::mensagem := "Apenas o status [E=Enviado] é permitido a conferencia."
+
+			EndIf
+
+		EndIf
+
+		If lRotinaPedido
+
+			oLog:cTabela := "SC5"
+
+			If SC5->C5_XCONFCB == "A" .Or. SC5->C5_XCONFCB == "C" // A=Aguar.Conferencia;C=Conferido;S=Sem Int.com WMS;E=Erro ao Enviar WMS;T=Estornado no WMS
+
+				If SC5->C5_XCONFCB == "A"
+
+					If jBody:HasProperty("volume")
+
+						RecLock("SC5", .F.)
+						SC5->C5_VOLUME1 := jBody["volume"]
+						SC5->(MsUnlock())
+
+					EndIf
+
+					If jBody:HasProperty("peso")
+
+						RecLock("SC5", .F.)
+						SC5->C5_PESOL   := jBody["peso"]
+						SC5->C5_PBRUTO  := jBody["peso"]
+						SC5->C5_ESPECI1 := "VOLUMES"
+						SC5->(MsUnlock())
+
+					EndIf
+
+					DBSelectArea("SC6")
+					SC6->(DBSetOrder(1)) // C6_FILIAL, C6_NUM, C6_ITEM, C6_PRODUTO, R_E_C_N_O_, D_E_L_E_T_
+					SC6->(DBGoTop())
+
+					For nW := 1 To Len(jBody["itensPedido"])
+
+						If SC6->(DBSeek(SC5->(C5_FILIAL + C5_NUM)+ jBody["itensPedido"][nW]['sequenciaERP']))
+
+							RecLock("SC6", .F.)
+							SC6->C6_XQTDCON	:= jBody["itensPedido"][nW]['qtdSeparada']
+							SC6->(MsUnlock())
+
+							aAdd(aRecno, SC6->(Recno()))
+
+						EndIf
+
+					Next nW
+					/*
+					SC6->(DBGoTop())
+
+					If SC6->(DBSeek(SC5->(C5_FILIAL + C5_NUM)))
+
+						While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_PRODUTO) == SC5->(C5_FILIAL + C5_NUM)
+
+							If aScan(aRecno, {|x| x == SC6->(Recno()) }) == 0
+
+								RecLock("SC6", .F.)
+								SC6->(DBDelete())
+								SC6->(MsUnlock())
+
+								cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] não foi separado, portanto foi excluido da transferencia." + CRLF
+
+							Else
+
+								cMensagem += "O produto [" + SC6->C6_PRODUTO + "] de quantidade [" + TransForm(SC6->C6_PRCVEN, "999.999.999.99") + "] " + If(SC6->C6_PRCVEN == SC6->C6_QUANT, " foi separado.", " foi separado parcial [" + TransForm(SC6->C6_QUANT, "999.999.999.99") + "]") + CRLF
+
+							EndIf
+
+							SC6->(DBSkip())
+
+						EndDo
+
+					EndIf
+					*/
+					::SetPedidoConferenciaStatus(If(jBody['status'] == "Conferido", "C", "T"))
+
+					::mensagem := "Sucess"
+
+				Else
+
+					lRet := .T.
+
+					nRetorno := 200
+
+					::mensagem := "Pedido já esta com status conferido."
+
+				EndIf
+
+			Else
+
+				lRet := .F.
+
+				nRetorno := 400
+
+				::mensagem := "Apenas o status [E=Enviado] é permitido a conferencia."
+
+			EndIf
+
+		EndIf
+
+		If lRotinaTrfArmazem
+
+			oLog:cTabela := "ZA5"
+
+			If jBody['status'] == "Conferido"
+
+				::mensagem := "Sucess"
+
+				If ZA5->ZA5_DEPPED == jBody['deposito']
+
+					::SetMovimentoAlmoxarifadoConferenciaStatusPedido("C")
+
+				ElseIf ZA5->ZA5_DEPREC == jBody['deposito']
+
+					// ::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+
+					TLogConsole():Log("Não deveria entrar nesse if devido mudança de regra.")
+
+				EndIf
+
+				If ZA5->ZA5_STAPED == "C"
+
+					::SetMovimentoAlmoxarifadoConferenciaStatus("P")
+
+				EndIf
+
+				DBSelectArea("ZA6")
+				ZA6->(DBSetOrder(2)) // ZA6_FILIAL, ZA6_PROCES, ZA6_ITEM, R_E_C_N_O_, D_E_L_E_T_
+				ZA6->(DBGoTop())
+
+				For nW := 1 To Len(jBody["itensPedido"])
+
+					If ZA6->(DBSeek(ZA5->(ZA5_FILIAL + ZA5_PROCES) + jBody["itensPedido"][nW]['sequenciaERP']))
+
+						RecLock("ZA6", .F.)
+						ZA6->ZA6_QTDSEP	:= jBody["itensPedido"][nW]['qtdSeparada']
+						ZA6->(MsUnlock())
+
+					EndIf
+
+				Next nW
+
+				If !Empty(oObjInteg:oEmpAuth:cDepositoB2B) .And. ::cDeposito <> oObjInteg:oEmpAuth:cDepositoB2B
+
+					oObjInteg:cDeposito := oObjInteg:oEmpAuth:cDepositoB2B // Rest nao faz new nesta classe.
+
+					If oObjInteg:SendTransferenciaArmazemDocEntrada(.T.)
+
+						::SetMovimentoAlmoxarifadoConferenciaStatusRecebimento("C")
+
+						If !oObjInteg:MovimentaEstoque()
+
+							TLogConsole():Log(ZA5->ZA5_ERRO)
+
+						EndIf
+
+					EndIF
+
+				Else
+
+					TLogConsole():Log("Não é B2B ")
+
+				EndIf
+
+			Else
+
+				lRet := .F.
+
+				nRetorno := 400
+
+				::mensagem := "Apenas o status [C=Conferido] é permitido a conferencia."
+
+			EndIf
+
+		EndIf
+
+	Else
+
+		lRet := .F.
+
+		nRetorno := 400
+
+		::mensagem := "Documento não encontrado"
+
+	EndIf
+
+	oLog:cChave		:= cChave
+	oLog:cDeposito	:= ::cDeposito
+	oLog:cOperacao	:= "I"
+	oLog:cRotina	:= "REST"
+	oLog:cTipo		:= "R"
+	oLog:cJsonEnv	:= jBody:ToJson()
+	oLog:cUrl		:= oRest:getFullURLRequest()
+	// oLog:cJsonRet	:= oRest:cResult
+	oLog:cObs		:= cMensagem
+	oLog:cStatus	:= If(lRet, "S", "E")
+	oLog:cErro		:= If(lRet, "", ::mensagem)
+
+	::Log(oLog)
+
+Return(lRet)
+
+Method SetPedidoConferenciaStatus(cStatus) Class TCyberlogIntegracao
+
+	RecLock("SC5", .F.)
+	SC5->C5_XCONFCB := cStatus // A=Aguar.Conferencia;C=Conferido;S=Sem Int.com WMS;E=Erro ao Enviar WMS;T=Estornado no WMS
+	SC5->(MsUnlock())
+
+Return()
+
+Method SetTransferenciaConferenciaStatus(cStatus) Class TCyberlogIntegracao
+
+	RecLock("NNS", .F.)
+	NNS->NNS_CYBERS := cStatus // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+	NNS->(MsUnlock())
+
+Return()
+
+Method SetMovimentoAlmoxarifadoConferenciaStatus(cStatus) Class TCyberlogIntegracao
+
+	RecLock("ZA5", .F.)
+	ZA5->ZA5_STATUS := cStatus // N=Não enviado;R=Aguard.Receb.;S=Aguard.Separação;P=Aguard.ERP;X=Erro;T=Transferido
+	ZA5->(MsUnlock())
+
+Return()
+
+Method SetMovimentoAlmoxarifadoConferenciaStatusPedido(cStatus) Class TCyberlogIntegracao
+
+	RecLock("ZA5", .F.)
+	ZA5->ZA5_STAPED := cStatus // N=Não Enviado;A=Aguar.Separação;C=Conferido;X=Erro ao Enviar WMS
+	ZA5->(MsUnlock())
+
+Return()
+
+Method SetMovimentoAlmoxarifadoConferenciaStatusRecebimento(cStatus) Class TCyberlogIntegracao
+
+	RecLock("ZA5", .F.)
+	ZA5->ZA5_STAREC := cStatus // N=Não Enviado;A=Aguar.Conferência;C=Conferido;X=Erro ao Enviar WMS
+	ZA5->(MsUnlock())
+
+Return()
+
+Method TransferenciaCrossdocking(cBody) Class TCyberlogIntegracao
+
+	Local nRetorno		:= 400
+	Local retConversion	:= Nil
+	Local oPrepEnv  	:= TPrepEnv():New()
+	Local jBody  		:= JsonObject():New()
+	Local oDto			:= TDto():New()
+	Local jBodyDTO		:= TCyberlogDTOTransferencia():New()
+
+	Default cBody		:= oRest:GetBodyRequest()
+
+	::LogConsole("Starting... " + cBody)
+
+	retConversion := jBody:FromJson(DecodeUTF8(cBody, "cp1252"))
+
+	If ValType(retConversion) <> "C"
+
+		If oDto:DTO(jBody, jBodyDTO:campos)
+
+			If oPrepEnv:PrepEnv("01", "010104", "FAT")
+
+				If ::ValidToken()
+
+					If ::AddTransferencia(jBody, @nRetorno)
+
+						oRest:setStatusCode(200)
+
+						::oResult['message'] 	:= ::mensagem
+						::oResult['status'] 	:= .T.
+
+					Else
+
+						oRest:setStatusCode(nRetorno)
+
+						::oResult['message'] 	:= self:mensagem
+						::oResult['status'] 	:= .F.
+
+					EndIf
+
+				Else
+
+					oRest:setStatusCode(403)
+
+					::oResult['message'] 	:= "Token invalido."
+					::oResult['status'] 	:= .F.
+
+				EndIf
+
+			Else
+
+				oRest:setStatusCode(500)
+
+				::oResult['message'] 	:= oPrepEnv:cMsg
+				::oResult['status'] 	:= .F.
+
+			EndIf
+
+		Else
+
+			oRest:setStatusCode(400)
+
+			::oResult['message'] 	:= oDto:Mensagem
+			::oResult['status'] 	:= .F.
+
+		EndIf
+
+	Else
+
+		oRest:setStatusCode(500)
+
+		::oResult['message'] 	:= retConversion
+		::oResult['status'] 	:= .F.
+
+	EndIf
+
+	::LogConsole("Finishing..." + ::oResult:toJSON())
+
+Return(oRest:setResponse(EncodeUTF8( ::oResult:toJSON() )))
+
+Method AddTransferencia(jBody, nRetorno) Class TCyberlogIntegracao
+
+	Local lRet 				:= .T.
+	Local nW 				:= 0
+	Local nRetAddLine 		:= Nil
+	Local nX 				:= 0
+	Local nPos 				:= 0
+	Local cMessage 			:= ""
+	Local aMsgDeErro 		:= {}
+	Local aTransferencia	:= {}
+	Local oLog 				:= TCyberlogHistoryStruct():New()
+
+	Local oModel 			:= Nil
+	Local oModelNNS			:= Nil
+	Local oModelNNT			:= Nil
+
+	Local oEmpCad			:= TEmpUtil():New()
+
+	Private INCLUI 			:= .T.
+	Private ALTERA 			:= .T.
+
+	Private lMSErroAuto 	:= .F.
+	Private lMSHelpAuto 	:= .F. // .F. -> Vai exibir o help em tela | .T. Não vai exibir o help em tela
+	Private lAutoErrNoFile 	:= .F. // .F. -> Vai capturar o log | .T. Não vai capturar o log
+
+	For nW := 1 To Len(jBody["transferencia"])
+
+		nPos := aScan(aTransferencia, {|x| x[1] == jBody["transferencia"][nW]["filial"] })
+
+		If nPos > 0
+
+			aAdd(aTransferencia[nPos], { jBody["transferencia"][nW]["quantidade"], jBody["transferencia"][nW]["armazem"], jBody["transferencia"][nW]["codProduto"] })
+
+		Else
+
+			aAdd(aTransferencia, { jBody["transferencia"][nW]["filial"], { jBody["transferencia"][nW]["quantidade"], jBody["transferencia"][nW]["armazem"], jBody["transferencia"][nW]["codProduto"] }})
+
+		EndIf
+
+	Next nW
+
+	For nW := 1 To Len(aTransferencia)
+
+		oModel		:= FWLoadModel("MATA311")
+
+		oModelNNS	:= oModel:GetModel( 'NNSMASTER' )
+		oModelNNT	:= oModel:GetModel( 'NNTDETAIL' )
+
+		oModel:SetOperation(MODEL_OPERATION_INSERT)
+
+		If oModel:CanActivate()
+
+			oModel:Activate()
+
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_FILIAL"    , xFilial("NNS")), .F.)
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_SOLICT"    , "000000"), .F.)
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_CYBERW"    , "N"), .F.) // S=Sim;N=Nao
+			lRet := If(lRet, oModel:SetValue("NNSMASTER", "NNS_CYBERS"    , "R"), .F.) // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+
+			For nX := 1 To Len(aTransferencia[nW])
+
+				If nX > 1
+
+					oEmpCad:CliCod(aTransferencia[nW][1])
+
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_FILORI"	, xFilial("NNT")), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_FILDES"	, oEmpCad:cCodFilial), .F.)
+
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_PROD"	, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6)), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_PRODD"	, self:AjusteCodProduto(aTransferencia[nW][nX][3], 6)), .F.)
+
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_LOCAL"	, aTransferencia[nW][nX][2]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_LOCLD"	, aTransferencia[nW][nX][2]), .F.)
+
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_QUANT"	, aTransferencia[nW][nX][1]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_QTDWMS"	, aTransferencia[nW][nX][1]), .F.)
+					lRet := If(lRet, oModel:SetValue("NNTDETAIL", "NNT_SERIE"	, "1"), .F.)
+
+					If nX <> Len(aTransferencia[nW])
+
+						nRetAddLine := oModel:GetModel('NNTDETAIL'):AddLine()
+
+					EndIf
+
+				EndIf
+
+			Next nX
+
+			If lRet .And. oModel:VldData()
+
+				oModel:CommitData()
+
+			Else
+
+				lRet := .F.
+
+			EndIf
+
+		EndIf
+
+		If lRet
+
+			oModel:DeActivate()
+			oModel:Destroy()
+			oModel := NIL
+
+			nRetorno := 200
+
+			::mensagem := "Sucess"
+
+			// FreeObj(oModel)
+
+		Else
+
+			aMsgDeErro := oModel:GetErrorMessage()
+
+			cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aMsgDeErro[01]) + '], ' + CRLF
+			cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aMsgDeErro[02]) + '], ' + CRLF
+			cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aMsgDeErro[03]) + '], ' + CRLF
+			cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aMsgDeErro[04]) + '], ' + CRLF
+			cMessage += "Id do erro: "                 + ' [' + cValToChar(aMsgDeErro[05]) + '], ' + CRLF
+			cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aMsgDeErro[06]) + '], ' + CRLF
+			cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aMsgDeErro[07]) + '], ' + CRLF
+			cMessage += "Valor atribuído: "            + ' [' + cValToChar(aMsgDeErro[08]) + '], ' + CRLF
+			cMessage += "Valor anterior: "             + ' [' + cValToChar(aMsgDeErro[09]) + ']'
+
+			::mensagem := cMessage
+
+		EndIf
+
+		oLog:cChave		:=  If(lRet, NNS->(NNS_FILIAL + NNS_COD), DTOS(dDataBase))
+		oLog:cDeposito	:= ::cDeposito
+		oLog:cTabela	:= "NNS"
+		oLog:cOperacao	:= "I"
+		oLog:cRotina	:= "REST"
+		oLog:cJsonEnv	:= jBody:toJson()
+		oLog:cTipo		:= "R"
+		oLog:cUrl		:= oRest:getFullURLRequest()
+		oLog:cJsonRet	:= ""
+		oLog:cObs		:= "Criado via crossdocking."
+		oLog:cStatus	:= If(lRet, "S", "E")
+		oLog:cErro		:= If(lRet, "", If(Len(cMessage) > 0, cMessage, "Erro"))
+
+		::Log(oLog)
+
+	Next nW
+
+Return()
+
+Method ValidEnvioPedidoM460MARK(aParam) Class TCyberlogIntegracao
+
+	Local lRet		:= .T.
+	Local lMarked 	:= .T.
+	Local aAreaSC9 	:= SC9->(GetArea())
+	Local cAlias 	:= GetNextAlias()
+	Local cM460QRY	:= "%" + U_XM460QRY() + "%"
+
+	If ::oEmpAuth:lIntAtiva
+
+		BeginSQL Alias cAlias
+
+			%noparser%
+
+			SELECT 	*
+			FROM 	%Table:SC9% SC9
+			WHERE 	1 = 1 AND
+			// SC9.C9_FILIAL 	= %xFilial:SC9% AND
+			// SC9.C9_OK		= %exp:aParam[1]% AND
+			%exp:cM460QRY% AND
+			SC9.C9_NFISCAL 	= '' AND
+			SC9.D_E_L_E_T_	= '' AND
+			SC9.C9_BLEST	= ''
+		EndSQL
+
+		(cAlias)->(DbGoTop())
+
+		While !(cAlias)->(Eof()) .And. lRet
+
+			If aParam[2]
+
+				If (cAlias)->C9_OK == aParam[1]
+					lMarked := .F.
+				Else
+					lMarked := .T.
+				EndIf
+
+			Else
+
+				If (cAlias)->C9_OK == aParam[1]
+					lMarked := .T.
+				Else
+					lMarked := .F.
+				EndIf
+
+			EndIf
+
+			If lMarked .And. Empty((cAlias)->C9_NFISCAL)
+
+				DBSelectArea("SC5")
+				SC5->(DBSetOrder(1)) // C5_FILIAL, C5_NUM, R_E_C_N_O_, D_E_L_E_T_
+
+				If SC5->(DBSeek(xFilial("SC9") + (cAlias)->C9_PEDIDO))
+
+					lRet := ::ValidEnvioPedido(.T.)
+
+				EndIf
+
+			EndIf
+
+			(cAlias)->(DbSkip())
+
+		EndDo
+
+	EndIf
+
+	RestArea(aAreaSC9)
+
+Return(lRet)
+
+Method ValidEnvioPedido(lFaturar, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+	// Local cMsg := ""
+
+	Default lFaturar 	:= .F. // Caso for faturamento verificar se o pedido foi enviado para o WMS, caso sim, deve estar com status de conferido!
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If lRet .And. !lFaturar .And. ( !Empty(SC5->C5_NOTA) .Or. SC5->C5_LIBEROK == 'E' .And. Empty(SC5->C5_BLQ) )
+
+			Help(NIL, NIL, "HELP", NIL, "Este pedido já esta encerrado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+		If lRet .And. !lFaturar .And. !SC5->C5_TIPO $ 'NDB'
+
+			Help(NIL, NIL, "HELP", NIL, 'Tipo de pedido não pode ser enviada para WMS!', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+		If lRet .And. SC5->C5_XCONFCB == "A" .And. lFaturar
+
+			Help(NIL, NIL, "HELP", NIL, "O Pedido " + SC5->C5_NUM + " está em fase de separação!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+		// If lRet .And. !lFaturar //.And. !::ValidClienteWMS(SC5->C5_CLIENTE, SC5->C5_LOJACLI)
+
+		//	Help(NIL, NIL, "HELP", NIL, "Cliente não configurado para o Cyberlog WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+		// 	lRet := .F.
+
+		// EndIf
+		/*
+		If lRet .And. !lFaturar
+
+			DBSelectArea("SC6")
+			SC6->(DBSetOrder(1)) // C6_FILIAL, C6_NUM, C6_ITEM, C6_PRODUTO, R_E_C_N_O_, D_E_L_E_T_
+			SC6->(DBGoTop())
+
+			If SC6->(DBSeek(SC5->(C5_FILIAL + C5_NUM)))
+
+				While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_NUM) == SC5->(C5_FILIAL + C5_NUM)
+
+					If !::ValidProdutoWMS(SC6->C6_PRODUTO)
+
+						lRet := .F.
+
+						cMsg += SC6->C6_PRODUTO + CRLF
+
+					EndIf
+
+					SC6->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+			If !lRet
+
+				Help(NIL, NIL, "HELP", NIL, cMsg, 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			EndIf
+
+		EndIf
+		*/
+	EndIf
+
+Return(lRet)
+
+Method ValidEnvioPreNota(lClassificar, lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+
+	Default lClassificar := .F.
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		If lRet .And. !lClassificar .And. !SF1->F1_STATUS $ " /B"
+
+			Help(NIL, NIL, "HELP", NIL, "Esta pre-nota já foi classificada!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+		If lRet .And. !lClassificar .And. !SF1->F1_TIPO $ 'NDB'
+
+			Help(NIL, NIL, "HELP", NIL, "Tipo de nota não pode ser enviada para WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+		If SF1->F1_XCONFCB == "A" .And. ( lClassificar .Or. ( !lClassificar .And. !lAltera_ ) )
+
+			Help(NIL, NIL, "HELP", NIL, "O documento de entrada está em fase de conferência!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			lRet := .F.
+
+		EndIf
+
+	EndIf
+
+Return(lRet)
+
+Method ValidEnvioTransferencia(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+	Local cMsg := ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+		// If lRet .And. !lEfetivar .And. ( !Empty(NNS->NNS_NOTA) .Or. NNS->NNS_LIBEROK == 'E' .And. Empty(NNS->NNS_BLQ) )
+
+		//	Help(NIL, NIL, "HELP", NIL, 'Este pedido já esta encerrado.', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+		// 	lRet := .F.
+
+		// EndIf
+
+		// If lRet .And. !lEfetivar .And. !NNS->NNS_TIPO $ 'NDB'
+
+		// Help(NIL, NIL, "HELP", NIL, 'Tipo de pedido não pode ser enviada para WMS', 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+		// 	lRet := .F.
+
+		// EndIf
+
+		If lRet .And. NNS->NNS_CYBERS <> "R" .And. NNS->NNS_CYBERW == "S" .And.  IsInCallStack('A311Efetiv')
+
+			Help(NIL, NIL, "HELP", NIL, "A Solicitação " + NNS->NNS_COD + " deve estar com status 'Recebido' para efetivação!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique o processo."})
+
+			lRet := .F.
+
+		EndIf
+
+		// If lRet .And. !lEfetivar .And. !::ValidClienteWMS(NNS->NNS_CLIENTE, NNS->NNS_LOJACLI)
+
+		//	Help(NIL, NIL, "HELP", NIL, "Cliente não configurado para o Cyberlog WMS!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+		// 	lRet := .F.
+
+		// EndIf
+	/*
+		If lRet .And. !lEfetivar
+
+			DBSelectArea("NNT")
+			NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+			NNT->(DBGoTop())
+
+			If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+				While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == NNS->(NNS_FILIAL + NNS_COD)
+
+					If !::ValidProdutoWMS(NNT->NNT_PROD)
+
+						lRet := .F.
+
+						cMsg += NNT->NNT_PROD + CRLF
+
+					EndIf
+
+					NNT->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+			If !lRet
+
+				Help(NIL, NIL, "HELP", NIL, cMsg, 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			EndIf
+
+		EndIf
+	*/
+	EndIf
+
+Return(lRet)
+
+
+Method ValidEnvioTransferenciaArmazem(lInclui_, lCopia_, lAltera_, lExclui_) Class TCyberlogIntegracao
+
+	Local lRet := .T.
+	Local cMsg := ""
+
+	Default lInclui_ 	:= .F.
+	Default lCopia_ 	:= .F.
+	Default lAltera_	:= .F.
+	Default lExclui_	:= .F.
+
+	If ::oEmpAuth:lIntAtiva
+
+
+	EndIf
+
+Return(lRet)
+
+Method AddMenu(laRotina, aRotina_) Class TCyberlogIntegracao
+
+	Local aMenu := {}
+
+	Default aRotina_ := {}
+	Default laRotina := .F.
+
+	If !FWIsInCallStack("U_MTA103MNU") // Apenas pre-nota
+
+		aAdd(aMenu, {"Envio Cyberlog WMS", "U_CYBER002(2)", 0, 2, 0, NIL})
+
+	EndIf
+
+	If FWIsInCallStack("U_MT311ROT")
+
+		aAdd(aMenu, {"Envio Cliente Cyberlog", "U_CYBER002(3)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Envio Produto Cyberlog"	, "U_CYBER002(4)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Grafico", "U_CYBER002(5)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Lib. sem conferência", "U_CYBER002(6)", 0, 2, 0, NIL})
+
+	EndIf
+
+	If FWIsInCallStack("U_MT140ROT")
+
+		aAdd(aMenu, {"Envio Fornecedor Cyberlog", "U_CYBER002(3)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Envio Produto Cyberlog"	, "U_CYBER002(4)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Grafico", "U_CYBER002(5)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Lib. sem conferência", "U_CYBER002(6)", 0, 2, 0, NIL})
+
+	EndIf
+
+	If FWIsInCallStack("U_MA410MNU")
+
+		aAdd(aMenu, {"Envio Cliente Cyberlog", "U_CYBER002(3)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Envio Produto Cyberlog"	, "U_CYBER002(4)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Grafico", "U_CYBER002(5)", 0, 2, 0, NIL})
+
+		aAdd(aMenu, {"Lib. sem conferência", "U_CYBER002(6)", 0, 2, 0, NIL})
+
+	EndIf
+
+	aAdd(aMenu, {"Log", "U_CYBER002(1)", 0, 2, 0, NIL})
+
+	If laRotina
+
+		aAdd(aRotina , {"Cyberlog", aMenu, 0, 2, 0, NIL})
+
+	Else
+
+		aAdd(aRotina_, {"Cyberlog", aMenu, 0, 2, 0, NIL})
+
+	EndIf
+
+Return(aRotina_)
+
+Method AddLegenda() Class TCyberlogIntegracao
+
+	Local aLegenda := PARAMIXB[1]
+
+	aAdd(aLegenda, {"EMPILHADEIRA"	, "Enviado WMS"}) // E=Enviado WMS
+
+	aAdd(aLegenda, {"ARMAZEM"		, "Conferido"}) // C=Conferido
+
+Return(aLegenda)
+
+Method AddAcores() Class TCyberlogIntegracao
+
+	Local aCores := PARAMIXB[1]
+
+	AAdd(aCores, { 'F1_XCONFCB == "A"', 'EMPILHADEIRA'	})  // NF Bloq. para Conferencia
+
+	AAdd(aCores, { 'F1_XCONFCB == "C"', 'ARMAZEM'	})  // NF Bloq. para Conferencia
+
+Return(aCores)
+
+Method Log(oLog) Class TCyberlogIntegracao
+
+	RecLock("ZA4", .T.)
+	ZA4->ZA4_FILIAL	:= xFilial("ZA4")
+	ZA4->ZA4_TABPRO	:= oLog:cTabela
+	ZA4->ZA4_DEPOSI	:= oLog:cDeposito
+	ZA4->ZA4_CHAVE	:= oLog:cChave
+	ZA4->ZA4_OPER	:= oLog:cOperacao 	// I=Inclusão;A=Alteração;E=Exclusão;R=Reenvio
+	ZA4->ZA4_TIPO	:= oLog:cTipo 		// E=Envio;R=Recebimento;I=Controle Interno
+	ZA4->ZA4_STATUS	:= oLog:cStatus 	// P=Pendente;E=Erro;S=Sucesso
+	ZA4->ZA4_DTINC	:= oLog:dDataInc
+	ZA4->ZA4_HORA	:= oLog:cHoraInc
+	ZA4->ZA4_ERRO	:= oLog:cErro
+	ZA4->ZA4_JSONEN	:= oLog:cJsonEnv
+	ZA4->ZA4_OBS	:= oLog:cObs
+	ZA4->ZA4_JSONRE	:= oLog:cJsonRet
+	ZA4->ZA4_ROTINA	:= oLog:cRotina
+	ZA4->ZA4_USER	:= oLog:cUser
+	ZA4->ZA4_URL	:= oLog:cUrl
+	ZA4->ZA4_RETURL	:= oLog:cRetPost
+	ZA4->(MsUnlock())
+
+Return()
+
+Method FormatDate(dData, nOption) Class TCyberlogIntegracao
+
+	Local xReturn := ""
+
+	Default nOption = 1
+
+	If nOption == 1
+
+		xReturn := cMonth(dData) + " " + AllTrim((Str(Day(dData)))) + ", " + AllTrim((STr(Year(dData)))) + " " + Time() + If(Time() >= "12", " PM", " AM")
+
+	ElseIf nOption == 2
+
+	ElseIf nOption == 3
+
+	ElseIf nOption == 4
+
+	EndIf
+
+Return(xReturn)
+
+Method SetNumDocSaida() Class TCyberlogIntegracao
+
+	Local lRet			:= .T.
+	Local cBody 		:= ""
+	Local cAlias		:= GetNextAlias()
+	Local cSql			:= ""
+	Local oJson 		:= JsonObject():New()
+	Local cChave		:= ""
+	Local cTab			:= ""
+	Local retConversion	:= Nil
+	Local oLog			:= TCyberlogHistoryStruct():New()
+
+	If ::oEmpAuth:lIntAtiva
+
+		If IsInCallStack('A311Efetiv')
+
+			cTab := "NNS"
+
+			cChave := NNS->(NNS_FILIAL + NNS_COD)
+
+		Else
+
+			cTab := "SC5"
+
+			cChave := SC5->(C5_FILIAL + C5_NUM)
+
+		EndIf
+
+		cSql := " SELECT TOP 1 R_E_C_N_O_ RECNO "
+		cSql += " FROM " + RetSqlName("ZA4")
+		cSql += " WHERE ZA4_FILIAL 	= " + ValToSql(xFilial("ZA4"))
+		cSql += " AND ZA4_CHAVE		= " + ValToSql(cChave)
+		cSql += " AND D_E_L_E_T_ 	= '' "
+		cSql += " AND ( CONVERT(VARCHAR(MAX), CONVERT(VARBINARY(MAX), ZA4_JSONRE)) LIKE '%Inserido%' OR CONVERT(VARCHAR(MAX), CONVERT(VARBINARY(MAX), ZA4_JSONRE)) LIKE '%Alterado%' )"
+		cSql += " ORDER BY 1 DESC "
+
+		TCQUERY cSql New Alias (cAlias)
+
+		If (cAlias)->(!EOF())
+
+			ZA4->(DBGoTo((cAlias)->RECNO))
+
+			cBody := ZA4->ZA4_JSONEN
+
+			cBody := Replace(Replace(cBody, "pedido=", ""), "INSERT", "UPDATE")
+
+			retConversion := oJson:FromJson(DecodeUTF8(cBody, "cp1252"))
+
+			If ValType(retConversion) == "C"
+
+				oLog:cStatus	:= "E"
+				oLog:cErro		:= retConversion
+
+			Else
+
+				oJson["notaFiscal"] := SF2->F2_DOC
+
+				oJson["serie"] := SF2->F2_SERIE
+
+				cBody := "pedido=" + EncodeUtf8(oJson:ToJson())
+
+				lRet := ::Send("/processo/integrarPedido", cBody)
+
+				oLog:cJsonRet	:= ::oRestCyber:cResult
+
+				oLog:cStatus	:= If(lRet, "S", "E")
+				oLog:cErro		:= If(lRet, "", ::oRestCyber:cResult)
+
+			EndIf
+
+			oLog:cChave		:= cChave
+			oLog:cDeposito	:= ::cDeposito
+			oLog:cTabela	:= cTab
+			oLog:cOperacao	:= "A"
+			oLog:cRotina	:= FunName()
+			oLog:cJsonEnv	:= cBody
+			oLog:cTipo		:= "E"
+			oLog:cObs		:= "Envio numero da nota."
+			oLog:cUrl		:= ::oRestCyber:cHost + ::oRestCyber:cPath
+
+			::Log(oLog)
+
+		EndIf
+
+		(cAlias)->(DBCloseArea())
+
+	EndIf
+
+Return()
+
+Method LiberaSemConferencia() Class TCyberlogIntegracao
+
+	Local lRet		:= .F.
+	Local aPergs	:= {}
+	Local aRet   	:= {}
+	Local cUserLib	:= GetNewPar("CH_USRLCYB", "admin/JACQUELINE CAPINAN")
+
+	aAdd(aPergs,{9,"A senha de um supervisor é necessária para liberação.",170,20,.T.})
+
+	aAdd(aPergs,{1,"Usuário"		, Space(40),"","","","",80,.T.})
+	aAdd(aPergs,{8,"Senha"			, Space(26),"","","","",80,.T.})
+
+	If ParamBox(aPergs, "Liberação manual", @aRet)  //,,{},.T.,0,0,/*oDlg*/,/*cLoad*/,.F.,.F.)
+
+		If AllTrim(aRet[2]) $ cUserLib
+
+			PSWOrder(2) //Busca pelo usuário
+
+			If PswSeek(AllTrim(aRet[2]),.T.)
+
+				If PswName(AllTrim(aRet[3]))
+
+					lRet := .T.
+
+				Else
+
+					Help(NIL, NIL, "HELP", NIL, "Usuário não autenticado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique sua senha."})
+
+				EndIf
+
+			Else
+
+				Help(NIL, NIL, "HELP", NIL, "Usuário não encontrado!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique seu usuário."})
+
+			EndIf
+
+		Else
+
+			Help(NIL, NIL, "HELP", NIL, "Usuário sem permissão!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique o parâmetro CH_USRLCYB."})
+
+		EndIf
+
+	EndIf
+
+Return(lRet)
+
+Method GenericRun(nAcao) Class TCyberlogIntegracao
+
+	Local cTab		:= ""
+	Local cChave	:= ""
+	Local cMsg		:= ""
+	Local oLog		:= TCyberlogHistory():New()
+	Local aRotina_	:= {}
+
+	Default nAcao		:= 0
+
+	If FWIsInCallStack("MATA311") .Or. FWIsInCallStack("U_CYBER_TRANSF")
+
+		If nAcao == 1
+
+			cTab	:= "NNS"
+
+			cChave	:= NNS->(NNS_FILIAL + NNS_COD)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			If NNS->NNS_CYBERW == "S"
+
+				::SendTransferencia()
+
+				cMsg += ::oResult["message"] + CRLF
+
+			Else
+
+				cMsg += "A transferencia não será enviada pois o campo 'Cyberlog WMS' está igual a 'Não'! " + CRLF
+
+			EndIf
+
+		ElseIf nAcao == 3 // Envio Cliente Cyberlog
+
+			DBSelectArea("NNT")
+			NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+
+			NNT->(DBSeek(xFilial("NNT") + NNS->NNS_COD))
+
+			::oEmpCad:SeekEmpFil(NNT->NNT_FILDES)
+
+			If SA1->(DBSeek(xFilial("SA1") + ::oEmpCad:cCodCliente + ::oEmpCad:cLojCliente))
+
+				::SendCustomer()
+
+				cMsg += ::oResult["message"] + CRLF
+
+			EndIf
+
+		ElseIf nAcao == 4 // Envio Produto Cyberlog
+
+			cChave	:= NNS->(NNS_FILIAL + NNS_COD)
+
+			DBSelectArea("NNT")
+			NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+			NNT->(DBGoTop())
+
+			DBSelectArea("SB1")
+			SB1->(DBSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+			If NNT->(DBSeek(cChave))
+
+				While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == cChave
+
+					If SB1->(DBSeek(xFilial("SB1") + NNT->NNT_PROD))
+
+						::SendProduct()
+
+						cMsg += ::oResult["message"] + CRLF
+
+					EndIf
+
+					NNT->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+		ElseIf nAcao == 5
+
+			::Grafico("Transferencias", ::LoadDataGraficoTransferencia())
+
+		ElseIf nAcao == 6
+
+			If ::LiberaSemConferencia()
+
+				DBSelectArea("NNT")
+				NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+				NNT->(DBGoTop())
+
+				If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+					While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == NNS->(NNS_FILIAL + NNS_COD)
+
+						RecLock("NNT", .F.)
+						NNT->NNT_QTDWMS	:= NNT->NNT_QUANT
+						NNT->(MsUnlock())
+
+						NNT->(DBSkip())
+
+					EndDo
+
+				EndIf
+
+				::SetTransferenciaConferenciaStatus("R", .T.)
+
+				oLog := TCyberlogHistoryStruct():New()
+
+				oLog:cChave		:= NNS->(NNS_FILIAL + NNS_COD)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "NNS"
+				oLog:cOperacao	:= "A"
+				oLog:cTipo		:= "I"
+				oLog:cRotina	:= FunName()
+				oLog:cObs		:= "Liberado Manualmente."
+
+				::Log(oLog)
+
+			EndIf
+
+		EndIf
+
+	ElseIf FWIsInCallStack("MATA410") .Or. FWIsInCallStack("U_CYBER_PEDIDO")
+
+		If nAcao == 1
+
+			cTab	:= "SC5"
+
+			cChave	:= SC5->(C5_FILIAL + C5_NUM)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			::SendPedido()
+
+			cMsg += ::oResult["message"] + CRLF
+
+		ElseIf nAcao == 3 // Envio Cliente Cyberlog
+
+			DbSelectArea("SA1")
+			SA1->(DbSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+			If SA1->(DBSeek(xFilial("SA1") + SC5->(C5_CLIENTE + C5_LOJACLI)))
+
+				::SendCustomer()
+
+				cMsg += ::oResult["message"] + CRLF
+
+			EndIf
+
+		ElseIf nAcao == 4 // Envio Produto Cyberlog
+
+			cChave	:= SC5->(C5_FILIAL + C5_NUM)
+
+			DBSelectArea("SC6")
+			SC6->(DBSetOrder(1)) // C6_FILIAL, C6_NUM, C6_ITEM, C6_PRODUTO, R_E_C_N_O_, D_E_L_E_T_
+			SC6->(DBGoTop())
+
+			DBSelectArea("SB1")
+			SB1->(DBSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+			If SC6->(DBSeek(cChave))
+
+				While SC6->(!EOF()) .And. SC6->(C6_FILIAL + C6_NUM) == cChave
+
+					If SB1->(DBSeek(xFilial("SB1") + SC6->C6_PRODUTO))
+
+						::SendProduct()
+
+						cMsg += ::oResult["message"] + CRLF
+
+					EndIf
+
+					SC6->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+		ElseIf nAcao == 5
+
+			::Grafico("Pedidos", ::LoadDataGraficoPedido())
+
+		ElseIf nAcao == 6
+
+			If ::LiberaSemConferencia()
+
+				oLog := TCyberlogHistoryStruct():New()
+
+				::SetPedidoConferenciaStatus("C")
+
+				oLog:cChave		:= SC5->(C5_FILIAL + C5_NUM)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "SC5"
+				oLog:cOperacao	:= "A"
+				oLog:cTipo		:= "I"
+				oLog:cRotina	:= FunName()
+				oLog:cObs		:= "Liberado Manualmente."
+
+				::Log(oLog)
+
+			EndIf
+
+		EndIf
+
+	ElseIf FWIsInCallStack("MATA010") .Or. FWIsInCallStack("U_CYBER_PROD")
+
+		If nAcao == 1
+
+			cTab	:= "SB1"
+
+			cChave	:= SB1->B1_COD
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			::SendProduct()
+
+			cMsg += ::oResult["message"] + CRLF
+
+		EndIf
+
+	ElseIf FWIsInCallStack("MATA020") .Or. FWIsInCallStack("U_CYBER_FORNECEDOR")
+
+		If nAcao == 1
+
+			cTab	:= "SA2"
+
+			cChave	:= SA2->(A2_COD + A2_LOJA)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			::SendProvider()
+
+			cMsg += ::oResult["message"] + CRLF
+
+		EndIf
+
+	ElseIf FWIsInCallStack("MATA030") .Or. FWIsInCallStack("CRMA980BRA") .Or.FWIsInCallStack("U_CYBER_CLIENTE")
+
+		If nAcao == 1
+
+			cTab	:= "SA1"
+
+			cChave	:= SA1->(A1_COD + A1_LOJA)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			::SendCustomer()
+
+			cMsg += ::oResult["message"] + CRLF
+
+		EndIf
+
+	ElseIf FWIsInCallStack("MATA140") .Or. FWIsInCallStack("MATA103") .Or. FWIsInCallStack("U_CYBER_DOCENT")
+
+		If nAcao == 1
+
+			cTab	:= "SF1"
+
+			cChave	:= SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			::SendDocEntrada()
+
+			cMsg += ::oResult["message"] + CRLF
+
+		ElseIf nAcao == 3 // Envio Fornecedor Cyberlog
+
+			DbSelectArea("SA2")
+			SA2->(DbSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+			If SA2->(DBSeek(xFilial("SA2") + SF1->(F1_FORNECE + F1_LOJA)))
+
+				::SendProvider()
+
+				cMsg += ::oResult["message"] + CRLF
+
+			EndIf
+
+		ElseIf nAcao == 4 // Envio Produto Cyberlog
+
+			cChave	:= SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)
+
+			DBSelectArea("SD1")
+			SD1->(DBSetOrder(1)) // D1_FILIAL, D1_DOC, D1_SERIE, D1_FORNECE, D1_LOJA, D1_COD, D1_ITEM, R_E_C_N_O_, D_E_L_E_T_
+			SD1->(DBGoTop())
+
+			DBSelectArea("SB1")
+			SB1->(DBSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+			If SD1->(DBSeek(cChave))
+
+				While SD1->(!EOF()) .And. SD1->(D1_FILIAL + D1_DOC + D1_SERIE + D1_FORNECE + D1_LOJA) == cChave
+
+					If SB1->(DBSeek(xFilial("SB1") + SD1->D1_COD))
+
+						::SendProduct()
+
+						cMsg += ::oResult["message"] + CRLF
+
+					EndIf
+
+					SD1->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+		ElseIf nAcao == 5
+
+			::Grafico("Pre-Nota", ::LoadDataGraficoDocEntrada())
+
+		ElseIf nAcao == 6
+
+			If ::LiberaSemConferencia()
+
+				oLog := TCyberlogHistoryStruct():New()
+
+				::SetRecebimentoConferenciaStatus("C", .F.)
+
+				oLog:cChave		:= SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "SF1"
+				oLog:cOperacao	:= "A"
+				oLog:cTipo		:= "I"
+				oLog:cRotina	:= FunName()
+				oLog:cObs		:= "Liberado Manualmente."
+
+				::Log(oLog)
+
+			EndIf
+
+		EndIf
+
+	ElseIf FWIsInCallStack("U_CYBER004") .Or. FWIsInCallStack("U_CYBER_ARMA") .Or. FWIsInCallStack("U_CYBER_ARMA_MOV")
+
+		If nAcao == 1
+
+			cTab	:= "ZA5"
+
+			cChave	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+
+			oLog:Show(cTab, cChave)
+
+		ElseIf nAcao == 2
+
+			If ZA5->ZA5_STAREC == "C"
+
+				cMsg += "Não é possível envio do pedido com status 'C=Conferido'!"
+
+			Else
+
+				::SendTransferenciaArmazemPedido()
+
+			EndIf
+
+			If ZA5->ZA5_STAPED == "C"
+
+				cMsg += "Não é possível envio do Recebimento com status 'C=Conferido'!"
+
+			EndIf
+
+			cMsg += ::oResult["message"] + CRLF
+
+		ElseIf nAcao == 4 // Envio Produto Cyberlog
+
+			cChave	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+
+			DBSelectArea("ZA6")
+			ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
+			ZA6->(DBGoTop())
+
+			DBSelectArea("SB1")
+			SB1->(DBSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+			If ZA6->(DBSeek(cChave))
+
+				While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChave
+
+					If SB1->(DBSeek(xFilial("SB1") + ZA6->ZA6_PRODUT))
+
+						::SendProduct()
+
+						cMsg += ::oResult["message"] + CRLF
+
+					EndIf
+
+					ZA6->(DBSkip())
+
+				EndDo
+
+			EndIf
+
+		ElseIf nAcao == 5
+
+			// ::Grafico("Transferência Armazém", ::LoadDataGraficoDocEntrada())
+
+		ElseIf nAcao == 6
+
+			If !::MovimentaEstoque()
+
+				cMsg := ZA5->ZA5_ERRO
+
+			EndIf
+
+		ElseIf nAcao == 7
+
+			aRotina_ := If(Type("aRotina") == "A", aClone(aRotina), {})
+
+			aRotina	:=  {	{"STR0002", 'AxPesqui'		, 0 , 1,0,.F.},;	// 'Pesquisar'
+			{"STR0003", 'A261Visual'	, 0 , 2,0,nil},;	// 'Visualizar'
+			{"STR0004", 'A261Inclui'	, 0 , 3,0,nil},;	// 'Incluir'
+			{"STR0005", 'A261Estorn'	, 0 , 6,0,nil},;	// 'Estornar'
+			{"STR0045", 'A240Legenda'	, 0 , 2,0,.F.},;	// 'Legenda'
+			{"STR0067", 'CTBC662'		, 0 , 7,0,.F.} }	// "Tracker Contábil"
+
+			Private cCadastro	:= "Transferência Mod. II"
+			Private nFCICalc    := SuperGetMV("MV_FCICALC",.F.,0)
+			Private lMA261D3	:= (ExistBlock('MA261D3'))	//-- Ponto de entrada na gravacao
+			Private lMA261Cpo	:= (ExistBlock('MA261CPO')) //-- Ponto de entrada para adicionar campos no aHeader
+			Private lMA261Exc	:= (ExistBlock('MA261EXC')) //-- Ponto de entrada na gravacao do estorno
+			Private lMA261Est	:= (ExistBlock('MA261EST')) //-- Ponto de entrada para verificar se estorno eh possivel
+			Private lM261D3O	:= (ExistBlock('M261D3O'))	//-- Ponto de entrada para verificar se estorno eh possivel
+			Private lLogMov		:= GetMV("MV_IMPMOV")
+
+			If Empty(ZA5->ZA5_DOC)
+
+				Help(NIL, NIL, "HELP", NIL, "Transferência no ERP não realizada!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+			Else
+
+				DbSelectArea("SD3")
+				SD3->(DbSetOrder(2)) // D3_FILIAL, D3_DOC, D3_COD, R_E_C_N_O_, D_E_L_E_T_
+
+				If SD3->(DBSeek(xFilial("SD3") + ZA5->ZA5_DOC))
+
+					a261Visual("SD3", SD3->(Recno()), 2)
+
+				Else
+
+					Help(NIL, NIL, "HELP", NIL, "Documento não encotrado no ERP!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+				EndIf
+
+			EndIf
+
+		EndIf
+
+	EndIf
+
+	If !Empty(Replace(cMsg, CRLF, ""))
+
+		Help(NIL, NIL, "HELP", NIL, Replace(Replace(Replace(cMsg, "{", ""), "}", ""), '"', ""), 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+	EndIf
+
+	If Len(aRotina_) > 0
+
+		aRotina := aRotina_
+
+	EndIf
+
+Return()
+
+Method MovimentaEstoque() Class TCyberlogIntegracao
+
+	Local nW			:= 0
+	Local nTotLin 		:= 0
+	Local aAuto			:= {}
+	Local aLinha 		:= {}
+	Local cErro			:= ""
+	Local oLog			:= Nil
+	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+
+	Private lMSErroAuto 	:= .F.
+	Private lMSHelpAuto 	:= .T. // .F. -> Vai exibir o help em tela | .T. Não vai exibir o help em tela
+	Private lAutoErrNoFile 	:= .F. // .F. -> Vai capturar o log | .T. Não vai capturar o log
+
+	lMSHelpAuto := .F. // Deixar como true por conta da funcao aviso
+
+	If ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "C" .And. ZA5->ZA5_STATUS <> "T"
+
+		// If Aviso("ATENCAO", "Este processo não pode ser interrompido e os movimentos gerados não poderão ser EXCLUÍDOS, somente estornados. Tem certeza que deseja processar?", {"Ok", "Cancelar"}, 2) == 1
+
+			// If MsgYesNo("Confirma Transferencia?")
+
+				lMSHelpAuto := .T.
+
+				FwClearHLP()
+
+				ProcRegua(nTotLin)
+
+				// cDocNum := GetSXENum("SD3","D3_DOC", 1)
+
+				aAdd(aAuto, { NIl, dDataBase })
+
+				Begin Transaction
+
+					DBSelectArea("ZA6")
+					ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
+					ZA6->(DBGoTop())
+
+					If ZA6->(DBSeek(cChaveZA5))
+
+						While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
+
+							IncProc("Baixando linha " + AllTrim(Str(nW)) + " de " + AllTrim(Str(nTotLin)))
+
+							aLinha := {}
+
+							lMSErroAuto := .F.
+
+							SB1->(DbSeek(xFilial("SB1")+PadR(ZA6->ZA6_PRODUT, tamsx3('D3_COD') [1])))
+
+							//Origem
+							aAdd(aLinha, {"ITEM"		, ZA6->ZA6_ITEM									, Nil})
+							aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //Cod Produto origem
+							aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto origem
+							aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida origem
+							aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCORI								, Nil}) //armazem origem
+							aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o origem
+
+							//Destino
+							aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //cod produto destino
+							aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto destino
+							aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida destino
+							aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCDES								, Nil}) //armazem destino
+							aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o destino
+
+							aAdd(aLinha, {"D3_NUMSERI"	, ""											, Nil}) //Numero serie
+
+							aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote Origem
+							aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote origem
+							aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //data validade
+							aAdd(aLinha, {"D3_POTENCI"	, 0												, Nil}) // Potencia
+							aAdd(aLinha, {"D3_QUANT"	, ZA6->ZA6_QTDSEP								, Nil}) //Quantidade
+							aAdd(aLinha, {"D3_QTSEGUM"	, ConvUM(SB1->B1_COD, ZA6->ZA6_QTDSEP, 0, 2)		, Nil}) //Seg unidade medida
+							aAdd(aLinha, {"D3_ESTORNO"	, ""											, Nil}) //Estorno
+							aAdd(aLinha, {"D3_NUMSEQ"	, ""											, Nil}) // Numero sequencia D3_NUMSEQ
+
+							aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote destino
+							aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote destino
+							aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //validade lote destino
+							aAdd(aLinha, {"D3_ITEMGRD"	, ""											, Nil}) //Item Grade
+
+							aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod origem
+							aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod destino
+
+							aAdd(aAuto, aLinha)
+
+							ZA6->(DBSkip())
+
+						EndDo
+
+						TLogConsole():Log("Iniciando Execauto mata261")
+
+						MSExecAuto( {|x, y| mata261(x, y)}, aAuto, 3 )
+
+						If lMSErroAuto
+
+							cErro := MostraErro("\log\", cChaveZA5 + DTOS(dDataBase) + Replace(Time(), ":", "_") + ".log")
+
+							DisarmTransaction()
+
+							// RollBackSX8()
+
+							TLogConsole():Log(cErro)
+
+						Else
+
+							// ConfirmSX8()
+
+							RecLock("ZA5", .F.)
+							ZA5->ZA5_STATUS := "T"
+							ZA5->ZA5_DOC 	:= U_XMA261TR()
+							ZA5->ZA5_DATATR	:= Date()
+							ZA5->(MsUnlock())
+
+							TLogConsole():Log("Processo: " + ZA5->ZA5_PROCES + " Movimentando com Sucesso!")
+
+						EndIf
+
+					EndIf
+
+				End Transaction
+
+				If lMSErroAuto
+
+					RecLock("ZA5", .F.)
+					ZA5->ZA5_STATUS := "X" // N=Não enviado;R=Aguard.Receb.;S=Aguard.Separação;X=Erro;T=Transferido
+					ZA5->ZA5_ERRO	:= cErro
+					ZA5->ZA5_DATATR	:= Date()
+					ZA5->(MsUnlock())
+
+				EndIf
+
+				oLog := TCyberlogHistoryStruct():New()
+
+				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+				oLog:cDeposito	:= ::cDeposito
+				oLog:cTabela	:= "ZA5"
+				oLog:cOperacao	:= "I"
+				oLog:cTipo		:= "M"
+				oLog:cStatus	:= If(lMSErroAuto, "E", "S")
+				oLog:cRotina	:= FunName()
+				oLog:cObs		:= "Almoxarifados movimentados com sucesso."
+
+				::Log(oLog)
+
+			// EndIf
+
+		// EndIf
+
+	ElseIf ZA5->ZA5_STATUS == "T"
+
+		Help(NIL, NIL, "HELP", NIL, "Movimento de transferência já realizado no ERP!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+	Else
+
+		Help(NIL, NIL, "HELP", NIL, "Movimento de transferência permitido apenas quando status de envio for 'Recebido'!", 1, 0, NIL, NIL, NIL, NIL, NIL, {"Verifique."})
+
+	EndIf
+
+Return(!lMSErroAuto)
+
+Method AjusteCodProduto(cProduto, nDigitos) Class TCyberlogIntegracao
+
+	Default nDigitos := 8
+
+	If Len(AllTrim(cProduto)) < nDigitos
+
+		cProduto := PadL(AllTrim(cProduto), 8, "0")
+
+	ElseIf Len(AllTrim(cProduto)) > nDigitos
+
+		cProduto := SubStr(AllTrim(cProduto), (Len(AllTrim(cProduto)) - nDigitos) + 1, 6)
+
+	EndIf
+
+Return(cProduto)
+
+Method GetFilial(cDeposito) Class TCyberlogIntegracao
+
+	Local cFilial_ := ""
+
+	DbSelectArea("ZA2")
+	ZA2->(DbSetOrder(2)) // ZA2_DEPOSI, ZA2_FILIAL, ZA2_CONTA, R_E_C_N_O_, D_E_L_E_T_
+
+	If ZA2->(DBSeek(cDeposito))
+
+		// If ZA2->ZA2_MSBLQL == "1"
+
+		cFilial_ := ZA2->ZA2_FILIAL
+
+		// EndIf
+
+	Else
+
+		DbSelectArea("ZA2")
+		ZA2->(DbSetOrder(3)) // ZA2_DEPB2B, ZA2_FILIAL, ZA2_CONTA, R_E_C_N_O_, D_E_L_E_T_
+		ZA2->(DBGoTop())
+
+		If ZA2->(DBSeek(cDeposito))
+
+			cFilial_ := ZA2->ZA2_FILIAL
+
+		EndIf
+
+	EndIf
+
+Return(cFilial_)
+
+Method ValidClienteWMS(cCodCli, cLojaCli) Class TCyberlogIntegracao
+
+	Local lRet := .F.
+
+	DbSelectArea("SA1")
+	SA1->(DBSetOrder(1)) // A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	If SA1->(DBSeek(xFilial("SA1") + cCodCli + cLojaCli))
+
+		lRet := SA1->A1_CYBERW == "S"
+
+	EndIf
+
+Return(lRet)
+
+Method ValidFornecedorWMS(cCodFor, cLojaFor) Class TCyberlogIntegracao
+
+	Local lRet := .F.
+
+	DbSelectArea("SA2")
+	SA2->(DBSetOrder(1)) // A2_FILIAL, A2_COD, A2_LOJA, R_E_C_N_O_, D_E_L_E_T_
+
+	If SA2->(DBSeek(xFilial("SA2") + cCodFor + cLojaFor))
+
+		lRet := SA2->A2_CYBERW == "S"
+
+	EndIf
+
+Return(lRet)
+
+Method ValidProdutoWMS(cProduto) Class TCyberlogIntegracao
+
+	Local lRet := .F.
+
+	DBSelectArea("SB1")
+	SB1->(DBSetOrder(1)) // B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+
+	If SB1->(DBSeek(xFilial("SB1") + cProduto))
+
+		lRet := SB1->B1_CYBERW == "S"
+
+	EndIf
+
+Return(lRet)
+
+Method ValidToken() Class TCyberlogIntegracao
+
+	Local lRet 		:= .F.
+	Local oHeader_ 	:= Nil
+	Local oEmpAuth 	:= Nil
+
+	oHeader_ := oRest:getHeaderRequest()
+
+	If ValType(oHeader_['token']) == "C"
+
+		oEmpAuth := TCyberlogApiAuth():New()
+
+		If !Empty(oEmpAuth:cTokenRetorno)
+
+			lRet := AllTrim(oEmpAuth:cTokenRetorno) == AllTrim(oHeader_['token'])
+
+		EndIf
+
+	EndIf
+
+Return(lRet)
+
+Method LogConsole(cMsg) Class TCyberlogIntegracao
+
+	ConOut(cMsg)
+
+Return()
+
+Method Grafico(cTituloGrafico, aDados) Class TCyberlogIntegracao
+
+	Local oDlg_		:= Nil
+	Local oChart	:= Nil
+	Local oPanel1	:= Nil
+	Local nW		:= 0
+
+	Default cTituloGrafico := "Grafico"
+	Default aDados 	:= {}
+
+	DEFINE DIALOG oDlg_ TITLE "Analise Totalizadores" SIZE 800,400 PIXEL
+
+	oPanel1:= TPanel():New( , ,,oDlg_,,,,,, 0,  0)
+	oPanel1:Align := CONTROL_ALIGN_ALLCLIENT
+
+	// TButton():New( 10, 10, "Refresh",oPanel,{||BtnClick(oChart)},45,15,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+	oChart := FWChartFactory():New()
+	oChart:SetOwner(oPanel1)
+
+	//Para graficos multi serie, definir a descricao pelo SetxAxis e passar array no addSerie
+    /*oChart:SetXAxis( {"periodo um", "periodo dois", "periodo tres"} )
+     
+    oChart:addSerie('Apresentação teste', {  96, 33, 10 } )
+    oChart:addSerie('Qualificação teste', {  100, 33, 10 } )
+    oChart:addSerie('Fechamento teste', {  99, 36, 10 } )
+    oChart:addSerie('Pós Venda', { 80, 100, 10 } )
+    */
+
+	//Para graficos de serie unica utilizar conforme abaixo
+
+	For nW := 1 To Len(aDados)
+
+		oChart:addSerie(aDados[nW][1], aDados[nW][2])
+
+	Next nW
+
+	//----------------------------------------------
+	//Picture
+	//----------------------------------------------
+	// oChart:setPicture("@E 999,999,999.99")
+
+	//----------------------------------------------
+	//Mascara
+	//----------------------------------------------
+	// oChart:setMask("R$ *@*")
+
+	//----------------------------------------------
+	//Adiciona Legenda
+	//opções de alinhamento da legenda:
+	//CONTROL_ALIGN_RIGHT | CONTROL_ALIGN_LEFT |
+	//CONTROL_ALIGN_TOP | CONTROL_ALIGN_BOTTOM
+	//----------------------------------------------
+	oChart:SetLegend(CONTROL_ALIGN_LEFT)
+
+	//----------------------------------------------
+	//Titulo
+	//opções de alinhamento do titulo:
+	//CONTROL_ALIGN_RIGHT | CONTROL_ALIGN_LEFT | CONTROL_ALIGN_CENTER
+	//----------------------------------------------
+	oChart:setTitle(cTituloGrafico, CONTROL_ALIGN_CENTER) //"Oportunidades por fase"
+
+	//----------------------------------------------
+	//Opções de alinhamento dos labels(disponível somente no gráfico de funil):
+	//CONTROL_ALIGN_RIGHT | CONTROL_ALIGN_LEFT | CONTROL_ALIGN_CENTER
+	//----------------------------------------------
+	oChart:SetAlignSerieLabel(CONTROL_ALIGN_RIGHT)
+
+	//Desativa menu que permite troca do tipo de gráfico pelo usuário
+	oChart:EnableMenu(.T.)
+
+	//Define o tipo do gráfico
+	oChart:SetChartDefault(COLUMNCHART)
+	//-----------------------------------------
+	// Opções disponiveis
+	// RADARCHART
+	// FUNNELCHART
+	// COLUMNCHART
+	// NEWPIECHART
+	// NEWLINECHART
+	//-----------------------------------------
+
+	oChart:Activate()
+
+	ACTIVATE DIALOG oDlg_ CENTERED
+
+	FreeObj(oDlg_)
+
+	oDlg_ := Nil
+
+Return()
+
+Method LoadDataGraficoDocEntrada() Class TCyberlogIntegracao
+
+	Local aDados	 := {}
+	Local cAlias := GetNextAlias()
+
+	BeginSQL Alias cAlias
+
+		%noparser%
+
+		SELECT CASE WHEN STATUS = 'A' THEN 'Aguardando conferencia'
+					WHEN STATUS = 'C' THEN 'Conferido'
+					WHEN STATUS = 'S' THEN 'Sem Int.com WMS'
+					WHEN STATUS = 'E' THEN 'Erro'
+					WHEN STATUS = 'T' THEN 'Estornado no WMS'
+			ELSE 'Outros'
+			END STATUS,
+			CASE WHEN TOT IS NULL THEN 0
+			ELSE TOT
+			END TOT
+		FROM
+		(
+			SELECT 'A' STATUS
+			UNION
+			SELECT 'C' STATUS
+			UNION
+			SELECT 'E' STATUS
+		) TAB
+
+		LEFT JOIN
+
+		(
+			SELECT F1_XCONFCB, COUNT(*) TOT
+			FROM SF1010 SF1 (NOLOCK)
+			WHERE SF1.D_E_L_E_T_ = ''
+			AND F1_XCONFCB <> ''
+			GROUP BY F1_XCONFCB
+		) SF1 ON
+		(
+			STATUS = F1_XCONFCB
+		)
+
+	EndSQL
+
+	(cAlias)->(DbGoTop())
+
+	While !(cAlias)->(Eof())
+
+		aAdd(aDados, { (cAlias)->STATUS, (cAlias)->TOT })
+
+		(cAlias)->(DbSkip())
+
+	EndDo
+
+Return(aDados)
+
+Method LoadDataGraficoPedido() Class TCyberlogIntegracao
+
+	Local aDados	 := {}
+	Local cAlias := GetNextAlias()
+
+	BeginSQL Alias cAlias
+
+		%noparser%
+
+		SELECT CASE WHEN STATUS = 'A' THEN 'Aguardando conferencia'
+					WHEN STATUS = 'C' THEN 'Conferido'
+					WHEN STATUS = 'S' THEN 'Sem Int.com WMS'
+					WHEN STATUS = 'E' THEN 'Erro'
+					WHEN STATUS = 'T' THEN 'Estornado no WMS'
+			ELSE 'Outros'
+			END STATUS,
+			CASE WHEN TOT IS NULL THEN 0
+			ELSE TOT
+			END TOT
+		FROM
+		(
+			SELECT 'A' STATUS
+			UNION
+			SELECT 'C' STATUS
+			UNION
+			SELECT 'S' STATUS
+			UNION
+			SELECT 'E' STATUS
+			UNION
+			SELECT 'T' STATUS
+		) TAB
+
+		LEFT JOIN
+
+		(
+			SELECT C5_XCONFCB, COUNT(*) TOT
+			FROM SC5010 SC5 (NOLOCK)
+			WHERE SC5.D_E_L_E_T_ = ''
+			AND C5_XCONFCB <> ''
+			GROUP BY C5_XCONFCB
+		) SC5 ON
+		(
+			STATUS = C5_XCONFCB
+		)
+
+	EndSQL
+
+	(cAlias)->(DbGoTop())
+
+	While !(cAlias)->(Eof())
+
+		aAdd(aDados, { (cAlias)->STATUS, (cAlias)->TOT })
+
+		(cAlias)->(DbSkip())
+
+	EndDo
+
+Return(aDados)
+
+Method LoadDataGraficoTransferencia() Class TCyberlogIntegracao
+
+	Local aDados	 := {}
+	Local cAlias := GetNextAlias()
+
+	BeginSQL Alias cAlias
+
+		%noparser%
+
+		SELECT CASE WHEN STATUS = 'N' THEN 'Não enviado'
+					WHEN STATUS = 'E' THEN 'Enviado'
+					WHEN STATUS = 'R' THEN 'Conferido'
+					WHEN STATUS = 'S' THEN 'Sem Int.com WMS'
+					WHEN STATUS = 'X' THEN 'Erro ao Enviar WMS'
+			ELSE 'Outros'
+			END STATUS,
+			CASE WHEN TOT IS NULL THEN 0
+			ELSE TOT
+			END TOT
+		FROM
+		(
+			SELECT 'N' STATUS
+			UNION
+			SELECT 'E' STATUS
+			UNION
+			SELECT 'R' STATUS
+			UNION
+			SELECT 'S' STATUS
+			UNION
+			SELECT 'X' STATUS
+		) TAB
+
+		LEFT JOIN
+
+		(
+			SELECT NNS_CYBERS, COUNT(*) TOT
+			FROM NNS010 NNS (NOLOCK)
+			WHERE NNS.D_E_L_E_T_ = ''
+			AND NNS_CYBERW = 'S'
+			AND EXISTS
+			(
+				SELECT NULL
+				FROM ZA4010 ZA4
+				WHERE ZA4_CHAVE = NNS_FILIAL + NNS_COD
+				AND ZA4.D_E_L_E_T_ = ''				
+			)
+			GROUP BY NNS_CYBERS
+		) SC5 ON
+		(
+			STATUS = NNS_CYBERS
+		)
+
+	EndSQL
+
+	(cAlias)->(DbGoTop())
+
+	While !(cAlias)->(Eof())
+
+		aAdd(aDados, { (cAlias)->STATUS, (cAlias)->TOT })
+
+		(cAlias)->(DbSkip())
+
+	EndDo
+
+Return(aDados)

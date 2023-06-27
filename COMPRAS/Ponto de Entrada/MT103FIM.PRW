@@ -18,6 +18,8 @@ User Function MT103FIM()
 	Local lDescTol	:= SuperGetMv("MV_DESCTOL",.F.,.F.)
 	Local cNumPC := 0
 	Local nItemAprov := 0
+	Local _aArea := GetArea()
+
 	aRecnoSCR 	:= {}
 
 	//nConfirma := 1
@@ -228,11 +230,39 @@ User Function MT103FIM()
 		If ExistBlock("VLDSBTRB")
 			ExecBlock("VLDSBTRB",.F.,.F.,{})
 		Endif
+
+		atuYestB2()
+
 	endif
 	
+	RestArea(_aArea)
 Return (NIL)
 
+Static function atuYestB2()
+	
+	local _cArmCom := getNewPar("EC_ARMCOM", "90") 
+	lOCAL _cFilEcom := getNewPar("EC_FILIAL", "010104") 
+	IF ALLTRIM(SF1->F1_FILIAL) == ALLTRIM(_cFilEcom)
+		DbSelectArea("SD1")
+		SD1->(DbSetOrder(1))
+		If SD1->(DbSeek(SF1->F1_FILIAL+SF1->F1_DOC+SF1->F1_SERIE+SF1->F1_FORNECE+SF1->F1_LOJA))
 
+			While !SD1->(Eof()) .and. SD1->D1_FILIAL+SD1->D1_DOC+SD1->D1_SERIE+SD1->D1_FORNECE+SD1->D1_LOJA == SF1->F1_FILIAL+SF1->F1_DOC+SF1->F1_SERIE+SF1->F1_FORNECE+SF1->F1_LOJA
+				if SD1->D1_LOCAL == _cArmCom
+					DbSelectArea("SB1")
+					SB1->(DbSetOrder(1))
+					If SB1->(DbSeek(xFilial('SB1')+SD1->D1_COD)) .AND. ALLTRIM(SB1->B1_YB2B) == 'S'
+						recLock("SB1", .F.)
+							SB1->B1_YESTB2B := "S"
+						SB1->(msUnlock())
+					ENDIF
+				ENDIF
+				SD1->(DbSkip())
+			Enddo
+
+		Endif
+	ENDIF
+RETURN
 
 //------------------------------------------------------------------------------------------
 // Funcao para inserir na tabela de Custo sem ST um produto novo com a primeira entrada

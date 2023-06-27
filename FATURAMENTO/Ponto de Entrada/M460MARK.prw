@@ -17,14 +17,21 @@
 
 User function M460MARK()
 
-    Local _lRet := .T.
-    Local _aArea := GetArea()
+    Local _lRet     := .T.
+    Local _aArea    := GetArea()
+    Local oCyberLog := TCyberLogIntegracao():New()
+
+	If !oCyberLog:ValidEnvioPedidoM460MARK(PARAMIXB)
+
+		_lRet := .F.
+	
+	EndIf 
 
     //SC9->(DbGoTop())
 
-   // While (SC9->(!EOF()))
+    // While (SC9->(!EOF()))
 
-        If SC9->(IsMark("C9_OK"))
+        If _lRet .And. u_CChWMSAtivo() .And. SC9->(IsMark("C9_OK"))
 
             DBSelectArea("SC5")
             DBSetOrder(1)
@@ -41,6 +48,7 @@ User function M460MARK()
                 TcQuery _cQry New Alias "TRSC9"
 
                 If Alltrim(TRSC9->(CODIGO_PRODUTO)) == ''
+
                     _lRet := .F.
 
                     Alert("O produto "+Alltrim(SC9->C9_PRODUTO)+ " não esta liberado pelo WMS para emissao de Nota, favor verificar a separação do produto no WMS")
@@ -51,7 +59,9 @@ User function M460MARK()
 
             Endif
         Endif
+
        // SC9->(DbSkip())
+
     //EndDo
 
     RestArea(_aArea)

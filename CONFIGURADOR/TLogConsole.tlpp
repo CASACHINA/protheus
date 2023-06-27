@@ -1,0 +1,134 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE 'FWMVCDEF.CH'
+
+/*/{Protheus.doc} TLogConsole
+@author Wlysses Cerqueira (WlyTech)
+@since 25/11/2022
+@version 1.0
+@description Classe padrao para log
+@type Class
+/*/
+
+Class TLogConsole 
+
+	Public Method New() Constructor
+	Static Method Log(cMsg, cRotina, cTypeMsg, lEmail)
+
+EndClass
+
+Method New() Class TLogConsole
+
+Return(Self)
+
+Method Log(cMsg, cRotina, cTypeMsg, lEmail) Class TLogConsole
+
+	Local cLog			:= ""
+	Local cEmpFil		:= If(Type("cEmpAnt") == "C" .And. Type("cFilAnt") == "C", cEmpAnt + cFilAnt, "    ")
+	Local nW			:= 0
+	Local cStack		:= ""
+	Local cFunc			:= ""
+	Local lLog			:= .F.
+	Local aInfo 		:= {}
+	Local nSpace		:= Len(AllTrim(cValToChar(ThreadID()))) 
+	Local cTypeDesc		:= ""
+	Local cUserSO		:= ""
+	Local cIPCli		:= ""
+	Local cIPServer		:= ""
+	
+	Default cMsg		:= ""
+	Default cRotina		:= FunName()
+	Default cTypeMsg	:= "1" //1=INFO 2=WARN 3=ERROR 4=VALID
+	Default lEmail		:= .F.
+
+	If Select("SX2") > 0
+	
+		lLog := GetNewPar("TCP_LOGZZZ", .T.)
+
+	EndIf
+
+	If Type("__cUserId") <> "C"
+
+		__cUserId := ""
+
+	EndIf
+
+	If cTypeMsg == "1"
+	
+		cTypeDesc := "[INFO ]"
+
+	ElseIf cTypeMsg == "2"
+	
+		cTypeDesc := "[WARN ]"
+		
+	ElseIf cTypeMsg == "3"
+	
+		cTypeDesc := "[ERROR]"
+		
+	ElseIf cTypeMsg == "4"
+	
+		cTypeDesc := "[VALID]"
+
+	EndIf
+
+	nSpace := If(nSpace < 6, 6 - nSpace,0)
+
+	cLog := Space(nSpace) +  "Emp/Fil:[" + cEmpFil + "]" + cTypeDesc + "[" + PADR(AllTrim(cRotina), 15, ".") + "]" + " -> " + "Log:[" + AllTrim(cMsg) + "]" + " User: [" + AllTrim(__cUserId) + "]"
+
+	For nW := 1 To 99
+		
+		cFunc := ProcName(nW)
+
+		If cFunc <> ""
+
+			cStack += If(Empty(cStack), cFunc, "|" + cFunc)
+
+		EndIf
+
+	Next nW
+
+	ConOut(cLog + " CallStack: [" + cStack + "]")
+
+	If lLog .And. Select("SX2") > 0 .And. AliasIndic("ZZZ")
+
+		cIPCli		:= GetClientIP()
+
+		cIPServer	:= GetServerIP()
+		
+		aInfo := GetUserInfoArray() 
+
+		If ValType(aInfo) == "A" .And. Len(aInfo) > 0
+
+			nPos := aScan(aInfo, {|x| AllTrim(x[2]) == AllTrim(GetComputerName())})
+
+			cUserSO := If(nPos > 0 , aInfo[nPos][1], "")
+		
+		EndIf
+
+		If cTypeMsg == "3" //[ERROR]
+			/*
+			Reclock("ZZZ", .T.)
+			ZZZ->ZZZ_FILIAL	:= xFilial("ZZZ")
+			ZZZ->ZZZ_CODEMP	:= cEmpAnt
+			ZZZ->ZZZ_CODFIL	:= cFilAnt
+			ZZZ->ZZZ_TIPO	:= cTypeMsg
+			ZZZ->ZZZ_DATA	:= Date()
+			ZZZ->ZZZ_HORA	:= Time()
+			ZZZ->ZZZ_MENSAG	:= cMsg
+			ZZZ->ZZZ_STACK	:= cStack
+			ZZZ->ZZZ_FUNCAO	:= cRotina
+			ZZZ->ZZZ_STATUS	:= ""
+			ZZZ->ZZZ_MODULO	:= cModulo
+			ZZZ->ZZZ_IPCLI	:= cIPCli
+			ZZZ->ZZZ_IPSRV	:= cIPServer
+			ZZZ->ZZZ_USERSO	:= cUserSO
+			ZZZ->ZZZ_USER	:= __cUserId
+			ZZZ->ZZZ_THREAD	:= ThreadId()
+			ZZZ->ZZZ_AMB	:= GetEnvServer()
+			ZZZ->(MSUnlock())
+			*/
+		End
+
+	EndIf
+
+Return()

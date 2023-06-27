@@ -23,6 +23,8 @@ user function MATA311()
 	Local xRetorno := .T.
 	// Local aInfo := {}
 
+	Local oObjCyberLog := Nil
+
 	IF ! Empty(ParamIXB)
 
 		oModel   := ParamIXB[1]
@@ -55,9 +57,27 @@ user function MATA311()
 
 			//apos a gravação, dentro da transação
 		case cIdPonto $ "MODELCOMMITTTS"
+			
+			If !IsInCallStack('A311Efetiv') .And. !IsInCallStack('U_TRFFATAUT') .And. !IsInCallStack('U_TRFFATJOB')
+
+				oObjCyberLog := TCyberlogIntegracao():New()
+
+				If oModel:GetValue('NNSMASTER', "NNS_CYBERW") == 'S'
+
+					oObjCyberLog:SendTransferencia(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+
+				Else
+
+					oObjCyberLog:SetPedidoConferenciaStatus("S", .T.)
+
+				EndIf
+
+			EndIf
+
 			//na efetivação
 			IF IsInCallStack('A311Efetiv')
 				// Chamada função por Paulo Camata - 23/04/2019
+				//Adicionada atualização do B1_YESTB2B para não precisar repetir o looping - Eduardo Vieira
 				u_RT004NF(oModel:GetValue('NNSMASTER', 'NNS_COD')) // atualizar NF da central de compras (Z01)
 
 				//na inclusao/alteração
@@ -88,7 +108,16 @@ user function MATA311()
 			EndIF
 
 		case cIdPonto == 'MODELPOS' .And. cIdModel == 'MATA311'
-			IF !IsBlind() .And. ( oModel:GetOperation() == MODEL_OPERATION_INSERT .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE )
+
+			IF IsInCallStack('A311Efetiv') .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
+
+				oObjCyberLog := TCyberlogIntegracao():New()
+
+				xRetorno := oObjCyberLog:ValidEnvioTransferencia()
+
+			EndIf
+
+			IF xRetorno .And. !IsBlind() .And. ( oModel:GetOperation() == MODEL_OPERATION_INSERT .Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE )
 				IF TesNaoInformada(oModel:GetModel('NNTDETAIL'))
 					xRetorno := .F.
 					Help('',1,'CASA-SOL.TRANSF',,'A TES precisa ser informado onde o campo estiver com conteúdo "***".',4)
@@ -99,13 +128,17 @@ user function MATA311()
 			// 	IF IsInCallStack('A311Altera')
 			// 		oModel:GetModel('NNSMASTER'):GetStruct():SetProperty("NNS_TRANSP",MODEL_FIELD_WHEN,{||.T.})
 			// 	EndIF
-
+			
 		case cIdPonto == 'MODELVLDACTIVE' .And. cIdModel == 'MATA311'
+
+			oModel:GetModel('NNSMASTER'):SetFldNoCopy( {'NNS_STATUS', 'NNS_SOLICT', 'NNS_DATA', 'NNS_CYBERS'} )
+
+			oModel:GetModel('NNTDETAIL'):SetFldNoCopy( {'NNT_DOC', 'NNT_SERIE', "NNT_QTDWMS"} )
 
 			//grava quantidade original
 			oModel:GetModel('NNTDETAIL'):GetStruct():AddTrigger('NNT_QUANT','NNT_QTDORI',{|model|  model:GetDataID() == 0 }, {|model| model:GetValue('NNT_QUANT') }, "")
 
-			If oModel:GetOperation() == MODEL_OPERATION_INSERT //.Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
+			If oModel:GetOperation() == MODEL_OPERATION_INSERT .And. !IsBlind() //.Or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
 
 				If INCLUI
 

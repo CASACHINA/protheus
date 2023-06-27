@@ -1,0 +1,229 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE 'tlpp-core.th'
+#INCLUDE 'tlpp-object.th'
+#INCLUDE 'tlpp-rest.th'
+
+/*/{Protheus.doc} TAutomacaoTransferenciaFilialEfetivar
+@author Wlysses
+@since 11/06/2022
+@version 1.0
+@description Integracao ERP com CyberLog.
+@type Class
+/*/
+
+Class TAutomacaoTransferenciaFilialEfetivar
+
+
+	Public Method New() Constructor
+
+	Public Method Run()
+	Public Method SetSerie()
+	Public Method Processa()
+
+EndClass
+
+Method New() Class TAutomacaoTransferenciaFilialEfetivar
+
+Return(Self)
+
+Method Run() Class TAutomacaoTransferenciaFilialEfetivar
+
+	Local cAlias_		:= GetNextAlias()
+	Local cSql			:= ""
+
+	cSql := " SELECT NNS_COD, R_E_C_N_O_ RECNO "
+	cSql += " FROM " + RetSqlName("NNS")
+	cSql += " WHERE NNS_FILIAL 	= " + ValToSql(xFilial("NNS"))
+	cSql += " AND NNS_STATUS	= '1' " 		// 1=Aprovado;2=Finalizado;3=Em Aprovação;4=Rejeitado
+	cSql += " AND NNS_DATA	   >= '20221212' "
+	cSql += " AND NNS_CYBERS   	= 'R' "		 	// N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+	cSql += " AND D_E_L_E_T_ 	= '' "
+
+	TCQUERY cSql New Alias (cAlias_)
+
+	DbSelectArea("NNS")
+	NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
+
+	DbSelectArea("NNT")
+	NNT->(DbSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+
+	If (cAlias_)->(EOF())
+
+		TLogConsole():Log("[TAutomacaoTransferenciaFilialEfetivar] sem itens para faturar!")
+
+	EndIf
+
+	While (cAlias_)->(!EOF())
+
+		NNS->(DBGoTo((cAlias_)->RECNO))
+
+		NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+		TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Faturando...")
+
+		::SetSerie()
+
+		// ::Processa((cAlias_)->NNS_COD)
+
+		StartJob( "U_TRFFATJOB", GetEnvServer(), .T., cEmpAnt, cFilAnt, (cAlias_)->NNS_COD )
+
+		(cAlias_)->(DBSkip())
+
+	EndDo
+
+	(cAlias_)->(DBCloseArea())
+
+Return()
+
+Method Processa(cCodTransf) Class TAutomacaoTransferenciaFilialEfetivar
+
+	Local oModel 	:= FWLoadModel("MATA311")
+	Local oLog 		:= TCyberlogHistoryStruct():New()
+	Local aFields 	:= {}
+	Local aErro 	:= {}
+	Local cMessage 	:= ""
+	Local oCyberlog	:= TCyberlogIntegracao():New()
+
+	Private cOpId311 := "011"
+	Private lMsErroAuto := .F.
+
+	oModel:SetOperation(4)
+
+	aAdd(aFields, {"NNS_COD", cCodTransf, Nil})
+
+	DbSelectArea("NNS")
+	NNS->(DBSetOrder(1)) // NNS_FILIAL, NNS_COD, R_E_C_N_O_, D_E_L_E_T_
+
+	DbSelectArea("NNT")
+	NNT->(DbSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+
+	NNS->(DBSeek(cFilAnt + cCodTransf))
+
+	NNT->(DBSeek(cFilAnt + cCodTransf))
+
+	If NNS->NNS_STATUS == "1"
+
+		Begin Transaction
+
+			lRet := FWMVCRotAuto(oModel, "NNS", 4, {{"NNSMASTER", aFields}} ,,.T.)
+
+			If !lRet
+		
+				DisarmTransaction()
+		
+			EndIf
+			
+		End Transaction
+
+		If lRet
+
+			TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Nota: " + SF2->(F2_SERIE + F2_DOC))
+
+		Else
+
+			aErro := oModel:GetErrorMessage()
+
+			cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aErro[01]) + '], ' + CRLF
+			cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aErro[02]) + '], ' + CRLF
+			cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aErro[03]) + '], ' + CRLF
+			cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aErro[04]) + '], ' + CRLF
+			cMessage += "Id do erro: "                 + ' [' + cValToChar(aErro[05]) + '], ' + CRLF
+			cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aErro[06]) + '], ' + CRLF
+			cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aErro[07]) + '], ' + CRLF
+			cMessage += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], ' + CRLF
+			cMessage += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'
+
+			TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + "Erro: " + cMessage)
+
+		EndIf
+
+		oLog:cChave		:= NNS->(NNS_FILIAL + NNS_COD)
+		oLog:cTabela	:= "NNS"
+		oLog:cOperacao	:= "I"
+		oLog:cRotina	:= "FATAUTO"
+		oLog:cTipo		:= "F"
+		oLog:cStatus	:= If(lRet, "S", "E")
+		oLog:cErro		:= If(Len(cMessage) > 0, cMessage, "")
+		oLog:cObs		:= If(lRet, "Nota: " + SF2->(F2_SERIE + F2_DOC), "")
+
+		oCyberlog:Log(oLog)
+
+		oModel:DeActivate()
+		oModel:Destroy()
+		oModel := NIL
+
+		// FreeObj(oModel)
+
+	Else
+
+		TLogConsole():Log("Transferencia: " + NNS->(NNS_FILIAL + NNS_COD) + " - " + " Já está faturado.")
+
+	EndIf
+
+Return()
+
+Method SetSerie() Class TAutomacaoTransferenciaFilialEfetivar
+
+	Local aAreaNNS := NNS->(GetArea())
+	Local aAreaNNT := NNT->(GetArea())
+
+	DBSelectArea("NNT")
+	NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
+	NNT->(DBGoTop())
+
+	If NNT->(DBSeek(NNS->(NNS_FILIAL + NNS_COD)))
+
+		While NNT->(!EOF()) .And. NNT->(NNT_FILIAL + NNT_COD) == NNS->(NNS_FILIAL + NNS_COD)
+
+			RecLock("NNT", .F.)
+			NNT->NNT_SERIE := "1"
+			NNT->(MsUnlock())
+
+			NNT->(DBSkip())
+
+		EndDo
+
+	EndIf
+
+	RestArea(aAreaNNS)
+	RestArea(aAreaNNT)
+
+Return()
+
+User Function TRFFATAUT(aParam)
+
+	Local oObjTransf := Nil
+	Default aParam := {"01", "010104"}
+
+	RPCSetEnv(aParam[1],aParam[2],,,"COM")
+
+	oObjTransf  := TAutomacaoTransferenciaFilialEfetivar():New()
+
+	oObjTransf:Run()
+
+	RPCClearEnv()
+
+Return()
+
+User Function TRFFATJOB(cEmp_, cFil_, cCodTransf_)
+
+	Local oObjTransf := Nil
+
+	RPCSetEnv(cEmp_,cFil_,,,"COM")
+
+	If MayIUseCode( cEmp_ + cFil_ + "TRFFATJOB" )
+
+		oObjTransf := TAutomacaoTransferenciaFilialEfetivar():New()
+
+		oObjTransf:Processa(cCodTransf_)
+
+	Else
+
+		TLogConsole():Log("Transferencia - TRFFATJOB: " + cFil_ + cCodTransf_ + " - " + " Já está em processo." )
+
+	EndIf
+
+	RPCClearEnv()
+
+Return()

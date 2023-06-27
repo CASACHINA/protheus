@@ -31,6 +31,7 @@ User function USELTES1(_cTpTES)
 	Local _aVar    := {}
 	Local aSaveLines:= {}
 	Local _cRet := ""
+	Local _i := 0
 
 
 	If Alltrim(_cYSTPR) == ""
@@ -41,34 +42,37 @@ User function USELTES1(_cTpTES)
 	Endif
 
 	//Alert(_cFilOri+ "."+_cFilDes+ "."+_cYSTPR+ "."+_cYSTSC)
-
 	aAdd(_aVar,{'PR','PR','1','1','509','253'})
 	aAdd(_aVar,{'PR','PR','1','2','509','253'})
-	aAdd(_aVar,{'PR','PR','2','2','505','251'})
+	//aAdd(_aVar,{'PR','PR','2','2','704','333'})
+	aAdd(_aVar,{'PR','PR','2','2','711','347'})
 	aAdd(_aVar,{'PR','PR','3','3','671','254'})
 	aAdd(_aVar,{'PR','SC','1','1','509','253'})
 	aAdd(_aVar,{'PR','SC','1','2','505','251'})
 	aAdd(_aVar,{'PR','SC','2','2','505','251'})
 	aAdd(_aVar,{'PR','SC','3','3','671','254'})
+	//aAdd(_aVar,{'PR','SC','5','5','505','251'}) ajuste na regra para subir agora
+	aAdd(_aVar,{'PR','SC','5','2','505','251'})
+	aAdd(_aVar,{'PR','PR','5','5','505','251'})
 	aAdd(_aVar,{'SC','SC','1','1','509','253'})
-	aAdd(_aVar,{'SC','SC','2','2','505','251'})
-	aAdd(_aVar,{'SC','SC','1','2','505','251'})
+	aAdd(_aVar,{'SC','SC','2','2','705','334'})
+	//aAdd(_aVar,{'SC','SC','1','2','505','251'})
+	aAdd(_aVar,{'SC','SC','1','2','705','334'})
 	aAdd(_aVar,{'SC','SC','3','3','671','254'})
 	aAdd(_aVar,{'SC','PR','1','2','505','251'})
 	aAdd(_aVar,{'SC','PR','2','2','505','251'})
 	aAdd(_aVar,{'SC','PR','3','3','671','254'})
 	aAdd(_aVar,{'SC','PR','1','1','509','253'})
-
 	aAdd(_aVar,{'PR','PR','4','4','686','317'})
 	aAdd(_aVar,{'PR','SC','4','4','686','317'})
 	aAdd(_aVar,{'SC','PR','4','4','686','317'})
 	aAdd(_aVar,{'SC','SC','4','4','686','317'})
-
+//
 	aAdd(_aVar,{'PR','PR','4','2','686','317'})
 	aAdd(_aVar,{'PR','SC','4','2','686','251'})
 	aAdd(_aVar,{'SC','PR','4','2','505','251'})
-	aAdd(_aVar,{'SC','SC','4','2','505','251'})
-
+	//aAdd(_aVar,{'SC','SC','4','2','505','251'})
+	aAdd(_aVar,{'SC','SC','4','2','705','334'})
 
 	For _i := 1 to Len(_aVar)
 

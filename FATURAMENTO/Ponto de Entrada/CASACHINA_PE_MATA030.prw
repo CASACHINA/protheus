@@ -13,6 +13,8 @@ user function MATA030()
 
 	Local xRetorno := .T.
 
+	Local oObjCyberLog := Nil
+
 	IF ! Empty(ParamIXB)
 
 		oModel   := ParamIXB[1]
@@ -45,6 +47,24 @@ user function MATA030()
 				EndIF
 			EndIF
 
+			//If oModel:GetValue("MATA030_SA1","A1_CYBERW") == 'S'
+
+				oObjCyberLog := TCyberlogIntegracao():New()
+
+				oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+					oObjCyberLog:SendCustomer(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				EndIf
+
+			//EndIf
+
+		Case cIdPonto == "FORMCOMMITTTSPOS"
+
 		case cIdPonto == "BUTTONBAR"
 
 			xRetorno := {}
@@ -76,6 +96,7 @@ user function M030INC()
 
 
 	Local aArea := GetArea()
+	Local oObjCyberLog := Nil
 
 	DbSelectArea("CTH")
 	CTH->(DbSetOrder(1))
@@ -114,16 +135,29 @@ user function M030INC()
 		u_CChtoCyberLog('CLIENTES', SA1->(A1_COD+A1_LOJA), 'I')
 	EndIF
 
+	If PARAMIXB == 0 // Clicou em OK
+
+		oObjCyberLog := TCyberlogIntegracao():New()
+
+		oObjCyberLog:SendCustomer(INCLUI, .F., ALTERA, .F.)
+
+	ElseIf PARAMIXB == 3 // Clicou em cancelar
+
+	EndIf
 
 return
 
-
-
 user function MALTCLI()
+
+	Local oObjCyberLog := Nil
 
 	IF u_CChWMSAtivo() .And. SA1->A1_CYBERW == 'S'
 		//cria o log
 		u_CChtoCyberLog('CLIENTES', SA1->(A1_COD+A1_LOJA), 'A')
 	EndIF
+
+	oObjCyberLog := TCyberlogIntegracao():New()
+
+	oObjCyberLog:SendCustomer(INCLUI, .F., ALTERA, .F.)
 
 return

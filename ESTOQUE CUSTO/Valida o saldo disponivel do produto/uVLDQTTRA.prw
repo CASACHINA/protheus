@@ -36,8 +36,9 @@ User Function uVLDQTTRA()
 
 		_lRet := .F.
 
-		Alert("Atenção " +UsrRetName(__cUserID) +chr(13)+chr(10) +chr(13)+chr(10) +" O saldo deste produto é insuficiente para a quantidade digitada."+chr(13)+chr(10)+chr(13)+chr(10)+" Quantidade digitada : "+Alltrim(Str(_nQuant))+" , Saldo disponivel em estoque :  " +Alltrim(Str(_nSldDis)))
+		//Alert("Atenção " +UsrRetName(__cUserID) +chr(13)+chr(10) +chr(13)+chr(10) +" O saldo deste produto é insuficiente para a quantidade digitada."+chr(13)+chr(10)+chr(13)+chr(10)+" Quantidade digitada : "+Alltrim(Str(_nQuant))+" , Saldo disponivel em estoque :  " +Alltrim(Str(_nSldDis)))
 
+		Help('',1,'CCHINA-SOL.PROD TRANSF',,"Atenção " +UsrRetName(__cUserID) +chr(13)+chr(10) +chr(13)+chr(10) +" O saldo deste produto é insuficiente para a quantidade digitada."+chr(13)+chr(10)+chr(13)+chr(10)+" Quantidade digitada : "+Alltrim(Str(_nQuant))+" , Saldo disponivel em estoque :  " +Alltrim(Str(_nSldDis)),4)
 
 	Endif
 

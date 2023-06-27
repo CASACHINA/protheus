@@ -258,16 +258,20 @@ static function fInsPedido(cId, lJob)
         cCodTra := "000003"
 
     elseif ("FRETE GR" $ cFreteB2b)
-        cCodTra := "000001"
+        cCodTra := ""
+
+    elseif ("FLIXLOG" $ cFreteB2b)
+        cCodTra := "000012"
 
     elseif ("ASAP LOG" $ cFreteB2b)
         cCodTra := "000004"
 
+    elseif ("JADLOG" $ cFreteB2b)
+        cCodTra := "000013"
+
     elseif ("RETIRE" $ cFreteB2b)
         cCodTra := ""
         cTipFre := "D"
-        
-
         
         // Tratamento de retira no CD
         if val(oJsonPed["Order"]["shipment_value"]) == 0 .and. val(oJsonPed["Order"]["total"]) < 250
@@ -364,6 +368,7 @@ static function fInsPedido(cId, lJob)
     aadd(aCabec, {"C5_FRETE"  , nVlrFrete   , nil})
     aadd(aCabec, {"C5_TPFRETE", cTipFre     , nil})
     aadd(aCabec, {"C5_TRANSP" , cCodTra     , nil})
+    aadd(aCabec, {"C5_CYBERW" , "S"         , nil})
 
     // Campos personalizados
     aadd(aCabec, {"C5_YADMFIN", cAdmFin     , nil})

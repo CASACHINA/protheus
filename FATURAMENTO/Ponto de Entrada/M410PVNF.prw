@@ -20,6 +20,7 @@ User Function M410PVNF()
 
     Local _lRet := .T.
     Local _aArea := GetArea()
+    Local oCyberLog := TCyberLogIntegracao():New()
 
     If SC5->C5_B2B == 'S'
 
@@ -28,6 +29,12 @@ User Function M410PVNF()
         Alert("Pedido de Venda do tipo B2B não poderá ser gerado nota atraves desta rotina, favor gerar a nota pela rotina de Documento de Saida!")
 
     Endif
+
+    If _lRet
+
+        _lRet := oCyberLog:ValidEnvioPedido(.T.)
+
+    EndIf
 
     RestArea(_aArea)
 

@@ -5,6 +5,8 @@ PE após salvar registros da transferencia multipla
 @author Paulo Camata (Camatech)
 @since 01/09/2020
 /*/
+Static _cDocSD3_ := ""
+
 user function MA261TRD3()
     local aRecn   := paramIxb[1] // Recnos salvos
     local cArmCom := getNewPar("EC_ARMCOM", "90")  // Armazem de estoque para o E-Commerce
@@ -38,5 +40,10 @@ user function MA261TRD3()
         endif
     next i
 
+    _cDocSD3_ := cDocumento
+
     restArea(aArea)
 return nil
+
+User Function XMA261TR()
+Return(_cDocSD3_)

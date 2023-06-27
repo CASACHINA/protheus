@@ -4,8 +4,16 @@
 static lWmsExclui
 
 user function MA410MNU()
+
+	Local aArea_	:= GetArea()
+	
 	aAdd(aRotina, {"Enviar para WMS", "u_CCN410Env", 0, 2, 0, nil})
 	aAdd(aRotina, {"Rastreio", "u_EC0008", 0, 2, 0, nil})
+
+	TCyberLogIntegracao():AddMenu(.T.)
+	
+	RestArea(aArea_)
+
 return
 
 user function CCN410Env()
@@ -77,7 +85,15 @@ O ponto de entrada M410STTS é executado após o o commit do pedido de venda
 @since 07/06/2017
 /*/
 user function M410STTS()
+
 	Local _aArea := GetArea()
+	Local oCyberLog := TCyberLogIntegracao():New()
+
+	If !IsInCallStack('A311Efetiv') .And. SC5->C5_CYBERW == 'S'
+
+		oCyberLog:SendPedido(IsInCallStack('A410Inclui'), IsInCallStack('A410Copia'), IsInCallStack('A410Altera'), IsInCallStack('A410Deleta'))
+
+	EndIf
 
 	IF u_CChWMSAtivo() .And. !IsInCallStack('A311Efetiv')
 
@@ -172,6 +188,9 @@ User Function MT410CPY()
 	Local aArea := GetArea()
 
 	M->C5_CYBERW := "N"
+	M->C5_XCONFCB := ""
+	M->C5_VOLUME1 := 0
+
 	RestArea(aArea)
 	RestArea(_aArea)
 Return

@@ -21,6 +21,8 @@ user function ITEM()
 	Local cIdModel //ParamIXB[3]
 
 	Local xRetorno := .T.
+	Local oObjCyberLog := Nil
+	Local cFilBkp := ""
 
 	IF ! Empty(ParamIXB)
 
@@ -54,6 +56,36 @@ user function ITEM()
 				EndIF
 			EndIF
 
+			If oModel:GetValue("SB1MASTER","B1_CYBERW") == "S"
+
+				// O WS para o fluig starta a filial 010101, logo ao fazer um cad de produtos
+				// nao entra na integracao pois a parametrizacao na ZA2, esta para 010104
+				// Como o cadastro é compartilhado, optei por fazer dessa forma, sem ter que 
+				// alterar o fonte WsPedCom, pois existe outro fornecedor trabalhando no mesmo.
+				If cFilAnt <> "010104"
+
+					cFilBkp := cFilAnt
+
+					cFilAnt := "010104"
+
+				EndIf
+
+				oObjCyberLog := TCyberlogIntegracao():New()
+
+				oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+
+				If !Empty(oObjCyberLog:oEmpAuth:cDepositoB2B)
+				
+					oObjCyberLog:cDeposito := oObjCyberLog:oEmpAuth:cDepositoB2B
+
+					oObjCyberLog:SendProduct(oModel:getOperation() == MODEL_OPERATION_INSERT, .F., oModel:getOperation() == MODEL_OPERATION_UPDATE, oModel:getOperation() == MODEL_OPERATION_DELETE)
+				
+				EndIf
+
+				cFilAnt := cFilBkp
+
+			EndIf
+
 		Case cIdPonto == "FORMCOMMITTTSPOS"
 
 			  /*	If Inclui
@@ -64,13 +96,14 @@ user function ITEM()
 					U_GT12M003("SB1","EXCLUI")
 		EndIf
                 */
-	case cIdPonto == "BUTTONBAR"
 
-		xRetorno := {}
+		case cIdPonto == "BUTTONBAR"
 
-	endcase
+			xRetorno := {}
 
-EndIF
+		endcase
+
+	EndIF
 
 return xRetorno
 
