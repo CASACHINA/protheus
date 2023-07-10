@@ -49,7 +49,7 @@ static function fImpArq(cCamArq)
     local aTabVen    := {}
     local aTabCom    := {}
     local lCpoB2B    := .F.
-
+    Local _nPos
     private lMsErroAuto := .F.
 
     oFile:Open()
@@ -113,23 +113,23 @@ static function fImpArq(cCamArq)
         for nI := 1 to len(aCabec)
             if nI <> nPosFil .and. !empty(aLinAux[nI]) .and. left(aCabec[nI], 3) == "B1_" .and. left(aCabec[nI], 9) <> "B1_TABCOM" // Nao considerar campo filial e tabela de compras
                 // Verificando se o campo informado no cabecalho existe no arquivo SX3 e nao é virtual
-                if SX3->(msSeek(padR(aCabec[nI], 10))) .and. SX3->X3_CONTEXT <> "V"
-                    if allTrim(SX3->X3_CAMPO) == "B1_01CAT4" // Tratamento para mercadologico
+                if SX3->(msSeek(padR(aCabec[nI], 10))) .and.  GetSx3Cache( aCabec[nI] , "X3_CONTEXT") <> "V"
+                    if allTrim(aCabec[nI]) == "B1_01CAT4" // Tratamento para mercadologico
                         aAdd(aProduto, {"B1_01CAT1", left(aLinAux[nI], 2), nil})
                         aAdd(aProduto, {"B1_01CAT2", left(aLinAux[nI], 4), nil})
                         aAdd(aProduto, {"B1_01CAT3", left(aLinAux[nI], 6), nil})
                         aAdd(aProduto, {"B1_01CAT4", left(aLinAux[nI], 8), nil})
 
-                    elseif SX3->X3_TIPO == "C"
+                    elseif FWSX3Util():GetFieldType( aCabec[nI] ) == "C"
                         aAdd(aProduto, {aCabec[nI], aLinAux[nI], nil})
-                    elseif SX3->X3_TIPO == "D"
+                    elseif FWSX3Util():GetFieldType( aCabec[nI] ) == "D"
                         aAdd(aProduto, {aCabec[nI], STOD(aLinAux[nI]), nil})
-                    elseif SX3->X3_TIPO == "N"
+                    elseif FWSX3Util():GetFieldType( aCabec[nI] ) == "N"
                         aAdd(aProduto, {aCabec[nI], val(strTran(aLinAux[nI], ",", ".")), nil})
                     endif
 
                     // Verificando se o campo informado não esta nos campos q sao considerados para alteracao
-                    if !padr(SX3->X3_CAMPO, 10) $ cCpoAlter
+                    if !padr(aCabec[nI], 10) $ cCpoAlter
                         lIncAlter := .T.
                     endif
                 endif
@@ -152,32 +152,57 @@ static function fImpArq(cCamArq)
                     recLock("SZ1", .T.)
                 endif
                 
-                dbSelectArea("SX3")
-                SX3->(dbSetOrder(1))
-                SX3->(msSeek("SZ1")) // Buscar todos os campos
-                
-                // Percorrer todos os campos da tabela
-                while !SX3->(EoF()) .and. allTrim(SX3->X3_ARQUIVO) == "SZ1"
-                    // Valores fixos (Estado e Produto)
-                    if allTrim(SX3->X3_CAMPO) == "Z1_FILIAL"
+
+                aFieldsSz1 := FwSX3Util():GetAllFields("SZ1")
+
+                For _nPos := 1 to len(aFieldsSz1)
+
+                     // Valores fixos (Estado e Produto)
+                    if allTrim(aFieldsSz1[_nPos]) == "Z1_FILIAL"
                         SZ1->Z1_FILIAL := xFilial("SZ1")
-                    elseif allTrim(SX3->X3_CAMPO) == "Z1_PRODUTO"
+                    elseif allTrim(aFieldsSz1[_nPos]) == "Z1_PRODUTO"
                         SZ1->Z1_PRODUTO := aLinAux[nPosPro]
                     else
-                        nPosCpo := AScanX(aCabec, {|x| allTrim(x) == allTrim(SX3->X3_CAMPO) + cEstFis})
+                        nPosCpo := AScanX(aCabec, {|x| allTrim(x) == allTrim(aFieldsSz1[_nPos]) + cEstFis})
                         if nPosCpo > 0
-                            if SX3->X3_TIPO == "C"
-                                &("SZ1->" + allTrim(SX3->X3_CAMPO)) := aLinAux[nPosCpo]
-                            elseif SX3->X3_TIPO == "D"
-                                &("SZ1->" + allTrim(SX3->X3_CAMPO)) := STOD(aLinAux[nPosCpo])
-                            elseif SX3->X3_TIPO == "N"
-                                &("SZ1->" + allTrim(SX3->X3_CAMPO)) := val(strTran(aLinAux[nPosCpo], ",", "."))
+                            if FWSX3Util():GetFieldType( aFieldsSz1[_nPos] )== "C"
+                                &("SZ1->" + allTrim(aFieldsSz1[_nPos])) := aLinAux[nPosCpo]
+                            elseif FWSX3Util():GetFieldType( aFieldsSz1[_nPos] ) == "D"
+                                &("SZ1->" + allTrim(aFieldsSz1[_nPos])) := STOD(aLinAux[nPosCpo])
+                            elseif FWSX3Util():GetFieldType( aFieldsSz1[_nPos] )== "N"
+                                &("SZ1->" + allTrim(aFieldsSz1[_nPos])) := val(strTran(aLinAux[nPosCpo], ",", "."))
                             endif
                         endif
                     endif
 
-                    SX3->(dbSkip())
-                enddo
+                Next _nPos
+
+                // dbSelectArea("SX3")
+                // SX3->(dbSetOrder(1))
+                // SX3->(msSeek("SZ1")) // Buscar todos os campos
+                
+                // // Percorrer todos os campos da tabela
+                // while !SX3->(EoF()) .and. allTrim(SX3->X3_ARQUIVO) == "SZ1"
+                //     // Valores fixos (Estado e Produto)
+                //     if allTrim(SX3->X3_CAMPO) == "Z1_FILIAL"
+                //         SZ1->Z1_FILIAL := xFilial("SZ1")
+                //     elseif allTrim(SX3->X3_CAMPO) == "Z1_PRODUTO"
+                //         SZ1->Z1_PRODUTO := aLinAux[nPosPro]
+                //     else
+                //         nPosCpo := AScanX(aCabec, {|x| allTrim(x) == allTrim(SX3->X3_CAMPO) + cEstFis})
+                //         if nPosCpo > 0
+                //             if SX3->X3_TIPO == "C"
+                //                 &("SZ1->" + allTrim(SX3->X3_CAMPO)) := aLinAux[nPosCpo]
+                //             elseif SX3->X3_TIPO == "D"
+                //                 &("SZ1->" + allTrim(SX3->X3_CAMPO)) := STOD(aLinAux[nPosCpo])
+                //             elseif SX3->X3_TIPO == "N"
+                //                 &("SZ1->" + allTrim(SX3->X3_CAMPO)) := val(strTran(aLinAux[nPosCpo], ",", "."))
+                //             endif
+                //         endif
+                //     endif
+
+                //     SX3->(dbSkip())
+                // enddo
 
                 SZ1->(msUnlock())
 
@@ -385,7 +410,7 @@ return nil
 // Funcao para efetuar atualizacao da tabela SB4
 Static Function fAtualizSB4()
     local cCampo
-
+    lOCAL _nPos
     dbSelectArea("SB4")
     SB4->(dbSetOrder(1))
     if SB4->(msSeek(xFilial("SB4") + SB1->B1_COD)) // Ja Existe Cadastro
@@ -400,21 +425,36 @@ Static Function fAtualizSB4()
         SB4->B4_01UTGRD := "N"
     endif
 
-    dbSelectArea("SX3")
-    SX3->(dbSetOrder(1))
-    SX3->(dbGoTop())
-    SX3->(msSeek("SB4"))
-    while !SX3->(Eof()) .and. allTrim(SX3->X3_ARQUIVO) == "SB4"
-        if !allTrim(SX3->X3_CAMPO) $ "B4_FILIAL|B4_COD" .and. SX3->X3_CONTEXT <> "V"
-            cCampo := "B1_" + subStr(SX3->X3_CAMPO, 4, 7)
+    // dbSelectArea("SX3")
+    // SX3->(dbSetOrder(1))
+    // SX3->(dbGoTop())
+    // SX3->(msSeek("SB4"))
+    // while !SX3->(Eof()) .and. allTrim(SX3->X3_ARQUIVO) == "SB4"
+    //     if !allTrim(SX3->X3_CAMPO) $ "B4_FILIAL|B4_COD" .and. SX3->X3_CONTEXT <> "V"
+    //         cCampo := "B1_" + subStr(SX3->X3_CAMPO, 4, 7)
+
+    //         if SB1->(FieldPos(cCampo)) > 0 // campo existe na tabela SB1
+    //             &("SB4->" + SX3->X3_CAMPO) := SB1->(FieldGet(FieldPos(cCampo)))
+    //         endif
+    //     endif
+
+    //     SX3->(dbSkip())
+    // endDo
+    
+    aFieldsb4 := FwSX3Util():GetAllFields("SB4")
+
+    For _nPos := 1 to len(aFieldsb4)
+       
+
+        if !allTrim( aFieldsb4[_nPos]) $ "B4_FILIAL|B4_COD" .and. GetSx3Cache( aFieldsb4[_nPos] , "X3_CONTEXT") <> "V"
+            cCampo := "B1_" + subStr( aFieldsb4[_nPos], 4, 7)
 
             if SB1->(FieldPos(cCampo)) > 0 // campo existe na tabela SB1
-                &("SB4->" + SX3->X3_CAMPO) := SB1->(FieldGet(FieldPos(cCampo)))
+                &("SB4->" +  aFieldsb4[_nPos]) := SB1->(FieldGet(FieldPos(cCampo)))
             endif
         endif
 
-        SX3->(dbSkip())
-    endDo
+    Next _nPos
     SB4->(msUnlock())
 Return nil
 

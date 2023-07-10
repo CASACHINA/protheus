@@ -91,7 +91,6 @@ static function readFile(cFile)
 
 	Local oFile := FWFileReader():New(cFile)
 	Local aLines := {}
-	Local nLine
 
 	Local cSeparator := ';'
 
@@ -126,7 +125,7 @@ static function ConsultaProtocolo(cEntidade, cNota)
 
 	IF ! lOk
 		IncProc()
-		ConOut("SPED|" + IIf(Empty(GetWscError(3)),GetWscError(1),GetWscError(3)))
+		//conout("SPED|" + IIf(Empty(GetWscError(3)),GetWscError(1),GetWscError(3)))
 	EndIF
 
 return lOk
@@ -175,7 +174,7 @@ static function ExportXML(cDirectory, cEntidade, cNota)
 			oXmlExp := XmlParser(oRetorno:OWSNOTAS:OWSNFES3[nX]:OWSNFE:CXML,"","","")
 
 			//versão no NFE
-			cVerNfe := IIf(Type("oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT") <> "U", oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT, '')
+			cVerNfe := retVersao( oXmlExp )
 
 
 	 		IF ! Empty(oXml:oWSNFe:cProtocolo)
@@ -213,9 +212,14 @@ static function ExportXML(cDirectory, cEntidade, cNota)
 
 
 	Else
-		ConOut("SPED|" + IIf(Empty(GetWscError(3)),GetWscError(1),GetWscError(3)))
+		//conout("SPED|" + IIf(Empty(GetWscError(3)),GetWscError(1),GetWscError(3)))
 		Return .F.
 	EndIF
 
 
 return .T.
+
+STATIC function retVersao(oXmlExp)
+Local _cVersao :=  IIf(Type("oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT") <> "U", oXmlExp:_NFE:_INFNFE:_VERSAO:TEXT, '')
+
+return _cVersao

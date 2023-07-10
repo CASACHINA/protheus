@@ -6,7 +6,7 @@ user function MEst270(aParam)
 
 	aParam := {'01','010104'}
 
-	Conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst270] - Schedule - Iniciado")
+	//conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst270] - Schedule - Iniciado")
 
 	IF aParam # nil
 
@@ -21,7 +21,7 @@ user function MEst270(aParam)
 		FwMsgRun(, {|| MEst27Exec() }, "Aguarde...", "Executando importação do WMS de inventário de estoque.")
 	EndIF
 
-	Conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst270] - Schedule - Finalizado")
+	//conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst270] - Schedule - Finalizado")
 
 return
 
@@ -156,7 +156,7 @@ static function GravaInv(dData, aItem)
 
 	Private lMsErroAuto := FALSE, lMsHelpAuto := lAutoErrNoFile := TRUE
 
-	ConOut(FormDate(dData))
+	//conout(FormDate(dData))
 	varinfo('aItem', aItem)
 
 	aAdd(aMata270, {'B7_DOC'  , DtoS(dData), Nil })

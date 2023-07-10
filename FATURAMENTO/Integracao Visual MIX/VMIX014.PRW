@@ -37,7 +37,7 @@ User Function VMIX014()
 	Local cErro			:= ""
 	Local bErro 		:= ErrorBlock( { |oErr| cErro := oErr:Description })
 
-	ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 VERSAO INICIADA...")
+	//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 VERSAO INICIADA...")
 
 	cSql := " SELECT * "
 	cSql += " FROM " + RetSqlName("ZA0")
@@ -149,9 +149,9 @@ User Function VMIX014()
 
 						If lRet
 
-							ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 VOU EXECUTAR O PROCESSO: " + ZA0->ZA0_PROCES)
+							//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 VOU EXECUTAR O PROCESSO: " + ZA0->ZA0_PROCES)
 							ProcessaX(ZA0->ZA0_CLIENT, ZA0->ZA0_LOJA, aRecSD2, aItens)
-							ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 FINALIZEI PROCESSO: " + ZA0->ZA0_PROCES)
+							//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 FINALIZEI PROCESSO: " + ZA0->ZA0_PROCES)
 
 						Else
 
@@ -170,7 +170,7 @@ User Function VMIX014()
 
 				If Empty(ZA0->ZA0_DOCDEV) .And. ( ValType(cErro) <> "U" .And. !Empty(cErro) )
 
-					ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 COM ERRO: " + cErro)
+					//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 COM ERRO: " + cErro)
 
 					RecLock("ZA0", .F.)
 					ZA0->ZA0_STATUS := "2" // 0=Aguard. Integração;1=Integrado;2=Erro
@@ -181,7 +181,7 @@ User Function VMIX014()
 
 			Else
 
-				ConOut( "[" + cEmpAnt + cFilAnt + "] " + "Nao consegui lockar ZA0_PROCES: " + ZA0->ZA0_PROCES + " Record locked by another user. " + TcInternal(53) )
+				//conout( "[" + cEmpAnt + cFilAnt + "] " + "Nao consegui lockar ZA0_PROCES: " + ZA0->ZA0_PROCES + " Record locked by another user. " + TcInternal(53) )
 
 			EndIf
 
@@ -193,7 +193,7 @@ User Function VMIX014()
 
 	(cQryCabec)->(DbCloseArea())
 
-	ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 CONCLUIDA.")
+	//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX014 CONCLUIDA.")
 
 Return()
 
@@ -236,7 +236,7 @@ Static Function ProcessaX(cCodCli, cLojaCli, aRecSD2, aItem)
 
 		cLogTxt += GetErrorLog(aAutoErro)
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> ERRO: " + cLogTxt)
+		//conout("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> ERRO: " + cLogTxt)
 
 		RecLock("ZA0", .F.)
 		ZA0->ZA0_STATUS := "2" // 0=Aguard. Integração;1=Integrado;2=Erro
@@ -245,7 +245,7 @@ Static Function ProcessaX(cCodCli, cLojaCli, aRecSD2, aItem)
 
 	Else
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> SUCESSO!")
+		//conout("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> SUCESSO!")
 
 		RecLock("ZA0", .F.)
 		ZA0->ZA0_STATUS := "1" // 0=Aguard. Integração;1=Integrado;2=Erro

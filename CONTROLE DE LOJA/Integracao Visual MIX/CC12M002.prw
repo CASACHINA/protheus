@@ -35,21 +35,21 @@ Funcao que executa a Integracao dos Dados com o Visual MIX - Retorno dos Dados.
 				VAL_AMB()
 			Else
 				////Aviso("Atencao","A Chave de Acesso Expirada",{"Fechar"},1)
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Chave de Acesso Expirada... Procure a GAO TECNOLOGIA para geracao de uma nova chave...")
-				Conout(Replicate("-",nRpl))			
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Chave de Acesso Expirada... Procure a GAO TECNOLOGIA para geracao de uma nova chave...")
+				//conout(Replicate("-",nRpl))			
 			EndIf
 		Else
 			//Aviso("Atencao","A Chave de Acesso Encontrada nao Faz Parte desse Codigo Fonte. Coloque a chave correta no diretorio correto.",{"Fechar"},1)
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  A Chave de Acesso Encontrada nao Faz Parte desse Codigo Fonte...")
-			Conout(Replicate("-",nRpl))		
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  A Chave de Acesso Encontrada nao Faz Parte desse Codigo Fonte...")
+			//conout(Replicate("-",nRpl))		
 		EndIf
 	Else
 		//Aviso("Atencao","Chave de Acesso Invalida ou nao Encontrada.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Chave de Acesso Invalida ou nao Encontrada...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Chave de Acesso Invalida ou nao Encontrada...")
+		//conout(Replicate("-",nRpl))
 	EndIf
 
 Return
@@ -96,45 +96,45 @@ Função responsavel por processar a integracao
 	
 	If nHandle >= 0
 		//Aviso("Atencao","Conexao com o Banco de Dados VM_INTEGRACAO realizada com sucesso.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados VM_INTEGRACAO Realizada com Sucesso ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados VM_INTEGRACAO Realizada com Sucesso ...")
+		//conout(Replicate("-",nRpl))
 		
 		VMIX_SL1()
 		
 	Else
 		//Aviso("Atencao","Nao foi possivel realizar a conexao com o banco de dados VM_INTEGRACAO.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Nao foi possivel realizar a conexao com o banco de dados VM_INTEGRACAO ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Nao foi possivel realizar a conexao com o banco de dados VM_INTEGRACAO ...")
+		//conout(Replicate("-",nRpl))
 	EndIf
 	
 	If TCUnlink(nHandle)
 		//Aviso("Atencao","Conexao com o Banco de Dados VM_INTEGRACAO finalizada com sucesso.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados VM_INTEGRACAO finalizada com sucesso ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados VM_INTEGRACAO finalizada com sucesso ...")
+		//conout(Replicate("-",nRpl))
 		
 		If TCSetConn(nConnERP)
 			//Aviso("Atencao","Conexao com o Banco de Dados do Protheus Reestabelecida.",{"Fechar"},1)
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados do Protheus Reestabelecida ...")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Conexao com o Banco de Dados do Protheus Reestabelecida ...")
+			//conout(Replicate("-",nRpl))
 			
 			SET_TABS() // Função Responsavel por popular os dados nas tabelas temporarias criadas
 			PROT_SL1() // Função responsavel por executar o exectauto de criação das vendas no modulo loja.
 		Else
 			//Aviso("Atencao","Falha ao Reestabelecer a conexao com o Banco de Dados do Protheus.",{"Fechar"},1)
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha ao Reestabelecer a conexao com o Banco de Dados do Protheus ...")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha ao Reestabelecer a conexao com o Banco de Dados do Protheus ...")
+			//conout(Replicate("-",nRpl))
 		EndIf
 		
 	Else
 		//Aviso("Atencao","Falha ao finalizar a conexao com o Banco de Dados VM_INTEGRACAO.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha ao finalizar a conexao com o Banco de Dados VM_INTEGRACAO ...")
-		Conout(Replicate("-",nRpl))	
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROC_INT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha ao finalizar a conexao com o Banco de Dados VM_INTEGRACAO ...")
+		//conout(Replicate("-",nRpl))	
 	EndIf
 Return
 
@@ -189,13 +189,13 @@ Função Responsavel por popular os dados nas tabelas temporarias criadas
 		Next nX	
 		
 		If lControl
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ1 Carregada com Sucesso.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ1 Carregada com Sucesso.")
+			//conout(Replicate("-",nRpl))
 		Else
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ1.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ1.")
+			//conout(Replicate("-",nRpl))
 		EndIf
 		
 		lControl := .F.
@@ -224,13 +224,13 @@ Função Responsavel por popular os dados nas tabelas temporarias criadas
 		Next nX
 		
 		If lControl
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ2 Carregada com Sucesso.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ2 Carregada com Sucesso.")
+			//conout(Replicate("-",nRpl))
 		Else
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ2.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ2.")
+			//conout(Replicate("-",nRpl))
 		EndIf
 		
 		lControl := .F.
@@ -266,22 +266,22 @@ Função Responsavel por popular os dados nas tabelas temporarias criadas
 		Next nX
 		
 		If lControl
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ4 Carregada com Sucesso.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Tabela SZ4 Carregada com Sucesso.")
+			//conout(Replicate("-",nRpl))
 		Else
-			Conout(Replicate("-",nRpl))
-			Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ4.")
-			Conout(Replicate("-",nRpl))
+			//conout(Replicate("-",nRpl))
+			//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "] Falha ao Carregar a Tabela SZ4.")
+			//conout(Replicate("-",nRpl))
 		EndIf
 		
 		aSL1 := {}
 		aSL2 := {}
 		aSL4 := {}
 	Else
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "]  Nao ha Registros para integracao nos Arrays aSL1,aSl2 e aSl4.")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][SET_TABS] [" + Dtoc(DATE()) +" "+ Time()+ "]  Nao ha Registros para integracao nos Arrays aSL1,aSl2 e aSl4.")
+		//conout(Replicate("-",nRpl))
 	EndIf
 	
 Return
@@ -349,14 +349,14 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 	If NQTREG <= 0
 		TMP1->(DBCLOSEAREA())
 		//Aviso("GET_VMIX","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
+		//conout(Replicate("-",nRpl))
 	Else
 		//Aviso("GET_SA2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
+		//conout(Replicate("-",nRpl))
 		
 		While ! TMP1->(EOF())
 			
@@ -411,9 +411,9 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			If lMsErroAuto
 				MostraErro()
 				DisarmTransaction()
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Erro na Execucao do ExecAlto para o Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Falha no Processo ...")			
-				Conout(Replicate("-",nRpl))
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Erro na Execucao do ExecAlto para o Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Falha no Processo ...")			
+				//conout(Replicate("-",nRpl))
 				
 				cUpd := " UPDATE " +  RetSqlName("SZ1")  +QbLinha 
 			    cUpd += " SET Z1_STATUS = '3' "+QbLinha 
@@ -424,13 +424,13 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z1_PDV = '"+TMP1->L1PDV+"' "+QbLinha 
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ1 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ1 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 
 			    cUpd := " UPDATE "+ RetSqlName("SZ2") +QbLinha 
@@ -442,13 +442,13 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z2_PDV = '"+TMP1->L1PDV+"' "+QbLinha 
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ2 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ2 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 
 			    cUpd := " UPDATE "+ RetSqlName("SZ4") +QbLinha 
@@ -459,13 +459,13 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z4_NUM = '"+TMP1->L1NUM+"' "+QbLinha 
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicatse("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicatse("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ4 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ4 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 				
 				aCab 		:= {}
@@ -475,9 +475,9 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 				aCab 		:= {}
 				aItem 		:= {}
 				aParcelas 	:= {}
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M002][PUT_PROT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ExecAuto Executado com Sucesso ...")
-				Conout(Replicate("-",nRpl))
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M002][PUT_PROT]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ExecAuto Executado com Sucesso ...")
+				//conout(Replicate("-",nRpl))
 				
 				cUpd := " UPDATE " +  RetSqlName("SZ1")  +QbLinha 
 			    cUpd += " SET Z1_STATUS = '2' "+QbLinha 
@@ -488,13 +488,13 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z1_PDV = '"+TMP1->L1PDV+"' "+QbLinha 
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ1 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ1 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 
 			    cUpd := " UPDATE "+ RetSqlName("SZ2") +QbLinha 
@@ -506,13 +506,13 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z2_PDV = '"+TMP1->L1PDV+"' "+QbLinha
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ2 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ2 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 
 			    cUpd := " UPDATE "+ RetSqlName("SZ4") +QbLinha 
@@ -523,25 +523,25 @@ Função responsavel por executar o exectauto de criação das vendas no modulo loja
 			    cUpd += " AND Z4_NUM = '"+TMP1->L1NUM+"' "+QbLinha 
 			    
 			    If (TcSqlExec(cUpd) < 0)
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-					Conout(Replicate("-",nRpl))
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA EXECUCAO DO UPDATE. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+					//conout(Replicate("-",nRpl))
 				Else
-					Conout(Replicate("-",nRpl))
-					Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ4 Executado com Sucesso ...")			
-					Conout(Replicate("-",nRpl))	
+					//conout(Replicate("-",nRpl))
+					//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Update do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Tabela SZ4 Executado com Sucesso ...")			
+					//conout(Replicate("-",nRpl))	
 				EndIf
 			
 			lIntERP := LJGRVTUDO(.F.)
 			
 			If lIntERP
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Integração do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Realizada com Sucesso ...")			
-				Conout(Replicate("-",nRpl))	
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Integração do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+"), Realizada com Sucesso ...")			
+				//conout(Replicate("-",nRpl))	
 			Else
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha na Integração do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+")...")			
-				Conout(Replicate("-",nRpl))	
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M002] [PROT_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Falha na Integração do Cupom N..: ("+TMP1->L1FILIAL+" - "+TMP1->L1NUM+")...")			
+				//conout(Replicate("-",nRpl))	
 			EndIf
 		EndIf
 			TMP1->(DBSKIP())
@@ -619,14 +619,14 @@ Função responsavel por popular o array aItens do Execauto
 	If NQTREG <= 0
 		TMP2->(DBCLOSEAREA())
 		//Aviso("GET_VMIX","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
+		//conout(Replicate("-",nRpl))
 	Else
 		//Aviso("GET_SA2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
+		//conout(Replicate("-",nRpl))
 		
 		aItem := {}
 		
@@ -716,14 +716,14 @@ Função responsavel por popular o array aParcelas do Execauto
 	If NQTREG <= 0
 		TMP3->(DBCLOSEAREA())
 		//Aviso("GET_VMIX","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados para Integração com o Protheus ...")
+		//conout(Replicate("-",nRpl))
 	Else
 		//Aviso("GET_SA2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][PROT_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][PROT_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados para Integração com o Protheus Encontrados ...")
+		//conout(Replicate("-",nRpl))
 		
 		While ! TMP3->(EOF())
 			
@@ -833,14 +833,14 @@ Função responsavel por buscar os dados no banco de dados do Visual Mix
 	If NQTREG <= 0
 		TMP1->(DBCLOSEAREA())
 		//Aviso("GET_VMIX","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados do Visual Mix a serem Integrados  ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Não há dados do Visual Mix a serem Integrados  ...")
+		//conout(Replicate("-",nRpl))
 	Else
 		//Aviso("GET_SA2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados ...")
+		//conout(Replicate("-",nRpl))
 		
 		While ! TMP1->(EOF())
 			
@@ -878,16 +878,16 @@ Função responsavel por buscar os dados no banco de dados do Visual Mix
 	
 	If lSl2
 		//Aviso("GET_SL2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados ...")
+		//conout(Replicate("-",nRpl))
 	EndIF
 	
 	If lSl4
 		//Aviso("GET_SL4","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados  ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados do Visual Mix Encontrados  ...")
+		//conout(Replicate("-",nRpl))
 	EndIF
 
 	If Len(aSL1) > 0 
@@ -901,14 +901,14 @@ Função responsavel por buscar os dados no banco de dados do Visual Mix
 			
 			If (TcSqlExec(cInsert) < 0)
 				//Aviso("Atencao","ERRO NA INTEGRACAO. Erro SQL: "+Alltrim(TCSQLError()),{"Fechar"},1)
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M001][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA GRAVACAO DA TABELA ST_CUPOM. Erro SQL: "+Alltrim(TCSQLError())+" ...")
-				Conout(Replicate("-",nRpl))
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M001][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  ERRO NA GRAVACAO DA TABELA ST_CUPOM. Erro SQL: "+Alltrim(TCSQLError())+" ...")
+				//conout(Replicate("-",nRpl))
 				//Return .F.	
 			Else
-				Conout(Replicate("-",nRpl))
-				Conout("[CC12M001][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Gravando Dados na Tabela  (ST_CUPOM - VMIX)..: "+ cValToChar(nX) +" de "+ cValToChar(Len(aSL1)) +" ...")			
-				Conout(Replicate("-",nRpl))
+				//conout(Replicate("-",nRpl))
+				//conout("[CC12M001][VMIX_SL1]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Gravando Dados na Tabela  (ST_CUPOM - VMIX)..: "+ cValToChar(nX) +" de "+ cValToChar(Len(aSL1)) +" ...")			
+				//conout(Replicate("-",nRpl))
 			EndIf
 		
 		Next nX
@@ -991,9 +991,9 @@ Funcao que busca os dados que seram salvos na tabela SL2.
 	If NQTREG <= 0
 		TMP2->(DBCLOSEAREA())
 		//Aviso("GET_SL2","Não há dados do Visual Mix a serem Integrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados (SL2 - VMIX), Referente ao Cupom...: "+cValToChar(nNum)+",  Nao Encontrados  ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL2]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados (SL2 - VMIX), Referente ao Cupom...: "+cValToChar(nNum)+",  Nao Encontrados  ...")
+		//conout(Replicate("-",nRpl))
 		Return .F.
 	Else
 			
@@ -1075,9 +1075,9 @@ Funcao que busca os dados que seram salvos na tabela SL2.
 		
 	If NQTREG <= 0
 		//Aviso("GET_SL2","Dados do Visual Mix Encontrados.",{"Fechar"},1)
-		Conout(Replicate("-",nRpl))
-		Conout("[CC12M002][VMIX_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados (SL4 - VMIX), Referente ao Cupom...: "+cValToChar(nNum)+",  Nao Encontrados  ...")
-		Conout(Replicate("-",nRpl))
+		//conout(Replicate("-",nRpl))
+		//conout("[CC12M002][VMIX_SL4]  [" + Dtoc(DATE()) +" "+ Time()+ "]  Dados (SL4 - VMIX), Referente ao Cupom...: "+cValToChar(nNum)+",  Nao Encontrados  ...")
+		//conout(Replicate("-",nRpl))
 		TMP3->(DBCLOSEAREA())
 		Return .F.
 	Else		

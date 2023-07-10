@@ -46,7 +46,7 @@ static function fValida(oJson)
     private lMsHelpAuto	:= .F.
 
     if empty(cUsuario) .or. empty(cPassword)
-        conout("Usuario e senhas em branco")
+        //conout("Usuario e senhas em branco")
         oHashRet:Set("Status", 0)
 		oHashRet:Set("MSGRET", "TAG User/Password nao informado!")
         return oHashRet
@@ -57,8 +57,8 @@ static function fValida(oJson)
     nTamUsu   := len(cUsuario) // tamanho 
 
     if cUsuario <> left(cPassword, nTamUsu)
-        conout("Usuario: " + cUsuario)
-        conout("Pass: " + left(cPassword, nTamUsu))
+        //conout("Usuario: " + cUsuario)
+        //conout("Pass: " + left(cPassword, nTamUsu))
         oHashRet:Set("Status", 0)
 		oHashRet:Set("mensagem", "Usuario/Senha invalidos!")
         return oHashRet
@@ -68,8 +68,8 @@ static function fValida(oJson)
     cPassword := subStr(cPassword, nTamUsu + 1, len(cPassword) - nTamUsu - 8) // Retirando somente a senha
 
     if cData <> DTOS(date())
-        conout("Data: " + cData)
-        conout("Date: " + DTOC(date()))
+        //conout("Data: " + cData)
+        //conout("Date: " + DTOC(date()))
         oHashRet:Set("Status", 0)
 		oHashRet:Set("mensagem", "Usuario/Senha invalidos!")
         return oHashRet
@@ -82,7 +82,7 @@ static function fValida(oJson)
 	// lLogin := RpcSetEnv("01", "0101", cUsuario, cPassword, , GetEnvServer())
 
     if !lLogin 
-    	conout("Login invalido")
+    	//conout("Login invalido")
         oHashRet:Set("Status", 0)
 		oHashRet:Set("mensagem", "Usuario ou Senha invalidos!")
         return oHashRet

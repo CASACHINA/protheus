@@ -29,8 +29,12 @@ EndIF
 
 	AADD(aRegMes,{"LINHA","C",128,0})
 
-	cNomeArq:=CriaTrab(aRegMes, .t. )
-	dbUseArea(.T.,__LocalDriver,cNomeArq,"IMP",.F.,.F.)  
+	//cNomeArq:=CriaTrab(aRegMes, .t. )
+	//dbUseArea(.T.,__LocalDriver,cNomeArq,"IMP",.F.,.F.) 
+	 
+	oTempTable := FWTemporaryTable():New( "IMP" )
+	oTemptable:SetFields( aRegMes )
+	oTempTable:Create()
 
 	ProcRegua(Len(aRegMes))     
 

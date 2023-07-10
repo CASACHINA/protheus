@@ -35,8 +35,12 @@ EndIF
 
 	AADD(aRegMes,{"LINHA","C",132,0})
 
-	cNomeArq:=CriaTrab(aRegMes, .t. )
-	dbUseArea(.T.,__LocalDriver,cNomeArq,"CAD",.F.,.F.)  
+	//cNomeArq:=CriaTrab(aRegMes, .t. )
+	//dbUseArea(.T.,__LocalDriver,cNomeArq,"CAD",.F.,.F.)  
+	oTempTable := FWTemporaryTable():New( "CAD" )
+	oTemptable:SetFields( aRegMes )
+	// oTemptable:AddIndex("1", {"ZLG_FILIAL","ZLG_PEDIDO" })
+	oTempTable:Create()
 
 	ProcRegua(Len(aRegMes))     
 

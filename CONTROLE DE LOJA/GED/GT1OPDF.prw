@@ -10,7 +10,7 @@ User Function GT1OPDF()
 	Local cCodObj	:= AC9->AC9_CODOBJ
 	Local aEntidade	:= {}
 
-	ConOut("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Recno ->" + cValToChar(nReg))
+	//conout("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Recno ->" + cValToChar(nReg))
 
 	If ExistBlock("CXF0001")
 
@@ -23,14 +23,14 @@ User Function GT1OPDF()
 
 		If Len(aEntidade) > 0
 
-			ConOut("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Chave : " + xFilial("AC9") + cCodObj + cAlias + xFilial(cAlias) + aEntidade[1])
+			//conout("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Chave : " + xFilial("AC9") + cCodObj + cAlias + xFilial(cAlias) + aEntidade[1])
 
 			DBSelectArea("AC9")
 			AC9->(DBSetOrder(1)) // AC9_FILIAL, AC9_CODOBJ, AC9_ENTIDA, AC9_FILENT, AC9_CODENT, R_E_C_N_O_, D_E_L_E_T_
 
 			If AC9->(DBSeek(xFilial("AC9") + cCodObj + cAlias + xFilial(cAlias) + aEntidade[1]))
 
-				ConOut("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Chave já atualizada!")
+				//conout("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Chave já atualizada!")
 
 			Else
 
@@ -42,13 +42,13 @@ User Function GT1OPDF()
 				AC9->AC9_XDATA  := Date()
 				AC9->(MsUnLock())
 
-				ConOut("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " atualizado para " + cAlias + " Entidade: " + aEntidade[1])
+				//conout("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " atualizado para " + cAlias + " Entidade: " + aEntidade[1])
 
 			EndIf
 
 		Else
 
-			ConOut("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Nao carregou aEntidade")
+			//conout("GT1OPDF -> Objeto: " + AC9->AC9_CODOBJ + " Nao carregou aEntidade")
 
 		EndIf
 

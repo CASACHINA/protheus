@@ -301,8 +301,8 @@ Local cIdProcess:= ""
 		oObjRetItem := WsClassNew("ECMWorkflowEngineService_keyValueDto")
 		oObjRetItem := oObjRetorno:oWSitem[1]
 		if oObjRetItem:cKey == "ERROR"
-			conout("Erro Integração com o Fluig ")
-			conout("Erro: "+oObjRetItem:cValue)
+			//conout("Erro Integração com o Fluig ")
+			//conout("Erro: "+oObjRetItem:cValue)
 		Else
 			oObjRetItem := oObjRetorno:oWSitem[6]
 			cIdProcess := oObjRetItem:cValue
@@ -314,10 +314,10 @@ Local cIdProcess:= ""
 				SCR->(MsUnlock())
 			Next
 		
-			conout("idProcess "+cIdProcess)
+			//conout("idProcess "+cIdProcess)
 		EndIf
 	Else
-		conout("Processo não integrado com o Fluig")
+		//conout("Processo não integrado com o Fluig")
 	EndIf
 
 Return
@@ -346,13 +346,13 @@ Static function GetLogFlg(cLogin)
 			oObjRetItem := oObjRetorno:oWSitem[1]
 			cLogFluig := oObjRetItem:cColleagueId
 		
-			conout("cLogFluig "+cLogFluig)
+			//conout("cLogFluig "+cLogFluig)
 		else
-			conout("Erro e-mail ")
+			//conout("Erro e-mail ")
 			cLogFluig := AllTrim(GetMv("MV_FLGMATR"))
 		EndIf
 	Else
-		conout("Processo não integrado com o Fluig")
+		//conout("Processo não integrado com o Fluig")
 	EndIf
 
 

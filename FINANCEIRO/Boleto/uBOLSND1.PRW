@@ -31,7 +31,7 @@ User Function uBOLSND1()
 	Private _cAgencia := "3415"
 	Private _cConta   := "0130027105"
 
-	validPerg()
+	//validPerg()
 	Pergunte (cPerg,.F.)
 
 
@@ -81,13 +81,17 @@ Static Function SELSE1()
 	Aadd(aEstr, {"OK","C",2,0})
 	Aadd(aEstr, {"RECNO","N",10,0})
 
-	cNomeArq := CriaTrab(aEstr)
+	//cNomeArq := CriaTrab(aEstr)
 
 	if Select("TRBOL01")<>0
 		TRBOL01->(DBCloseArea())
 	EndIF
 
-	dbUseArea(.T.,__LocalDriver,cNomeArq,'TRBOL01',.F.)
+	//dbUseArea(.T.,__LocalDriver,cNomeArq,'TRBOL01',.F.)
+
+	oTempTable := FWTemporaryTable():New( "TRBOL01" )
+	oTemptable:SetFields( aEstr )
+	oTempTable:Create()
 
 	Processa({||SqlToTrb(cQry, aEstr, "TRBOL01")}) // Cria arquivo temporario
 
@@ -146,139 +150,22 @@ Static Function ValidPerg
 
 	_cAlias := Alias()
 	cPerg := "uBOLSND1"
-	XPutSX1(cPerg, "01", "Prefixo de"             , "", "", "mv_ch1" , "C", 03,  0, 0, "G", "", ""   , "", "", "mv_par01", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "02", "Prefixo Ate"            , "", "", "mv_ch2" , "C", 03,  0, 0, "G", "", ""   , "", "", "mv_par02", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "03", "Titulo de"              , "", "", "mv_ch3" , "C", 09,  0, 0, "G", "", "SE1", "", "", "mv_par03", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "04", "Titulo Ate"             , "", "", "mv_ch4" , "C", 09,  0, 0, "G", "", "SE1", "", "", "mv_par04", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "05", "Parcela De"             , "", "", "mv_ch5" , "C", 02,  0, 0, "G", "", "", "", "", "mv_par05", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "06", "Parcela Ate"            , "", "", "mv_ch6" , "C", 02,  0, 0, "G", "", ""   , "", "", "mv_par06", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "07", "Cliente de"             , "", "", "mv_ch7" , "C", 09,  0, 0, "G", "", "SA1", "", "", "mv_par07", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "08", "Cliente Ate"            , "", "", "mv_ch8" , "C", 09,  0, 0, "G", "", "SA1", "", "", "mv_par08", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "09", "Vencimento de"          , "", "", "mv_ch9" , "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par09", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "10", "Vencimento ate"         , "", "", "mv_ch10", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par10", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "11", "Emissao de"          	 , "", "", "mv_ch11", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par11", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "12", "Emissao de"          	 , "", "", "mv_ch12", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par12", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "13", "Bodero de"              , "", "", "mv_ch13" , "C", 06,  0, 0, "G", "", "", "", "", "mv_par13", "","","","","","","","","","","","","","","","")
-	XPutSX1(cPerg, "14", "Bordero Ate"            , "", "", "mv_ch14" , "C", 06,  0, 0, "G", "", "", "", "", "mv_par14", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "01", "Prefixo de"             , "", "", "mv_ch1" , "C", 03,  0, 0, "G", "", ""   , "", "", "mv_par01", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "02", "Prefixo Ate"            , "", "", "mv_ch2" , "C", 03,  0, 0, "G", "", ""   , "", "", "mv_par02", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "03", "Titulo de"              , "", "", "mv_ch3" , "C", 09,  0, 0, "G", "", "SE1", "", "", "mv_par03", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "04", "Titulo Ate"             , "", "", "mv_ch4" , "C", 09,  0, 0, "G", "", "SE1", "", "", "mv_par04", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "05", "Parcela De"             , "", "", "mv_ch5" , "C", 02,  0, 0, "G", "", "", "", "", "mv_par05", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "06", "Parcela Ate"            , "", "", "mv_ch6" , "C", 02,  0, 0, "G", "", ""   , "", "", "mv_par06", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "07", "Cliente de"             , "", "", "mv_ch7" , "C", 09,  0, 0, "G", "", "SA1", "", "", "mv_par07", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "08", "Cliente Ate"            , "", "", "mv_ch8" , "C", 09,  0, 0, "G", "", "SA1", "", "", "mv_par08", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "09", "Vencimento de"          , "", "", "mv_ch9" , "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par09", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "10", "Vencimento ate"         , "", "", "mv_ch10", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par10", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "11", "Emissao de"          	 , "", "", "mv_ch11", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par11", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "12", "Emissao de"          	 , "", "", "mv_ch12", "D", 08,  0, 0, "G", "", ""   , "", "", "mv_par12", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "13", "Bodero de"              , "", "", "mv_ch13" , "C", 06,  0, 0, "G", "", "", "", "", "mv_par13", "","","","","","","","","","","","","","","","")
+	//xPutSx1(cPerg, "14", "Bordero Ate"            , "", "", "mv_ch14" , "C", 06,  0, 0, "G", "", "", "", "", "mv_par14", "","","","","","","","","","","","","","","","")
 
 	dbSelectArea(_cAlias)
 Return
-
-Static Function xPutSx1(cGrupo,cOrdem,cPergunt,cPerSpa,cPerEng,cVar,;
-		cTipo ,nTamanho,nDecimal,nPresel,cGSC,cValid,;
-		cF3, cGrpSxg,cPyme,;
-		cVar01,cDef01,cDefSpa1,cDefEng1,cCnt01,;
-		cDef02,cDefSpa2,cDefEng2,;
-		cDef03,cDefSpa3,cDefEng3,;
-		cDef04,cDefSpa4,cDefEng4,;
-		cDef05,cDefSpa5,cDefEng5,;
-		aHelpPor,aHelpEng,aHelpSpa,cHelp)
-
-	LOCAL aArea := GetArea()
-	Local cKey
-	Local lPort := .f.
-	Local lSpa  := .f.
-	Local lIngl := .f.
-
-	cKey  := "P." + AllTrim( cGrupo ) + AllTrim( cOrdem ) + "."
-
-	cPyme    := Iif( cPyme 		== Nil, " ", cPyme		)
-	cF3      := Iif( cF3 		== NIl, " ", cF3		)
-	cGrpSxg  := Iif( cGrpSxg	== Nil, " ", cGrpSxg	)
-	cCnt01   := Iif( cCnt01		== Nil, "" , cCnt01 	)
-	cHelp	 := Iif( cHelp		== Nil, "" , cHelp		)
-
-	dbSelectArea( "SX1" )
-	dbSetOrder( 1 )
-
-
-	cGrupo := PadR( cGrupo , Len( SX1->X1_GRUPO ) , " " )
-
-	If !( DbSeek( cGrupo + cOrdem ))
-
-		cPergunt:= If(! "?" $ cPergunt .And. ! Empty(cPergunt),Alltrim(cPergunt)+" ?",cPergunt)
-		cPerSpa	:= If(! "?" $ cPerSpa  .And. ! Empty(cPerSpa) ,Alltrim(cPerSpa) +" ?",cPerSpa)
-		cPerEng	:= If(! "?" $ cPerEng  .And. ! Empty(cPerEng) ,Alltrim(cPerEng) +" ?",cPerEng)
-
-		Reclock( "SX1" , .T. )
-
-		Replace X1_GRUPO   With cGrupo
-		Replace X1_ORDEM   With cOrdem
-		Replace X1_PERGUNT With cPergunt
-		Replace X1_PERSPA  With cPerSpa
-		Replace X1_PERENG  With cPerEng
-		Replace X1_VARIAVL With cVar
-		Replace X1_TIPO    With cTipo
-		Replace X1_TAMANHO With nTamanho
-		Replace X1_DECIMAL With nDecimal
-		Replace X1_PRESEL  With nPresel
-		Replace X1_GSC     With cGSC
-		Replace X1_VALID   With cValid
-
-		Replace X1_VAR01   With cVar01
-
-		Replace X1_F3      With cF3
-		Replace X1_GRPSXG  With cGrpSxg
-
-		If Fieldpos("X1_PYME") > 0
-			If cPyme != Nil
-				Replace X1_PYME With cPyme
-			Endif
-		Endif
-
-		Replace X1_CNT01   With cCnt01
-		If cGSC == "C"			// Mult Escolha
-			Replace X1_DEF01   With cDef01
-			Replace X1_DEFSPA1 With cDefSpa1
-			Replace X1_DEFENG1 With cDefEng1
-
-			Replace X1_DEF02   With cDef02
-			Replace X1_DEFSPA2 With cDefSpa2
-			Replace X1_DEFENG2 With cDefEng2
-
-			Replace X1_DEF03   With cDef03
-			Replace X1_DEFSPA3 With cDefSpa3
-			Replace X1_DEFENG3 With cDefEng3
-
-			Replace X1_DEF04   With cDef04
-			Replace X1_DEFSPA4 With cDefSpa4
-			Replace X1_DEFENG4 With cDefEng4
-
-			Replace X1_DEF05   With cDef05
-			Replace X1_DEFSPA5 With cDefSpa5
-			Replace X1_DEFENG5 With cDefEng5
-		Endif
-
-		Replace X1_HELP  With cHelp
-
-		PutSX1Help(cKey,aHelpPor,aHelpEng,aHelpSpa)
-
-		MsUnlock()
-	Else
-
-		lPort := ! "?" $ X1_PERGUNT .And. ! Empty(SX1->X1_PERGUNT)
-		lSpa  := ! "?" $ X1_PERSPA  .And. ! Empty(SX1->X1_PERSPA)
-		lIngl := ! "?" $ X1_PERENG  .And. ! Empty(SX1->X1_PERENG)
-
-		If lPort .Or. lSpa .Or. lIngl
-			RecLock("SX1",.F.)
-			If lPort
-				SX1->X1_PERGUNT:= Alltrim(SX1->X1_PERGUNT)+" ?"
-			EndIf
-			If lSpa
-				SX1->X1_PERSPA := Alltrim(SX1->X1_PERSPA) +" ?"
-			EndIf
-			If lIngl
-				SX1->X1_PERENG := Alltrim(SX1->X1_PERENG) +" ?"
-			EndIf
-			SX1->(MsUnLock())
-		EndIf
-	Endif
-
-	RestArea( aArea )
-
-Return
-
-
 
 

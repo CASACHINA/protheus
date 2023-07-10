@@ -89,7 +89,7 @@ Static Function ModelDef()
 	oStruPai:AddTrigger(aAux[1],aAux[2],aAux[3],aAux[4])
 
 	//Cria o modelo de dados para cadastro
-	oModel := MPFormModel():New("CCFI001M", bPre, bPos, bCommit, bCancel)
+	oModel := MPFormModel():New("CCFI001M", bPre, bPos, /*bCommit*/, bCancel)
 	oModel:AddFields("SZ1MASTER", /*cOwner*/, oStruPai)
 	oModel:AddGrid("SZ1DETAIL","SZ1MASTER",oStruFilho,/*bLinePre*/, /*bLinePost*/,/*bPre - Grid Inteiro*/,/*bPos - Grid Inteiro*/,/*bLoad - Carga do modelo manualmente*/)
 	oModel:SetDescription("Modelo de dados - " + cTitulo)

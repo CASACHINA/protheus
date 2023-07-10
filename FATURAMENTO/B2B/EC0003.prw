@@ -94,7 +94,7 @@ user function EC0003EN()
     cFilAnt := "010104" // filial CD
 
     if u_EC0001() // Atualizando token
-        cToken := allTrim(getMv("EC_TOKEN"))
+        cToken := buscaToken()
         cGetPar := 'access_token=' + escape(cToken)
     else
         cLogErr := "Erro Geração Token"
@@ -127,7 +127,7 @@ user function EC0003EN()
 
         if (cRet == "401") // Unauthorized
             if u_EC0001() // Atualizando token
-                cToken := allTrim(getMv("EC_TOKEN"))
+                cToken := buscaToken()
                 cGetPar := 'access_token=' + escape(cToken)
             else
                 cLogErr := "Erro Geração Token"
@@ -214,7 +214,7 @@ static function fPost(cUrlPost, cPath, cGetPar, cJson, aHeader)
     cPostRet := HttpPost(cUrlPost + cPath, cGetPar, cJson, 120, aHeader, @cHeaRet) // Efetua o POST
 
     If !empty(cPostRet) // Retorno
-        Conout("POST Categoria: " + cPostRet)
+        //conout("POST Categoria: " + cPostRet)
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(cPostRet) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -265,7 +265,7 @@ user Function EC0003AT()
     endif
 
     if u_EC0001() // Atualizando token
-        cToken := allTrim(getMv("EC_TOKEN"))
+        cToken := buscaToken()
         cGetPar := 'access_token=' + escape(cToken)
     else
         cLogErr := "Erro Geração Token"
@@ -285,7 +285,7 @@ user Function EC0003AT()
 
     if (cRet == "401") // Unauthorized
         if u_EC0001() // Atualizando token
-            cToken := getMv("EC_TOKEN")
+            cToken := buscaToken()
             cPath += "?access_token=" + cToken
         else
             cLogErr := "Erro Geração Token"
@@ -314,7 +314,7 @@ static function fPut(cUrlPut, cPath, cGetPar, cJson, aHeader)
     oRest:setPath(cPath + "/" + allTrim(ZZ2->ZZ2_ID) + "?" + cGetPar)
 
     If (oRest:Put(aHeader, cJson)) // Efetua o POST
-        Conout("PUT CATEGORIA: " + oRest:GetResult())
+        //conout("PUT CATEGORIA: " + oRest:GetResult())
         oJsonRet := JsonObject():New()
         ret := oJsonRet:fromJson(oRest:GetResult()) // Convertendo json
         if (oJsonRet["code"] == 200 .or. oJsonRet["code"] == 201) // OK
@@ -354,7 +354,7 @@ user function EC0003ALL()
     cFilAnt := "010104" // filial CD
 
     if u_EC0001() // Atualizando token
-        cToken := allTrim(getMv("EC_TOKEN"))
+        cToken := buscaToken()
         cGetPar := 'access_token=' + escape(cToken)
     else
         cLogErr := "Erro Geração Token"
@@ -393,7 +393,7 @@ user function EC0003ALL()
 
         if (cRet == "401") // Unauthorized
             if u_EC0001() // Atualizando token
-                cToken := allTrim(getMv("EC_TOKEN"))
+                cToken := buscaToken()
                 cGetPar := 'access_token=' + escape(cToken)
             else
                 cLogErr := "Erro Geração Token"
@@ -418,3 +418,8 @@ user function EC0003ALL()
     cFilAnt := cFilBkp
     msgInfo("Integração finalizada.", "OK")
 return nil
+
+
+static function buscaToken()
+    Local _cToken :=  allTrim(getMv("EC_TOKEN"))
+return _cToken

@@ -5,7 +5,7 @@ user function MEst410(aParam)
 
 	aParam := {'01','010104'}
 
-	Conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst410] - Schedule - Iniciado")
+	//conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst410] - Schedule - Iniciado")
 
 
 	IF aParam # nil
@@ -21,7 +21,7 @@ user function MEst410(aParam)
 		FwMsgRun(, {|| MEst41Exec() }, "Aguarde...", "Executando importação do WMS de conferencia de saida.")
 	EndIF
 
-	Conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst410] - Schedule - Finalizado")
+	//conout("[" + DtoC(Date()) + " - "  + Time() + "] - [MEst410] - Schedule - Finalizado")
 
 return
 

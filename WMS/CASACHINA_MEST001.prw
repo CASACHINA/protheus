@@ -9,7 +9,7 @@ User Function MEST001(oModel)
 	Local bProcess	:= {|oSelf| MEST01EX(oSelf,oModel) }
 	Local cPerg		:= Padr("MEST001",10)
 
-	CriaSX1(cPerg)
+	//CriaSX1(cPerg)
 
 	oProcess := tNewProcess():New(cPerg,"Importação de dados para transferência entre filiais.",bProcess,;
 	"Efetua carga de dados para transferência entre filiais.",cPerg,,.F.,,,.T.,.T.)
@@ -240,7 +240,7 @@ Return
 
 
 Static Function CriaSX1(cPerg)
-	U_PUTSX1(cPerg,"01","Arquivo?"			,"Arquivo?"			,"Arquivo?"			,"mv_ch1","C",99,0,0,"G","U_AEST01VA()","DIR"	,"","","mv_par01","","","","","","","","","","","","","","","","",{"Informe o arquivo para importação,","obrigatóriamente deve ser .CSV","",""},{"","","",""},{"","",""},"")
+	//U_PUTSX1(cPerg,"01","Arquivo?"			,"Arquivo?"			,"Arquivo?"			,"mv_ch1","C",99,0,0,"G","U_AEST01VA()","DIR"	,"","","mv_par01","","","","","","","","","","","","","","","","",{"Informe o arquivo para importação,","obrigatóriamente deve ser .CSV","",""},{"","","",""},{"","",""},"")
 Return
 
 User Function AEST01VA(cChama)

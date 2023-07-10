@@ -25,7 +25,7 @@ User Function VMIX013(aParam)
 
 	While !MayIUseCode( "VMIX013" )
 
-		ConOut("A rotina VMIX013 está sendo executada por outro processo!")
+		//conout("A rotina VMIX013 está sendo executada por outro processo!")
 
 	EndDo
 	
@@ -39,7 +39,7 @@ User Function VMIX013(aParam)
 
 		cQryCabec := GetNextAlias()
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX013 VERSAO INICIADA...")
+		//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX013 VERSAO INICIADA...")
 
 		cVMIXDB   := AllTrim(GetNewPar("ZZ_VMIXDB", ""))
 		cVMIXFIL  := AllTrim(GetNewPar("ZZ_VMIXFIL", ""))
@@ -117,7 +117,7 @@ User Function VMIX013(aParam)
 
 		(cQryCabec)->(DbCloseArea())
 
-		ConOut("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX013 CONCLUIDA.")
+		//conout("[" + cEmpAnt + cFilAnt + "] " + "INTEGRACAO VMIX013 CONCLUIDA.")
 
 		U_VMIX014() // Chama a rotina para geracao das notas de devolucao.
 
@@ -365,7 +365,7 @@ Static Function GetValue(cQuery, cTable, cField)
 						__cMsgAdv += "Advertência: Campos " + AllTrim(ZV1->ZV1_CPOPRO) + " nao encontrado!" + Chr(10)
 
 						// If __lJob
-						conout(conout)
+						//conout(//conout)
 						// EndIf
 
 					EndIf
@@ -399,7 +399,7 @@ Static Function GetValue(cQuery, cTable, cField)
 						__cMsgAdv += "Advertência: Campos " + AllTrim(ZV1->ZV1_CPOPRO) + " nao encontrado!" + Chr(10)
 
 						// If __lJob
-						conout(__cMsgAdv)
+						//conout(__cMsgAdv)
 						// EndIf
 
 					EndIf
@@ -566,7 +566,7 @@ Static Function Cliente(cQryCabec)
 
 				cLogTxt += GetErrorLog(aAutoErro)
 
-				ConOut("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> ERRO: " + cLogTxt)
+				//conout("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> ERRO: " + cLogTxt)
 
 				RecLock("ZA0", .F.)
 				ZA0->ZA0_STATUS := "2" // 0=Aguard. Integração;1=Integrado;2=Erro
@@ -575,7 +575,7 @@ Static Function Cliente(cQryCabec)
 
 			Else
 
-				ConOut("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> SUCESSO!")
+				//conout("[" + cEmpAnt + cFilAnt + "] PROCESSO: " + ZA0->ZA0_PROCES + " VMIX014 >>> SUCESSO!")
 
 				RecLock("ZA0", .F.)
 				ZA0->ZA0_STATUS := "0" // 0=Aguard. Integração;1=Integrado;2=Erro
