@@ -1488,9 +1488,9 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 			oLog:cTabela := "NNS"
 
-			If NNS->NNS_CYBERS == "E" .Or. NNS->NNS_CYBERS == "R" // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+			If .T. // NNS->NNS_CYBERS == "E" .Or. NNS->NNS_CYBERS == "R" // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
 
-				If NNS->NNS_CYBERS == "E"
+				If .T. // NNS->NNS_CYBERS == "E"
 
 					DBSelectArea("NNT")
 					NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
