@@ -798,9 +798,9 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"controlaLote":			.F.,;
 		"controlaValidade":		.F.,;
 		"controlaSerial":		.F.,;
-        "profundidadeDun":      SB5->B5_COMPR,;
-        "alturaDun":            SB5->B5_ALTURA,;
-        "larguraDun":           SB5->B5_LARG,;
+        "profundidadeDun":      If(SB5->B5_COMPR	> 0, SB5->B5_COMPR  * 10, 0),;
+        "alturaDun":            If(SB5->B5_ALTURA 	> 0, SB5->B5_ALTURA * 10, 0),;
+        "larguraDun":           If(SB5->B5_LARG 	> 0, SB5->B5_LARG 	* 10, 0),;
         "pesoDun":              SB1->B1_PESO,;
 		"semPickingFixo":		.F.,;
 		"perigoso":				.F.,;
