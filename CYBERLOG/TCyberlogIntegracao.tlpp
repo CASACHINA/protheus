@@ -106,6 +106,7 @@ Class TCyberlogIntegracao
 	Public Method AjusteCodProduto(cProduto, nDigitos)
 
 	Public Method MovimentaEstoque()
+	Public Method ExistsMovimento(cProcesso)
 
 EndClass
 
@@ -747,7 +748,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 		"informarlote":		.F.,;
 		"itensRecebimento":	Nil,;
 		"listaXDocking":	Nil;
-	}
+		}
 
 	jJson['itensRecebimento'] := aItens
 
@@ -762,7 +763,7 @@ Method LoadJsonDocEntrada(cAcao) Class TCyberlogIntegracao
 			"chaveIdPedido":	"",;
 			"docaDestino":		"0",;
 			"itensXDocking": 	aItens;
-		}
+			}
 
 		aAdd(alistaXDocking, jJsonXDocking)
 
@@ -798,10 +799,10 @@ Method LoadJsonProduct(cAcao) Class TCyberlogIntegracao
 		"controlaLote":			.F.,;
 		"controlaValidade":		.F.,;
 		"controlaSerial":		.F.,;
-        "profundidadeDun":      SB5->B5_COMPR,;
-        "alturaDun":            SB5->B5_ALTURA,;
-        "larguraDun":           SB5->B5_LARG,;
-        "pesoDun":              SB1->B1_PESO,;
+		"profundidadeDun":      If(SB5->B5_COMPR	> 0, INT(SB5->B5_COMPR)  * 10, 0),;
+		"alturaDun":            If(SB5->B5_ALTURA 	> 0, INT(SB5->B5_ALTURA) * 10, 0),;
+		"larguraDun":           If(SB5->B5_LARG 	> 0, INT(SB5->B5_LARG) 	* 10, 0),;
+		"pesoDun":              SB1->B1_PESO,;
 		"semPickingFixo":		.F.,;
 		"perigoso":				.F.,;
 		"refrigerado":			.F.,;
@@ -1488,9 +1489,9 @@ Method SetPedidoConferencia(jBody, nRetorno) Class TCyberlogIntegracao
 
 			oLog:cTabela := "NNS"
 
-			If NNS->NNS_CYBERS == "E" .Or. NNS->NNS_CYBERS == "R" // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
+			If .T. // NNS->NNS_CYBERS == "E" .Or. NNS->NNS_CYBERS == "R" // N=Nao Enviado;E=Enviado;R=Recebido;X=Erro ao Enviar WMS;S=Sem Int.com WMS
 
-				If NNS->NNS_CYBERS == "E"
+				If .T. // NNS->NNS_CYBERS == "E"
 
 					DBSelectArea("NNT")
 					NNT->(DBSetOrder(1)) // NNT_FILIAL, NNT_COD, NNT_FILORI, NNT_PROD, NNT_LOCAL, NNT_LOCALI, NNT_NSERIE, NNT_LOTECT, NNT_NUMLOT, NNT_FILDES, NNT_PRODD, NNT_LOCLD, NNT_LOCDES, NNT_LOTED, R_E_C_N_O_, D_E_L_E_T_
@@ -2056,6 +2057,7 @@ Method ValidEnvioPedidoM460MARK(aParam) Class TCyberlogIntegracao
 			SC9.C9_NFISCAL 	= '' AND
 			SC9.D_E_L_E_T_	= '' AND
 			SC9.C9_BLEST	= ''
+			
 		EndSQL
 
 		(cAlias)->(DbGoTop())
@@ -3070,6 +3072,7 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 	Local cErro			:= ""
 	Local oLog			:= Nil
 	Local cChaveZA5 	:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+	Local lJaProc		:= .F.
 
 	Private lMSErroAuto 	:= .F.
 	Private lMSHelpAuto 	:= .T. // .F. -> Vai exibir o help em tela | .T. Não vai exibir o help em tela
@@ -3077,136 +3080,159 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 
 	lMSHelpAuto := .F. // Deixar como true por conta da funcao aviso
 
+	While !MayIUseCode( "TCyberlogIntegracao_MovimentaEstoque_" + cChaveZA5 )
+
+		ConOut("A rotina VMIX013 está sendo executada por outro processo!")
+
+	EndDo
+
 	If ZA5->ZA5_STAREC == "C" .And. ZA5->ZA5_STAPED == "C" .And. ZA5->ZA5_STATUS <> "T"
 
 		// If Aviso("ATENCAO", "Este processo não pode ser interrompido e os movimentos gerados não poderão ser EXCLUÍDOS, somente estornados. Tem certeza que deseja processar?", {"Ok", "Cancelar"}, 2) == 1
 
-			// If MsgYesNo("Confirma Transferencia?")
+		// If MsgYesNo("Confirma Transferencia?")
 
-				lMSHelpAuto := .T.
+		lJaProc := ::ExistsMovimento(ZA5->ZA5_PROCES)
 
-				FwClearHLP()
+		If !lJaProc
 
-				ProcRegua(nTotLin)
+			lMSHelpAuto := .T.
 
-				// cDocNum := GetSXENum("SD3","D3_DOC", 1)
+			FwClearHLP()
 
-				aAdd(aAuto, { NIl, dDataBase })
+			ProcRegua(nTotLin)
 
-				Begin Transaction
+			// cDocNum := GetSXENum("SD3","D3_DOC", 1)
 
-					DBSelectArea("ZA6")
-					ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
-					ZA6->(DBGoTop())
+			aAdd(aAuto, { NIl, dDataBase })
 
-					If ZA6->(DBSeek(cChaveZA5))
+			Begin Transaction
 
-						While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
+				DBSelectArea("ZA6")
+				ZA6->(DBSetOrder(1)) // ZA6_FILIAL, ZA6_PROCES, R_E_C_N_O_, D_E_L_E_T_
+				ZA6->(DBGoTop())
 
-							IncProc("Baixando linha " + AllTrim(Str(nW)) + " de " + AllTrim(Str(nTotLin)))
+				If ZA6->(DBSeek(cChaveZA5))
 
-							aLinha := {}
+					While ZA6->(!EOF()) .And. ZA6->(ZA6_FILIAL + ZA6_PROCES) == cChaveZA5
 
-							lMSErroAuto := .F.
+						IncProc("Baixando linha " + AllTrim(Str(nW)) + " de " + AllTrim(Str(nTotLin)))
 
-							SB1->(DbSeek(xFilial("SB1")+PadR(ZA6->ZA6_PRODUT, tamsx3('D3_COD') [1])))
+						aLinha := {}
 
-							//Origem
-							aAdd(aLinha, {"ITEM"		, ZA6->ZA6_ITEM									, Nil})
-							aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //Cod Produto origem
-							aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto origem
-							aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida origem
-							aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCORI								, Nil}) //armazem origem
-							aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o origem
+						lMSErroAuto := .F.
 
-							//Destino
-							aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //cod produto destino
-							aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto destino
-							aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida destino
-							aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCDES								, Nil}) //armazem destino
-							aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o destino
+						SB1->(DbSeek(xFilial("SB1")+PadR(ZA6->ZA6_PRODUT, tamsx3('D3_COD') [1])))
 
-							aAdd(aLinha, {"D3_NUMSERI"	, ""											, Nil}) //Numero serie
+						//Origem
+						aAdd(aLinha, {"ITEM"		, ZA6->ZA6_ITEM									, Nil})
+						aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //Cod Produto origem
+						aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto origem
+						aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida origem
+						aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCORI								, Nil}) //armazem origem
+						aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o origem
 
-							aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote Origem
-							aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote origem
-							aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //data validade
-							aAdd(aLinha, {"D3_POTENCI"	, 0												, Nil}) // Potencia
-							aAdd(aLinha, {"D3_QUANT"	, ZA6->ZA6_QTDSEP								, Nil}) //Quantidade
-							aAdd(aLinha, {"D3_QTSEGUM"	, ConvUM(SB1->B1_COD, ZA6->ZA6_QTDSEP, 0, 2)		, Nil}) //Seg unidade medida
-							aAdd(aLinha, {"D3_ESTORNO"	, ""											, Nil}) //Estorno
-							aAdd(aLinha, {"D3_NUMSEQ"	, ""											, Nil}) // Numero sequencia D3_NUMSEQ
+						//Destino
+						aAdd(aLinha, {"D3_COD"		, SB1->B1_COD									, Nil}) //cod produto destino
+						aAdd(aLinha, {"D3_DESCRI"	, SB1->B1_DESC									, Nil}) //descr produto destino
+						aAdd(aLinha, {"D3_UM"		, SB1->B1_UM									, Nil}) //unidade medida destino
+						aAdd(aLinha, {"D3_LOCAL"	, ZA6->ZA6_LOCDES								, Nil}) //armazem destino
+						aAdd(aLinha, {"D3_LOCALIZ"	, ""											, Nil}) //Informar endereÃ§o destino
 
-							aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote destino
-							aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote destino
-							aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //validade lote destino
-							aAdd(aLinha, {"D3_ITEMGRD"	, ""											, Nil}) //Item Grade
+						aAdd(aLinha, {"D3_NUMSERI"	, ""											, Nil}) //Numero serie
 
-							aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod origem
-							aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod destino
+						aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote Origem
+						aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote origem
+						aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //data validade
+						aAdd(aLinha, {"D3_POTENCI"	, 0												, Nil}) // Potencia
+						aAdd(aLinha, {"D3_QUANT"	, ZA6->ZA6_QTDSEP								, Nil}) //Quantidade
+						aAdd(aLinha, {"D3_QTSEGUM"	, ConvUM(SB1->B1_COD, ZA6->ZA6_QTDSEP, 0, 2)		, Nil}) //Seg unidade medida
+						aAdd(aLinha, {"D3_ESTORNO"	, ""											, Nil}) //Estorno
+						aAdd(aLinha, {"D3_NUMSEQ"	, ""											, Nil}) // Numero sequencia D3_NUMSEQ
 
-							aAdd(aAuto, aLinha)
+						aAdd(aLinha, {"D3_LOTECTL"	, ""											, Nil}) //Lote destino
+						aAdd(aLinha, {"D3_NUMLOTE"	, ""											, Nil}) //sublote destino
+						aAdd(aLinha, {"D3_DTVALID"	, ''											, Nil}) //validade lote destino
+						aAdd(aLinha, {"D3_ITEMGRD"	, ""											, Nil}) //Item Grade
 
-							ZA6->(DBSkip())
+						aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod origem
+						aAdd(aLinha, {"D3_CODLAN"	, ""											, Nil}) //cat83 prod destino
 
-						EndDo
+						aAdd(aLinha, {"D3_XPROCTR"	, ZA6->ZA6_PROCES								, Nil}) //cat83 prod destino
 
-						TLogConsole():Log("Iniciando Execauto mata261")
+						aAdd(aAuto, aLinha)
 
-						MSExecAuto( {|x, y| mata261(x, y)}, aAuto, 3 )
+						ZA6->(DBSkip())
 
-						If lMSErroAuto
+					EndDo
 
-							cErro := MostraErro("\log\", cChaveZA5 + DTOS(dDataBase) + Replace(Time(), ":", "_") + ".log")
+					TLogConsole():Log("Iniciando Execauto mata261")
 
-							DisarmTransaction()
+					MSExecAuto( {|x, y| mata261(x, y)}, aAuto, 3 )
 
-							// RollBackSX8()
+					If lMSErroAuto
 
-							TLogConsole():Log(cErro)
+						cErro := MostraErro("\log\", cChaveZA5 + DTOS(dDataBase) + Replace(Time(), ":", "_") + ".log")
 
-						Else
+						DisarmTransaction()
 
-							// ConfirmSX8()
+						// RollBackSX8()
 
-							RecLock("ZA5", .F.)
-							ZA5->ZA5_STATUS := "T"
-							ZA5->ZA5_DOC 	:= U_XMA261TR()
-							ZA5->ZA5_DATATR	:= Date()
-							ZA5->(MsUnlock())
+						TLogConsole():Log(cErro)
 
-							TLogConsole():Log("Processo: " + ZA5->ZA5_PROCES + " Movimentando com Sucesso!")
+					Else
 
-						EndIf
+						// ConfirmSX8()
+
+						RecLock("ZA5", .F.)
+						ZA5->ZA5_STATUS := "T"
+						ZA5->ZA5_DOC 	:= U_XMA261TR()
+						ZA5->ZA5_DATATR	:= Date()
+						ZA5->(MsUnlock())
+
+						TLogConsole():Log("Processo: " + ZA5->ZA5_PROCES + " Movimentando com Sucesso!")
 
 					EndIf
 
-				End Transaction
-
-				If lMSErroAuto
-
-					RecLock("ZA5", .F.)
-					ZA5->ZA5_STATUS := "X" // N=Não enviado;R=Aguard.Receb.;S=Aguard.Separação;X=Erro;T=Transferido
-					ZA5->ZA5_ERRO	:= cErro
-					ZA5->ZA5_DATATR	:= Date()
-					ZA5->(MsUnlock())
-
 				EndIf
 
-				oLog := TCyberlogHistoryStruct():New()
+			End Transaction
 
-				oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
-				oLog:cDeposito	:= ::cDeposito
-				oLog:cTabela	:= "ZA5"
-				oLog:cOperacao	:= "I"
-				oLog:cTipo		:= "M"
-				oLog:cStatus	:= If(lMSErroAuto, "E", "S")
-				oLog:cRotina	:= FunName()
-				oLog:cObs		:= "Almoxarifados movimentados com sucesso."
+			If lMSErroAuto
 
-				::Log(oLog)
+				RecLock("ZA5", .F.)
+				ZA5->ZA5_STATUS := "X" // N=Não enviado;R=Aguard.Receb.;S=Aguard.Separação;X=Erro;T=Transferido
+				ZA5->ZA5_ERRO	:= cErro
+				ZA5->ZA5_DATATR	:= Date()
+				ZA5->(MsUnlock())
 
-			// EndIf
+			EndIf
+
+		EndIf
+
+		oLog := TCyberlogHistoryStruct():New()
+
+		oLog:cChave		:= ZA5->(ZA5_FILIAL + ZA5_PROCES)
+		oLog:cDeposito	:= ::cDeposito
+		oLog:cTabela	:= "ZA5"
+		oLog:cOperacao	:= "I"
+		oLog:cTipo		:= "M"
+		oLog:cStatus	:= If(lMSErroAuto, "E", "S")
+		oLog:cRotina	:= FunName()
+
+		If lJaProc
+
+			oLog:cObs	:= "Separação já foi efetivada no ERP."
+
+		Else
+
+			oLog:cObs	:= If(lMSErroAuto, "Almoxarifados movimentados com sucesso.", "Ocorreu um erro no processamento.")
+
+		EndIf
+
+		::Log(oLog)
+
+		// EndIf
 
 		// EndIf
 
@@ -3221,6 +3247,31 @@ Method MovimentaEstoque() Class TCyberlogIntegracao
 	EndIf
 
 Return(!lMSErroAuto)
+
+Method ExistsMovimento(cProcesso) Class TCyberlogIntegracao
+
+	Local lRet := .F.
+	Local cAlias_ := GetNextAlias()
+
+	BeginSQL Alias cAlias_
+
+		%noparser%
+
+		SELECT COUNT(*) TOT
+		FROM %Table:SD3% SD3 
+		WHERE D3_FILIAL = %xFilial:SD3% 
+		AND D3_XPROCTR	= %Exp:cProcesso%
+		AND D_E_L_E_T_ 	= ''
+
+	EndSQL
+
+	(cAlias_)->(DbGoTop())
+
+	lRet := (cAlias_)->TOT > 0
+
+	(cAlias_)->(dbCloseArea())
+
+Return(lRet)
 
 Method AjusteCodProduto(cProduto, nDigitos) Class TCyberlogIntegracao
 
@@ -3487,6 +3538,8 @@ Method LoadDataGraficoDocEntrada() Class TCyberlogIntegracao
 
 	EndDo
 
+	(cAlias)->(dbCloseArea())
+
 Return(aDados)
 
 Method LoadDataGraficoPedido() Class TCyberlogIntegracao
@@ -3545,6 +3598,8 @@ Method LoadDataGraficoPedido() Class TCyberlogIntegracao
 		(cAlias)->(DbSkip())
 
 	EndDo
+
+	(cAlias)->(dbCloseArea())
 
 Return(aDados)
 
@@ -3611,5 +3666,7 @@ Method LoadDataGraficoTransferencia() Class TCyberlogIntegracao
 		(cAlias)->(DbSkip())
 
 	EndDo
+
+	(cAlias)->(dbCloseArea())
 
 Return(aDados)
