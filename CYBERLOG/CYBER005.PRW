@@ -115,11 +115,15 @@ Static Function ReportDef()
 
 		EndDo
 
-		lRet := CpyT2S(cFile, "\spool")
+		If nRemote == 1 // Smartclient
 
-		If !lRet
+			lRet := CpyT2S(cFile, "\spool")
 
-			ConOut("ERRO AO ENVIAR ARQUIVO: " + cFile + " >>> PARA O SERVIDOR.")
+			If !lRet
+
+				ConOut("ERRO AO ENVIAR ARQUIVO: " + cFile + " >>> PARA O SERVIDOR.")
+
+			EndIf
 
 		EndIf
 
