@@ -418,7 +418,7 @@ User Function CYBER_ARMA()
 		ZA6->(MsUnlock())
 
 	EndIf
-	
+
 	oObjCyberLog:lManual := .T.
 
 	oObjCyberLog:GenericRun(2)
@@ -434,17 +434,18 @@ Return()
 User Function CYBER_ARMA_MOV()
 
 	Local nW			:= 0
-	Local aRecno        := {3}
+	Local aRecno        := {152}
 	Local aParam	    := {"01", "010104"}
 	Local oObjCyberLog  := Nil
 
 	Private oRest := oRestEmulation():New()
-	Private cBody := '{ "deposito": "1", "erpId": "ZA50101040000000001", "volume": 10, "status": "Conferido", "itensPedido": [ { "sequenciaERP": "01", "erpId": "01", "codigoReduzido": "011022", "qtdPedido": 100, "qtdSeparada": 100 } ] }'
+
+	Private cBody := '{"deposito":"1","erpId":"ZA50101040000000152","status":"Conferido","volume":0,"peso":3.2,"itensPedido":[{"sequenciaERP":"0001","erpId":"00111495","codigoReduzido":"00111495","qtdPedido":100,"qtdSeparada":100}]}'
 
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
 	oObjCyberLog  := TCyberlogIntegracao():New()
-	
+
 	For nW := 1 To Len(aRecno)
 
 		ZA5->(DBGOTO( aRecno[nW] ))
@@ -473,7 +474,7 @@ User Function CYBER_ARMA_CONF()
 	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
 
 	oObjCyberLog  := TCyberlogIntegracao():New()
-	
+
 	For nW := 1 To Len(aRecno)
 
 		// ZA5->(DBGOTO( aRecno[nW] ))
@@ -526,6 +527,92 @@ User Function AJUSTSXE(cTab, cField, lDeleted)
 
 Return(cNextSX8)
 
+User Function CYBER_ESTORNO()
+
+	Local aParam	    := {"01", "010104"}
+	Local cAlias 		:= GetNextAlias()
+
+	RPCSetEnv(aParam[1],aParam[2],,,"FAT")
+
+	Private lMsErroAuto := .F.
+
+	BeginSQL Alias cAlias
+
+		%noparser%
+
+		SELECT 	D3_FILIAL,
+				D3_COD,   
+				SUM(D3_QUANT) D3_QUANT,
+				D3_CF,
+				D3_LOCAL,
+				D3_DOC,
+				D3_EMISSAO
+		FROM %Table:SD3% SD3 
+		WHERE D3_FILIAL = %xFilial:SD3%
+		AND D3_XPROCTR	= 'ESTORNAR'
+		AND D3_EMISSAO  >= %Exp:(GetMv("MV_ULMES"))%
+		AND D3_TM		= '999'
+		AND D3_ESTORNO <> 'S'
+		AND D_E_L_E_T_ 	= ''
+		GROUP BY  D3_FILIAL,
+				D3_COD,   
+				D3_QUANT,
+				D3_CF,
+				D3_LOCAL,
+				D3_DOC,
+				D3_EMISSAO
+		ORDER BY D3_FILIAL,
+				D3_DOC DESC,
+				D3_EMISSAO ASC
+
+	EndSQL
+
+	(cAlias)->(DbGoTop())
+
+	While !(cAlias)->(Eof())
+
+		//-- Preenchimento dos campos
+		aAuto := {}
+
+		dDataBase := STOD((cAlias)->D3_EMISSAO)
+
+		aadd(aAuto,{"D3_DOC", (cAlias)->D3_DOC, Nil})
+		aadd(aAuto,{"D3_COD", (cAlias)->D3_COD, Nil})
+
+		DbSelectArea("SD3")
+		SD3->(DbSetOrder(2))
+
+		SD3->(DbSeek(xFilial("SD3") + (cAlias)->D3_DOC + (cAlias)->D3_COD))
+
+		//-- Teste de Estorno
+		nOpcAuto := 6 // Estornar
+
+		MSExecAuto({|x,y| mata261(x,y)},aAuto,nOpcAuto)
+
+		If lMsErroAuto
+
+			cErro := MostraErro("\log\", (cAlias)->D3_DOC + DTOS(dDataBase) + Replace(Time(), ":", "_") + ".log")
+
+			DisarmTransaction()
+
+			// RollBackSX8()
+
+			TLogConsole():Log(cErro)
+
+		Else
+
+			conout((cAlias)->D3_DOC + ": Estorno de movimentação efetuada com sucesso.")
+
+		EndIf
+
+		(cAlias)->(DbSkip())
+
+	EndDo
+
+	(cAlias)->(dbCloseArea())
+
+Return()
+
 Static Function GetMax(cTab, cField, lDeleted)
 
 	Local aArea		:= GetArea()
@@ -533,13 +620,13 @@ Static Function GetMax(cTab, cField, lDeleted)
 	Local cAglImp	:= StrZero(1,nTamSeq)
 	Local cQuery	:= ""
 	Local cAlias1   := GetNextAlias()
-	
+
 	Default lDeleted	:= .F.
-	
+
 	cQuery := "SELECT MAX(" + cField + ") MAXNUMPRC FROM " + RetSqlName(cTab) + " "
 
 	If lDeleted
-		
+
 		cQuery += "WHERE D_E_L_E_T_ = ' ' "
 
 	EndIf
@@ -558,17 +645,17 @@ Static Function GetMax(cTab, cField, lDeleted)
 
 Return(cAglImp)
 
-Class oRestEmulation
+	Class oRestEmulation
 
-	Public Method New() Constructor
+		Public Method New() Constructor
 
-	Public Method setResponse()
-	Public Method getBodyRequest()
-	Public Method setStatusCode()
-	Public Method getFullURLRequest()
-	Public Method getHeaderRequest()
+		Public Method setResponse()
+		Public Method getBodyRequest()
+		Public Method setStatusCode()
+		Public Method getFullURLRequest()
+		Public Method getHeaderRequest()
 
-EndClass
+	EndClass
 
 Method New() Class oRestEmulation
 
